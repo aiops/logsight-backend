@@ -14,7 +14,8 @@ from pathlib import Path
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = './' 
+#Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = os.path.join('templates', BASE_DIR)
 STATIC_DIR = os.path.join('static', BASE_DIR)
 
@@ -27,7 +28,7 @@ SECRET_KEY = 'pxz!5e7vki$4%fx2+xb-z6v_85b)0j)nwontigspp#!+fpxu*2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =  ['*', 'localhost', '127.0.0.1', 'kibana', 'web-app']
 
 
 # Application definition
@@ -81,7 +82,7 @@ WSGI_APPLICATION = 'src.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),
+        'NAME': str(BASE_DIR + 'db.sqlite3'),
     }
 }
 
@@ -131,6 +132,14 @@ LOGIN_URL = 'login'
 LOGOUT_URL = 'logout'
 
 
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
+# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+# EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PW')
+
+DEFAULT_FROM_EMAIL = 'noreply<LoxBear@gmail.com>'
