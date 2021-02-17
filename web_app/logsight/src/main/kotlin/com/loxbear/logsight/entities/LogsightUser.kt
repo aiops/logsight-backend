@@ -16,11 +16,8 @@ data class LogsightUser(
     @Column(name = "password")
     val password: String,
 
-    @Column(name = "first_name")
-    val firstName: String,
-
-    @Column(name = "last_name")
-    val lastName: String,
+    @Column(name = "key")
+    val key: String,
 
     @Column(name = "date_created")
     val dateCreated: LocalDateTime = LocalDateTime.now()

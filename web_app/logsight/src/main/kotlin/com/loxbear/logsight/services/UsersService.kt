@@ -1,42 +1,21 @@
 package com.loxbear.logsight.services
 
-import com.loxbear.logsight.charts.data.DataSet
-import com.loxbear.logsight.charts.data.LineChart
-import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
+import com.loxbear.logsight.entities.LogsightUser
+import com.loxbear.logsight.models.RegisterUserForm
+import com.loxbear.logsight.repositories.UserRepository
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import utils.KeyGenerator
 
 @Service
-class UsersService(val repository: ChartsRepository) {
+class UsersService(val repository: UserRepository) {
 
-    fun getLineChartData(): LineChart {
-        val labels = mutableListOf<String>()
-        val normal = mutableListOf<Double>()
-        val anomaly = mutableListOf<Double>()
-        val dataSets = mutableListOf<DataSet>()
-        repository.getLineChartData().aggregations.listAggregations.buckets.forEach {
-            labels.add(it.date.toBookingTime())
-            val dataKey0 = it.listBuckets.buckets[0].key
-            if (dataKey0 == "normal") {
-                normal.add(it.listBuckets.buckets[0].docCount)
-            } else if (dataKey0 == "anomaly") {
-                anomaly.add(it.listBuckets.buckets[0].docCount)
+    fun createUser(form: RegisterUserForm): LogsightUser {
+        return with(form) {
+            if (repository.findByEmail(email).isPresent) {
+                throw Exception("User with email $email already exists")
             }
-            if (it.listBuckets.buckets.size > 1) {
-                val dataKey1 = it.listBuckets.buckets[1].key
-                if (dataKey1 == "normal") {
-                    normal.add(it.listBuckets.buckets[1].docCount)
-                } else if (dataKey1 == "anomaly") {
-                    anomaly.add(it.listBuckets.buckets[1].docCount)
-                }
-            }
+            repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
         }
-        dataSets.add(DataSet(data = anomaly, label = "Anomaly"))
-        dataSets.add(DataSet(data = normal, label = "Normal"))
-        return LineChart(labels = labels, datasets = dataSets)
+
     }
-
-    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-
 }
