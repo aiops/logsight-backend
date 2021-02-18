@@ -10,4 +10,6 @@ import java.util.*
 interface UserRepository : JpaRepository<LogsightUser, Long> {
     fun findByEmail(email: String): Optional<LogsightUser>
 
+    fun findByEmailAndPassword(email: String, password: String): Optional<LogsightUser>
+
 }
