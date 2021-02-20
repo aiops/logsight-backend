@@ -10,9 +10,6 @@ data class Anomaly(
     @Id
     val id: String,
 
-    @Field(name = "actual_label")
-    val actualLabel: String,
-
     @Field(name = "actual_level", type = FieldType.Text)
     val actualLevel: String?,
 

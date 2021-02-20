@@ -1,6 +1,9 @@
 package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.charts.data.LineChart
+import com.loxbear.logsight.charts.data.LogLevelPieChart
+import com.loxbear.logsight.charts.data.LogLevelStackedLineChart
+import com.loxbear.logsight.charts.data.SystemOverviewHeatmapChart
 import com.loxbear.logsight.services.elasticsearch.ChartsService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,9 +17,36 @@ class ChartsController(val chartsService: ChartsService) {
 
     @GetMapping("/line_chart")
     fun getLineChartData(): LineChart {
-        val data = chartsService.getLineChartData()
-        println(data)
-        return data
+        return chartsService.getLineChartData()
     }
+
+    @GetMapping("/log_level_advanced_pie_chart")
+    fun getLogLevelPieData(): LogLevelPieChart {
+        val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
+        // in that case, we just append them with comma $esIndexUserApp1,$esIndexUserApp2 ...
+        val startTime = "now-1h"
+        val stopTime = "now"
+        return chartsService.getLogLevelPieChartData(esIndexUserApp, startTime, stopTime)
+    }
+
+    @GetMapping("/log_level_stacked_line_chart")
+    fun getLogLevelStackedLineData(): LogLevelStackedLineChart {
+        val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
+        // in that case, we just append them with comma $esIndexUserApp1,$esIndexUserApp2 ...
+        val startTime = "now-1h"
+        val stopTime = "now"
+        return chartsService.getLogLevelStackedLineChartData(esIndexUserApp, startTime, stopTime)
+    }
+
+
+    @GetMapping("/system_overview_heatmap")
+    fun getSystemOverViewHeatmapData(): SystemOverviewHeatmapChart {
+        val esIndexUserAppLogAd = "1234-213_app_name_test_log_ad" // this should be list of all indices
+        // (count_ad and log_ad) of the apps belonging to the user
+        val startTime = "now-2h"
+        val stopTime = "now"
+        return chartsService.getSystemOverviewHeatmapChart(esIndexUserAppLogAd, startTime, stopTime)
+    }
+
 
 }

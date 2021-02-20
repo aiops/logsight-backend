@@ -3,14 +3,14 @@
     "listAggregations": {
       "date_histogram": {
         "field": "@timestamp",
-        "interval": "5s",
-        "time_zone": "Europe/Skopje",
+        "interval": "30s",
+        "time_zone": "Europe/Zagreb",
         "min_doc_count": 1
       },
       "aggs": {
         "listBuckets": {
           "terms": {
-            "field": "prediction.keyword",
+            "field": "actual_level.keyword",
             "order": {
               "_count": "desc"
             },
@@ -41,8 +41,8 @@
           "range": {
             "@timestamp": {
               "format": "strict_date_optional_time",
-              "gte": "now-1h",
-              "lte": "now"
+              "gte": "start_time",
+              "lte": "stop_time"
             }
           }
         }
