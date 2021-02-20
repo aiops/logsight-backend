@@ -31,6 +31,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.11.3")
     implementation(group = "org.json", name = "json", version = "20201115")
+    implementation(group = "org.springframework.kafka", name= "spring-kafka", version= "2.6.5")
+
 
 }
 
