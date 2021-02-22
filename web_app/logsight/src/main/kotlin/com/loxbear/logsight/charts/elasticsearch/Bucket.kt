@@ -8,6 +8,5 @@ import java.time.ZonedDateTime
 data class Bucket(
     @JsonProperty("key_as_string")
     val date: ZonedDateTime,
-
     val listBuckets: ListBucket
 )
