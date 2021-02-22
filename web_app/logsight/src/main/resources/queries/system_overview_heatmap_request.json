@@ -3,18 +3,25 @@
     "listAggregations": {
       "date_histogram": {
         "field": "@timestamp",
-        "interval": "5s",
-        "time_zone": "Europe/Skopje",
+        "interval": "5m",
+        "time_zone": "Europe/Zagreb",
         "min_doc_count": 1
       },
       "aggs": {
         "listBuckets": {
           "terms": {
-            "field": "prediction.keyword",
+            "field": "_index",
             "order": {
-              "_count": "desc"
+              "1": "desc"
             },
             "size": 5
+          },
+          "aggs": {
+            "1": {
+              "avg": {
+                "field": "prediction"
+              }
+            }
           }
         }
       }
@@ -41,8 +48,8 @@
           "range": {
             "@timestamp": {
               "format": "strict_date_optional_time",
-              "gte": "now-1h",
-              "lte": "now"
+              "gte": "start_time",
+              "lte": "stop_time"
             }
           }
         }

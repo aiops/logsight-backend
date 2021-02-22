@@ -1,22 +1,12 @@
 {
   "aggs": {
     "listAggregations": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "5s",
-        "time_zone": "Europe/Skopje",
-        "min_doc_count": 1
-      },
-      "aggs": {
-        "listBuckets": {
-          "terms": {
-            "field": "prediction.keyword",
-            "order": {
-              "_count": "desc"
-            },
-            "size": 5
-          }
-        }
+      "terms": {
+        "field": "actual_level.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 5
       }
     }
   },
@@ -41,8 +31,8 @@
           "range": {
             "@timestamp": {
               "format": "strict_date_optional_time",
-              "gte": "now-1h",
-              "lte": "now"
+              "gte": "start_time",
+              "lte": "stop_time"
             }
           }
         }

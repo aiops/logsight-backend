@@ -2,14 +2,11 @@ package com.loxbear.logsight.charts.elasticsearch
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ResultBucket(
-
-    val key: String,
-
-    @JsonProperty("doc_count")
-    val docCount: Double
-
+data class HeatMapBucket(
+        @JsonProperty("key_as_string")
+        val date: ZonedDateTime,
+        val listBuckets: HeatMapListBucket
 )
