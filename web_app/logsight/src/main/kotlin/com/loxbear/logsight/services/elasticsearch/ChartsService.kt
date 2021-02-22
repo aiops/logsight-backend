@@ -65,7 +65,8 @@ class ChartsService(val repository: ChartsRepository) {
         repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets.forEach {
 
             for (i in it.listBuckets.buckets){
-                values.add(StackedLogLevelPoint(it.date, i.docCount))
+                println(i.docCount)
+                values.add(StackedLogLevelPoint(it.date.toString(), i.docCount))
                 dict[i.key] = values
             }
         }
@@ -73,6 +74,7 @@ class ChartsService(val repository: ChartsRepository) {
         for (i in dict.keys){
             stackedSeries.add(StackedLogLevelSeries(name=i, dict.getValue(i)))
         }
+
         return LogLevelStackedLineChart(data = stackedSeries)
     }
 
