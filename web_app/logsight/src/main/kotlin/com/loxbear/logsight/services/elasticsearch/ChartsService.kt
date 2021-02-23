@@ -5,21 +5,7 @@ import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-//[
-//{
-//    "name": "Germany",
-//    "value": 40632,
-//    "extra": {
-//    "code": "de"
-//}
-//},
-//{
-//    "name": "United States",
-//    "value": 50000,
-//    "extra": {
-//    "code": "us"
-//}
-//}]
+
 @Service
 class ChartsService(val repository: ChartsRepository) {
 
