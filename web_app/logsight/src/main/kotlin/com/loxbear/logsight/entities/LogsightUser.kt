@@ -10,15 +10,21 @@ data class LogsightUser(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     val email: String,
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     val password: String,
 
-    @Column(name = "key")
+    @Column(name = "key", nullable = false)
     val key: String,
 
-    @Column(name = "date_created")
-    val dateCreated: LocalDateTime = LocalDateTime.now()
+    @Column(name = "date_created", nullable = false)
+    val dateCreated: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "activation_date", nullable = true)
+    val activationDate: LocalDateTime? = null,
+
+    @Column(name = "activated", nullable = false)
+    val activated: Boolean = false,
 )
