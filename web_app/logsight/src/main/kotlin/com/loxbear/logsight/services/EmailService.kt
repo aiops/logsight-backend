@@ -14,7 +14,7 @@ class EmailService(val emailConfiguration: EmailConfiguration,
     fun sendActivationEmail(user: LogsightUser) {
         val activationUrl = "$baseUrl/auth/activate/${user.key}"
         val emailTo = user.email
-        val body = "Please activate on the following <a href=$activationUrl> url </a>"
+        val body = "Please activate on the following link $activationUrl"
         sendEmail(emailTo, body)
     }
 
@@ -23,7 +23,7 @@ class EmailService(val emailConfiguration: EmailConfiguration,
         val message = SimpleMailMessage()
         message.setFrom("LogSight")
         message.setTo(emailTo)
-        message.setSubject("Test")
+        message.setSubject("Activate your account")
         message.setText(body)
         sender.send(message)
     }
