@@ -1,7 +1,6 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
-import com.loxbear.logsight.incidents.data.TopKIncidentsTable
-
+import com.loxbear.logsight.incidents.elasticsearch.TopIncidents
 import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -15,17 +14,15 @@ import utils.UtilsService.Companion.readFileAsString
 class IncidentRepository {
     val restTemplate = RestTemplate()
 
-    fun getTopKIncidentData(): TopKIncidentsTable {
+    fun getTopKIncidentData(esIndexUserApp: String, startTime: String, stopTime: String): String {
 
-        val jsonString: String = readFileAsString("src/main/resources/queries/system_overview_heatmap_request.json")
-//        val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
-//        val index = "1234-213_app_name_test1_log_ad"
+        val jsonString: String = readFileAsString("src/main/resources/queries/top_incidents_dashboard_request.json")
+        val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
-        val json = JSONObject(jsonString)
-
+        val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-        return restTemplate.postForEntity<TopKIncidentsTable>("http://localhost:9200/_search", request).body!!
+        return restTemplate.postForEntity<String>("http://localhost:9200/$esIndexUserApp/_search", request).body!!
     }
 
 
