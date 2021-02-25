@@ -14,7 +14,8 @@ class IncidentController(val incidentsService: IncidentService) {
 
     @GetMapping("/top_k_incidents")
     fun getTopKIncidentsTableData(): TopKIncidentsTable {
-        return incidentsService.getTopKIncidentsTableData()
+        val esIndexUserApp = "1234-213_app_name_test_log_ad"
+        return incidentsService.getTopKIncidentsTableData(esIndexUserApp)
     }
 
 

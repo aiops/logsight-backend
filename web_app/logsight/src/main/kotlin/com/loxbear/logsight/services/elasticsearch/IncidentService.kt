@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service
 class IncidentService(val repository: IncidentRepository) {
 
 
-    fun getTopKIncidentsTableData(): TopKIncidentsTable {
+    fun getTopKIncidentsTableData(esIndexUserApp: String): TopKIncidentsTable {
         val data = mutableListOf<DataSet>()
         val labels = mutableListOf<String>()
-        repository.getTopKIncidentData()
+        repository.getTopKIncidentData(esIndexUserApp)
 //        get the data
         return TopKIncidentsTable(datasets = data, labels = labels)
     }
