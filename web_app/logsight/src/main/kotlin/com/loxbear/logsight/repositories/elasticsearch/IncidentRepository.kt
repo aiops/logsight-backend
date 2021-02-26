@@ -1,6 +1,5 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
-import com.loxbear.logsight.incidents.elasticsearch.TopIncidents
 import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -15,16 +14,13 @@ class IncidentRepository {
     val restTemplate = RestTemplate()
 
     fun getTopKIncidentData(esIndexUserApp: String, startTime: String, stopTime: String): String {
-
         val jsonString: String = readFileAsString("src/main/resources/queries/top_incidents_dashboard_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
+
         return restTemplate.postForEntity<String>("http://localhost:9200/$esIndexUserApp/_search", request).body!!
     }
-
-
-
 }
