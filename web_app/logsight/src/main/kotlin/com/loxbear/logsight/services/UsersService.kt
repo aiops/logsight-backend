@@ -1,5 +1,6 @@
 package com.loxbear.logsight.services
 
+import com.loxbear.logsight.encoder
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.LoginUserForm
 import com.loxbear.logsight.models.RegisterUserForm
@@ -36,9 +37,10 @@ class UsersService(val repository: UserRepository,
     @Transactional
     fun registerUser(email: String): String? {
         return if (repository.findByEmail(email).isPresent) {
+
             return "User with email $email already exists"
         } else {
-            val user = createUser(form = RegisterUserForm(email, "demo", "demo"))
+            val user = createUser(form = RegisterUserForm(email, encoder().encode("demo"), encoder().encode("demo")))
             emailService.sendActivationEmail(user)
             null
         }

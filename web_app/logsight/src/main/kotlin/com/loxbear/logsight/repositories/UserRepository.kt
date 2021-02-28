@@ -20,8 +20,13 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
 
     @Modifying
     @Query(
-        """update LogsightUser u set u.activated = true where u.key = :key"""
+            """update LogsightUser u set u.activated = true where u.key = :key"""
     )
     fun activateUser(key: String)
+
+    @Query(
+            """select u from  LogsightUser u  where u.email = :username"""
+    )
+    fun findByUsername(username: String): Optional<LogsightUser>
 
 }
