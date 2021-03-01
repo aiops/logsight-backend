@@ -54,4 +54,8 @@ class UsersService(val repository: UserRepository,
         repository.activateUser(key)
         return user
     }
+
+    fun findByEmail(email: String): LogsightUser {
+        return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
+    }
 }

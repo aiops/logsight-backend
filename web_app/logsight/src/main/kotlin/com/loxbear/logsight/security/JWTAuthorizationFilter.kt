@@ -43,12 +43,9 @@ class JWTAuthorizationFilter(authManager: AuthenticationManager?) : BasicAuthent
         chain.doFilter(req, res)
     }
 
-
-
     private fun getAuthentication(request: HttpServletRequest): UsernamePasswordAuthenticationToken? {
         val token = request.getHeader(HEADER_STRING)
         if (token != null) {
-            // parse the token.
             val user: String? = JWT.require(Algorithm.HMAC512(SECRET.toByteArray()))
                     .build()
                     .verify(token.replace(TOKEN_PREFIX, ""))
