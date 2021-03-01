@@ -6,7 +6,6 @@ import com.loxbear.logsight.models.LoginUserForm
 import com.loxbear.logsight.models.RegisterUserForm
 import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.repositories.UserRepository
-import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

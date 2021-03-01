@@ -25,6 +25,7 @@ import com.loxbear.logsight.security.SecurityConstants.HEADER_STRING
 import com.loxbear.logsight.security.SecurityConstants.SECRET
 import com.loxbear.logsight.security.SecurityConstants.TOKEN_PREFIX
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import kotlin.jvm.Throws
 
 
 class JWTAuthorizationFilter(authManager: AuthenticationManager?) : BasicAuthenticationFilter(authManager) {
