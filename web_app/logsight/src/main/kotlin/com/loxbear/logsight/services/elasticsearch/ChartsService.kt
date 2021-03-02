@@ -47,40 +47,41 @@ class ChartsService(val repository: ChartsRepository) {
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
-        val values = mutableListOf<StackedLogLevelPoint>()
-        repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets.forEach {
 
-            for (i in it.listBuckets.buckets){
-                println(i.docCount)
-                values.add(StackedLogLevelPoint(it.date.toString(), i.docCount))
-                dict[i.key] = values
+        val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets
+        print(res)
+        res.forEach {
+            for (i in it.listBuckets.buckets) {
+                val list = dict[i.key] ?: mutableListOf()
+                list.add(StackedLogLevelPoint(it.date.toBookingTimeWithSeconds(), i.docCount))
+                dict[i.key] = list
             }
         }
         val stackedSeries = mutableListOf<StackedLogLevelSeries>()
-        for (i in dict.keys){
-            stackedSeries.add(StackedLogLevelSeries(name=i, dict.getValue(i)))
+        for (i in dict.keys) {
+            stackedSeries.add(StackedLogLevelSeries(name = i, series = dict.getValue(i)))
         }
-
         return LogLevelStackedLineChart(data = stackedSeries)
     }
 
     fun getSystemOverviewHeatmapChart(esIndexUserAppLogAd: String,
-                                          startTime: String, stopTime: String): SystemOverviewHeatmapChart {
+                                      startTime: String, stopTime: String): SystemOverviewHeatmapChart {
         val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
         repository.getSystemOverviewHeatmapChartData(esIndexUserAppLogAd,
-                startTime,
-                stopTime).aggregations.listAggregations.buckets.forEach {
+            startTime,
+            stopTime).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
-            for (i in it.listBuckets.buckets){
-                    listPoints.add(HeatMapLogLevelPoint(name=i.key,value=i.valueData.value, PieExtra("")))
-                    }
-                heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name=it.date.toString(), listPoints))
+            for (i in it.listBuckets.buckets) {
+                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_")[1] + i.key.split("_")[2] + i.key.split("_")[3], value = i.valueData.value, extra = PieExtra("")))
+            }
+            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toBookingTime(), series = listPoints))
         }
 
         return SystemOverviewHeatmapChart(data = heatMapLogLevelSeries)
     }
 
 
-    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toBookingTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
 }

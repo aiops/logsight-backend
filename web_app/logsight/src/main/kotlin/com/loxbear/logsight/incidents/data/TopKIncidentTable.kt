@@ -10,5 +10,5 @@ data class TopKIncidentTable(
         val stopTimestamp: String,
         val firstLog: String,
         val lastLog: String,
-        val totalScore: BigDecimal
+        val totalScore: BigDecimal // incident severities
 )

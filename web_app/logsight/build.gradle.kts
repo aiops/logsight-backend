@@ -19,19 +19,20 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-//    testImplementation("org.springframework.security:spring-security-test")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.11.3")
     implementation(group = "org.json", name = "json", version = "20201115")
     implementation(group = "org.springframework.kafka", name= "spring-kafka", version= "2.6.5")
+    implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
+    implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
 
 
 }
