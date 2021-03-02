@@ -47,12 +47,14 @@ class ChartsService(val repository: ChartsRepository) {
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
-        val values = mutableListOf<StackedLogLevelPoint>()
-        repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets.forEach {
 
+        val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets
+        print(res)
+        res.forEach {
             for (i in it.listBuckets.buckets) {
-                values.add(StackedLogLevelPoint(it.date.toBookingTime(), i.docCount))
-                dict[i.key] = values
+                val list = dict[i.key] ?: mutableListOf()
+                list.add(StackedLogLevelPoint(it.date.toBookingTimeWithSeconds(), i.docCount))
+                dict[i.key] = list
             }
         }
         val stackedSeries = mutableListOf<StackedLogLevelSeries>()
@@ -70,7 +72,7 @@ class ChartsService(val repository: ChartsRepository) {
             stopTime).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
-                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_")[1] + i.key.split("_")[2] + i.key.split("_")[3] , value = i.valueData.value, extra = PieExtra("")))
+                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_")[1] + i.key.split("_")[2] + i.key.split("_")[3], value = i.valueData.value, extra = PieExtra("")))
             }
             heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toBookingTime(), series = listPoints))
         }
@@ -80,5 +82,6 @@ class ChartsService(val repository: ChartsRepository) {
 
 
     fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toBookingTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
 
 }
