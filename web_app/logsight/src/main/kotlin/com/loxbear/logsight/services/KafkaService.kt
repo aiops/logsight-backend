@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 class KafkaService(val repository: ApplicationRepository, val kafkaTemplate: KafkaTemplate<String, String>) {
     fun applicationCreated(application: Application) {
         with(application) {
-            val message = JSONObject().put("private_key", user.key).put("user_name", user.email.split("@")[0]).put("application_name", name).put("application_id", id)
+            val message = JSONObject().put("private_key", user.key.toLowerCase().filter { it.isLetterOrDigit()}).put("user_name", user.email.split("@")[0]).put("application_name", name).put("application_id", id)
             kafkaTemplate.send("container_settings", message.toString())
         }
     }

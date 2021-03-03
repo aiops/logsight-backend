@@ -16,7 +16,7 @@ class IncidentController(val incidentsService: IncidentService, val usersService
     @GetMapping("/top_k_incidents")
     fun getTopKIncidentsTableData(authentication: Authentication): List<TopKIncidentTable> {
         val user = usersService.findByEmail(authentication.name)
-        val esIndexUserApp = "${user.key}_grozdan212_incidents"
+        val esIndexUserApp = "${user.key.toLowerCase().filter { it.isLetterOrDigit() }}_grozdan212222_incidents"
 //        val esIndexUserApp = "1234-213_app_name_test_incidents"
         val startTime = "now-12h"
         val stopTime = "now"
