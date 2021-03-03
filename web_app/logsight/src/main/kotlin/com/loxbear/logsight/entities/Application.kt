@@ -9,7 +9,7 @@ data class Application(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(name = "email")
+    @Column(name = "name")
     val name: String,
 
     @ManyToOne

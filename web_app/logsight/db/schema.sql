@@ -2,7 +2,7 @@ CREATE TABLE users
 (
     id              BIGSERIAL PRIMARY KEY,
     password        TEXT    NOT NULL,
-    email           TEXT    NOT NULL,
+    email           TEXT    NOT NULL unique ,
     key             TEXT,
     date_created    TIMESTAMP WITHOUT TIME ZONE,
     activation_date TIMESTAMP WITHOUT TIME ZONE,
@@ -12,6 +12,6 @@ CREATE TABLE users
 CREATE TABLE applications
 (
   id                BIGSERIAL PRIMARY KEY,
-  name              TEXT    NOT NULL,
+  name              TEXT    NOT NULL unique,
   user_id           BIGINT REFERENCES users(id)
 );
