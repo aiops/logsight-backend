@@ -26,7 +26,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     fun getLogLevelPieData(authentication: Authentication): LogLevelPieChart {
         val user = usersService.findByEmail(authentication.name)
         print(user)
-        val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
+        val esIndexUserApp = "${user.key}_grozdan212_log_ad"//"1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
         // in that case, we just append them with comma $esIndexUserApp1,$esIndexUserApp2 ...
         val startTime = "now-1h"
         val stopTime = "now"
@@ -34,8 +34,10 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     }
 
     @GetMapping("/log_level_stacked_line_chart")
-    fun getLogLevelStackedLineData(): LogLevelStackedLineChart {
-        val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
+    fun getLogLevelStackedLineData(authentication: Authentication): LogLevelStackedLineChart {
+        val user = usersService.findByEmail(authentication.name)
+//        val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
+        val esIndexUserApp = "${user.key}_grozdan212_log_ad"
         // in that case, we just append them with comma $esIndexUserApp1,$esIndexUserApp2 ...
         val startTime = "now-1h"
         val stopTime = "now"
@@ -44,12 +46,14 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
 
 
     @GetMapping("/system_overview_heatmap")
-    fun getSystemOverViewHeatmapData(): SystemOverviewHeatmapChart {
-        val esIndexUserAppLogAd = "1234-213_app_name_test_log_ad" // this should be list of all indices
+    fun getSystemOverViewHeatmapData(authentication: Authentication): SystemOverviewHeatmapChart {
+        val user = usersService.findByEmail(authentication.name)
+//        val esIndexUserAppLogAd = "1234-213_app_name_test_log_ad" // this should be list of all indices
         // (count_ad and log_ad) of the apps belonging to the user
+        val esIndexUserApp = "${user.key}_grozdan212_log_ad"
         val startTime = "now-2h"
         val stopTime = "now"
-        return chartsService.getSystemOverviewHeatmapChart(esIndexUserAppLogAd, startTime, stopTime)
+        return chartsService.getSystemOverviewHeatmapChart(esIndexUserApp, startTime, stopTime)
     }
 
 
