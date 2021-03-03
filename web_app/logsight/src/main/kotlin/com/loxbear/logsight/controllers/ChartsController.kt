@@ -37,7 +37,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     fun getLogLevelStackedLineData(): LogLevelStackedLineChart {
         val esIndexUserApp = "1234-213_app_name_test_log_ad" // can be multiple indices (multiple apps)
         // in that case, we just append them with comma $esIndexUserApp1,$esIndexUserApp2 ...
-        val startTime = "now-1h"
+        val startTime = "now-2h"
         val stopTime = "now"
         return chartsService.getLogLevelStackedLineChartData(esIndexUserApp, startTime, stopTime)
     }
