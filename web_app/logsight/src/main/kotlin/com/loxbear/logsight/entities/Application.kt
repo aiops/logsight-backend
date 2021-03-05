@@ -1,5 +1,6 @@
 package com.loxbear.logsight.entities
 
+import com.loxbear.logsight.entities.enums.ApplicationStatus
 import javax.persistence.*
 
 @Entity
@@ -9,8 +10,12 @@ data class Application(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(name = "email")
+    @Column(name = "name")
     val name: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    val status: ApplicationStatus,
 
     @ManyToOne
     @JoinColumn(name = "user_id")
