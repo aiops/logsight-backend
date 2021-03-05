@@ -15,8 +15,14 @@ class ApplicationController(val applicationService: ApplicationService,
                             val kafkaTemplate: KafkaTemplate<String, String>) {
 
     @PostMapping
-    fun activateUser(@RequestBody body: ApplicationRequest): Application {
+    fun createApplication(@RequestBody body: ApplicationRequest): Application {
         val user = usersService.findByKey(body.key)
         return applicationService.createApplication(body.name, user)
+    }
+
+    @GetMapping("/user/{key}")
+    fun getApplicationsForUser(@PathVariable key: String): List<Application> {
+        val user = usersService.findByKey(key)
+        return applicationService.findAllByUser(user)
     }
 }
