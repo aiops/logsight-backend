@@ -2,7 +2,6 @@ package com.loxbear.logsight.services
 
 import com.loxbear.logsight.encoder
 import com.loxbear.logsight.entities.LogsightUser
-import com.loxbear.logsight.models.LoginUserForm
 import com.loxbear.logsight.models.RegisterUserForm
 import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.repositories.UserRepository
@@ -27,16 +26,9 @@ class UsersService(val repository: UserRepository,
 
     }
 
-    fun loginUser(form: LoginUserForm): LogsightUser? {
-        return with(form) {
-            repository.findByEmailAndPasswordAndActivatedIsTrue(email, password).orElseGet { null }
-        }
-    }
-
     @Transactional
     fun registerUser(email: String): String? {
         return if (repository.findByEmail(email).isPresent) {
-
             return "User with email $email already exists"
         } else {
             val user = createUser(form = RegisterUserForm(email, encoder().encode("demo"), encoder().encode("demo")))
@@ -45,14 +37,16 @@ class UsersService(val repository: UserRepository,
         }
     }
 
-    fun findByKey(key: String): UserModel = repository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
+    fun findByKey(key: String): LogsightUser = repository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
 
     @Transactional
     fun activateUser(key: String): UserModel {
         logger.info("Activating user with key [{}]", key)
         val user = findByKey(key)
         repository.activateUser(key)
-        return user
+        with(user) {
+            return UserModel(id = id, email = email, activated = activated, key = key)
+        }
     }
 
     fun findByEmail(email: String): LogsightUser {

@@ -17,3 +17,7 @@ email:
 
 app:
   baseUrl: http://localhost:4200
+
+kafka:
+  bootstrapAddress: localhost:9093
+  groupId: 1
