@@ -58,13 +58,12 @@ class ChartsRepository {
 
         val jsonString: String = readFileAsString("src/main/resources/queries/system_overview_heatmap_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
-        val index = "1234-213_app_name_test1_log_ad"
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(timeJsonString)
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-        return restTemplate.postForEntity<SystemOverviewData>("http://localhost:9200/$esIndexUserAppLogAd,$index/_search", request).body!!
+        return restTemplate.postForEntity<SystemOverviewData>("http://localhost:9200/$esIndexUserAppLogAd/_search", request).body!!
     }
 
 

@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/users")
 class UserController(val usersService: UsersService) {
 
-    @GetMapping("/{key}")
-    fun getUser(@PathVariable key: String, authentication: Authentication): UserModel {
+    @GetMapping
+    fun getUser(authentication: Authentication): UserModel {
         val user = usersService.findByEmail(authentication.name)
         with(user) {
             return UserModel(id = id, email = email, activated = activated, key = key)
