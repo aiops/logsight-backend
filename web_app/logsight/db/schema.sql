@@ -13,6 +13,6 @@ CREATE TABLE applications
 (
   id                BIGSERIAL PRIMARY KEY,
   name              TEXT    NOT NULL unique,
-  status            TEXT    NOT NULL default 'IN_PROGRESS'
+  status            TEXT    NOT NULL default 'IN_PROGRESS',
   user_id           BIGINT REFERENCES users(id)
 );
