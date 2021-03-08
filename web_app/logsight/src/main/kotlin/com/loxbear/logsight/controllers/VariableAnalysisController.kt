@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*
 
 
 @RestController
-@RequestMapping("/api/applications")
-class ApplicationController(val applicationService: ApplicationService,
-                            val usersService: UsersService) {
+@RequestMapping("/api/variable-analysis")
+class VariableAnalysisController(val applicationService: ApplicationService,
+                                 val usersService: UsersService) {
 
     @PostMapping
     fun createApplication(@RequestBody body: ApplicationRequest): Application {
@@ -19,9 +19,8 @@ class ApplicationController(val applicationService: ApplicationService,
         return applicationService.createApplication(body.name, user)
     }
 
-    @GetMapping("/user/{key}")
-    fun getApplicationsForUser(@PathVariable key: String): List<Application> {
-        val user = usersService.findByKey(key)
-        return applicationService.findAllByUser(user)
+    @GetMapping("/application/{id}")
+    fun getApplicationsForUser(@PathVariable id: Long, @RequestParam(required = false) search: String?) {
+
     }
 }
