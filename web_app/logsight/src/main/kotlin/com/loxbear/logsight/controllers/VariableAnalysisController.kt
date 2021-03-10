@@ -1,26 +1,25 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.entities.Application
-import com.loxbear.logsight.models.ApplicationRequest
+import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
-import org.springframework.kafka.core.KafkaTemplate
+import com.loxbear.logsight.services.elasticsearch.VariableAnalysisService
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
 
 @RestController
 @RequestMapping("/api/variable-analysis")
-class VariableAnalysisController(val applicationService: ApplicationService,
-                                 val usersService: UsersService) {
-
-    @PostMapping
-    fun createApplication(@RequestBody body: ApplicationRequest): Application {
-        val user = usersService.findByKey(body.key)
-        return applicationService.createApplication(body.name, user)
-    }
+class VariableAnalysisController(val variableAnalysisService: VariableAnalysisService,
+                                 val usersService: UsersService, val applicationService: ApplicationService) {
 
     @GetMapping("/application/{id}")
-    fun getApplicationsForUser(@PathVariable id: Long, @RequestParam(required = false) search: String?) {
-
+    fun getTemplates(@PathVariable id: Long, @RequestParam(required = false) search: String?, authentication: Authentication): List<VariableAnalysisHit> {
+        val user = usersService.findByEmail(authentication.name)
+        val application = applicationService.findById(id)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val startTime = "now-1h"
+        val stopTime = "now"
+        return variableAnalysisService.getTemplates(applicationsIndexes, startTime, stopTime)
     }
 }
