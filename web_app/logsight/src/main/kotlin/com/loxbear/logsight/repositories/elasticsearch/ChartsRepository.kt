@@ -25,7 +25,7 @@ class ChartsRepository {
         val json = JSONObject(jsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
 
-        return restTemplate.postForEntity<LineChartData>("http://localhost:9200/1234-213_app_name_test_log_ad/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/1234-213_app_name_test_log_ad/_search", request).body!!
     }
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChartData {
@@ -37,7 +37,7 @@ class ChartsRepository {
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-        return restTemplate.postForEntity<LogLevelPieChartData>("http://localhost:9200/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<LogLevelPieChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
     }
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LineChartData {
@@ -50,7 +50,7 @@ class ChartsRepository {
         val json = JSONObject(timeJsonString)
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-        return restTemplate.postForEntity<LineChartData>("http://localhost:9200/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
     }
 
     fun getSystemOverviewHeatmapChartData(esIndexUserAppLogAd: String,
@@ -63,7 +63,7 @@ class ChartsRepository {
         val json = JSONObject(timeJsonString)
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-        return restTemplate.postForEntity<SystemOverviewData>("http://localhost:9200/$esIndexUserAppLogAd/_search", request).body!!
+        return restTemplate.postForEntity<SystemOverviewData>("http://elasticsearch:9200/$esIndexUserAppLogAd/_search", request).body!!
     }
 
 
