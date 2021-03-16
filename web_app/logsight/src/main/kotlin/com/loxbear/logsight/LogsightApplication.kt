@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 
 
-
 @SpringBootApplication
 class LogsightApplication
 
