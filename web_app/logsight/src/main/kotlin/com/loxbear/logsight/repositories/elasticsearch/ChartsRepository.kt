@@ -18,7 +18,8 @@ class ChartsRepository {
     val restTemplate = RestTemplate()
 
     fun getLineChartData(): LineChartData {
-        val jsonString: String = readFileAsString("src/main/resources/queries/first_plot_request.json")
+        //val jsonString: String = readFileAsString("src/main/resources/queries/first_plot_request.json")
+        val jsonString: String = readFileAsString("queries/first_plot_request.json")
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
@@ -30,7 +31,8 @@ class ChartsRepository {
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChartData {
 
-        val jsonString: String = readFileAsString("src/main/resources/queries/log_level_pie_chart_request.json")
+        //val jsonString: String = readFileAsString("src/main/resources/queries/log_level_pie_chart_request.json")
+        val jsonString: String = readFileAsString("queries/log_level_pie_chart_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
 
         val headers = HttpHeaders()
@@ -42,7 +44,8 @@ class ChartsRepository {
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LineChartData {
 
-        val jsonString: String = readFileAsString("src/main/resources/queries/log_level_stacked_line_chart_request.json")
+        //val jsonString: String = readFileAsString("src/main/resources/queries/log_level_stacked_line_chart_request.json")
+        val jsonString: String = readFileAsString("queries/log_level_stacked_line_chart_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
 
         val headers = HttpHeaders()
@@ -56,7 +59,8 @@ class ChartsRepository {
     fun getSystemOverviewHeatmapChartData(esIndexUserAppLogAd: String,
                                           startTime: String, stopTime: String): SystemOverviewData {
 
-        val jsonString: String = readFileAsString("src/main/resources/queries/system_overview_heatmap_request.json")
+        //val jsonString: String = readFileAsString("src/main/resources/queries/system_overview_heatmap_request.json")
+        val jsonString: String = readFileAsString("queries/system_overview_heatmap_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON

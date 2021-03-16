@@ -15,7 +15,7 @@ COPY logsight-client/ ./
 RUN npm run-script build --prod
 
 # Bundle app source
-COPY . /usr/src/app
+# COPY . /usr/src/app
 
 # EXPOSE 4200
 CMD [ "npm", "start" ]

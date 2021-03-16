@@ -14,7 +14,8 @@ class IncidentRepository {
     val restTemplate = RestTemplate()
 
     fun getTopKIncidentData(esIndexUserApp: String, startTime: String, stopTime: String): String {
-        val jsonString: String = readFileAsString("src/main/resources/queries/top_incidents_dashboard_request.json")
+        //val jsonString: String = readFileAsString("src/main/resources/queries/top_incidents_dashboard_request.json")
+        val jsonString: String = readFileAsString("queries/top_incidents_dashboard_request.json")
         val timeJsonString = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
