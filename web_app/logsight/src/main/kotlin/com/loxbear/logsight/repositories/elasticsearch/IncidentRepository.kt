@@ -21,7 +21,7 @@ class IncidentRepository {
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-
+        // TODO: change to http://localhost:9200
         return restTemplate.postForEntity<String>("http://elasticsearch:9200/$esIndexUserApp/_search", request).body!!
     }
 }

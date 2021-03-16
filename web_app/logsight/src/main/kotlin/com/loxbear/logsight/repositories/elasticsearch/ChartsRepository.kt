@@ -25,7 +25,7 @@ class ChartsRepository {
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(jsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
-
+        // TODO: change to http://localhost:9200
         return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/1234-213_app_name_test_log_ad/_search", request).body!!
     }
 
@@ -39,6 +39,7 @@ class ChartsRepository {
         headers.contentType = MediaType.APPLICATION_JSON
         val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
+        // TODO: change to http://localhost:9200
         return restTemplate.postForEntity<LogLevelPieChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
     }
 
@@ -53,6 +54,7 @@ class ChartsRepository {
         val json = JSONObject(timeJsonString)
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
+        // TODO: change to http://localhost:9200
         return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
     }
 
@@ -67,6 +69,7 @@ class ChartsRepository {
         val json = JSONObject(timeJsonString)
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
+        // TODO: change to http://localhost:9200
         return restTemplate.postForEntity<SystemOverviewData>("http://elasticsearch:9200/$esIndexUserAppLogAd/_search", request).body!!
     }
 

@@ -13,6 +13,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @EnableElasticsearchRepositories(basePackages = ["com.loxbear.logsight.repositories.elasticsearch"])
 @ComponentScan(basePackages = ["com.loxbear.logsight"])
 class ElasticsearchClientConfig : AbstractElasticsearchConfiguration() {
+    // TODO: change to http://localhost:9200
     @Bean
     override fun elasticsearchClient(): RestHighLevelClient {
         val clientConfiguration = ClientConfiguration
