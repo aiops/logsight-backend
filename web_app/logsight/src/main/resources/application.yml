@@ -23,4 +23,4 @@ kafka:
   groupId: 1
 
 elasticsearch:
-  bootstrapAddress: localhost:9200
+  url: localhost:9200
