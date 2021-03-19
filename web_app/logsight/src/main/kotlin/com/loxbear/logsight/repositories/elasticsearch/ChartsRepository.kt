@@ -5,6 +5,7 @@ import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
 import com.loxbear.logsight.charts.elasticsearch.SystemOverviewData
 
 import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -17,6 +18,9 @@ import utils.UtilsService.Companion.readFileAsString
 class ChartsRepository {
     val restTemplate = RestTemplate()
 
+    @Value("\${elasticsearch.url}")
+    private val elasticsearchUrl: String? = null
+
     fun getLineChartData(): LineChartData {
         //val jsonString: String = readFileAsString("src/main/resources/queries/first_plot_request.json")
         val jsonString: String = readFileAsString("queries/first_plot_request.json")
@@ -26,7 +30,7 @@ class ChartsRepository {
         val json = JSONObject(jsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
         // TODO: change to http://localhost:9200
-        return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/1234-213_app_name_test_log_ad/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/1234-213_app_name_test_log_ad/_search", request).body!!
     }
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChartData {
@@ -40,7 +44,7 @@ class ChartsRepository {
         val json = JSONObject(timeJsonString)
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
         // TODO: change to http://localhost:9200
-        return restTemplate.postForEntity<LogLevelPieChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<LogLevelPieChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LineChartData {
@@ -55,7 +59,7 @@ class ChartsRepository {
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
         // TODO: change to http://localhost:9200
-        return restTemplate.postForEntity<LineChartData>("http://elasticsearch:9200/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getSystemOverviewHeatmapChartData(esIndexUserAppLogAd: String,
@@ -70,7 +74,7 @@ class ChartsRepository {
 
         val request: HttpEntity<String> = HttpEntity<String>(json.toString(), headers)
         // TODO: change to http://localhost:9200
-        return restTemplate.postForEntity<SystemOverviewData>("http://elasticsearch:9200/$esIndexUserAppLogAd/_search", request).body!!
+        return restTemplate.postForEntity<SystemOverviewData>("http://$elasticsearchUrl/$esIndexUserAppLogAd/_search", request).body!!
     }
 
 

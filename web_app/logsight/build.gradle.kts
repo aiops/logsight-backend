@@ -34,8 +34,6 @@ dependencies {
     implementation(group = "org.springframework.kafka", name= "spring-kafka", version= "2.6.5")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
-
-
 }
 
 tasks.withType<KotlinCompile> {
