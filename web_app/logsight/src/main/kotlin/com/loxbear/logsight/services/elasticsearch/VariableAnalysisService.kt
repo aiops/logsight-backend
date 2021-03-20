@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service
 @Service
 class VariableAnalysisService(val repository: VariableAnalysisRepository) {
 
-    fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String): List<VariableAnalysisHit> {
-        val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime))
+    fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?): List<VariableAnalysisHit> {
+        val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
         return resp.getJSONObject("hits").getJSONArray("hits").map {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
             val template = hit.getString("template")

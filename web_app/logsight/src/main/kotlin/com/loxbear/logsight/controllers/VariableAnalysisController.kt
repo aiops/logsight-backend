@@ -20,6 +20,6 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val startTime = "now-1h"
         val stopTime = "now"
-        return variableAnalysisService.getTemplates(applicationsIndexes, startTime, stopTime)
+        return variableAnalysisService.getTemplates(applicationsIndexes, startTime, stopTime, search)
     }
 }
