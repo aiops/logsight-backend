@@ -1,6 +1,8 @@
 package com.loxbear.logsight.controllers
 
+import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
+import com.loxbear.logsight.models.SpecificTemplateRequest
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.VariableAnalysisService
@@ -21,5 +23,19 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val startTime = "now-1h"
         val stopTime = "now"
         return variableAnalysisService.getTemplates(applicationsIndexes, startTime, stopTime, search)
+    }
+
+    @PostMapping("/application/{id}/specific_template")
+    fun getSpecificTemplate(@PathVariable id: Long,
+                            @RequestBody specificTemplate: SpecificTemplateRequest,
+                            authentication: Authentication): Pair<String, List<LineChart>> {
+        val user = usersService.findByEmail(authentication.name)
+        val application = applicationService.findById(id)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val startTime = "now-1h"
+        val stopTime = "now"
+        with(specificTemplate) {
+            return variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+        }
     }
 }
