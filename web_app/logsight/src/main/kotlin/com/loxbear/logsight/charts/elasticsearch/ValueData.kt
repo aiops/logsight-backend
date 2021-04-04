@@ -1,3 +1,4 @@
+
 package com.loxbear.logsight.charts.elasticsearch
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties

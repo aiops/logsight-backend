@@ -3,15 +3,18 @@ package com.loxbear.logsight.services.elasticsearch
 import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.elasticsearch.HitParam
+import com.loxbear.logsight.charts.elasticsearch.ResultBucket
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisSpecificTemplate
 import com.loxbear.logsight.entities.Application
+import com.loxbear.logsight.models.TopNTemplatesData
 import com.loxbear.logsight.repositories.elasticsearch.VariableAnalysisRepository
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
 @Service
 class VariableAnalysisService(val repository: VariableAnalysisRepository) {
@@ -54,7 +57,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                                    template: String, param: String, paramValue: String): Pair<String, List<LineChart>> {
         val specificTemplateData = getSpecificTemplate(applicationsIndexes, startTime, stopTime, template, param, paramValue)
         val allParamsNumbers = checkAllParamsNumbers(specificTemplateData)
-        val lineChartData = if (allParamsNumbers) {
+        return if (allParamsNumbers) {
             val lineChartSeries = specificTemplateData.mapNotNull {
                 try {
                     val d: Double = it.param.toDouble()
@@ -63,17 +66,15 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                     null
                 }
             }
-            listOf(LineChart(name = template, series = lineChartSeries))
+            "LineChart" to listOf(LineChart(name = template, series = lineChartSeries))
         } else {
-            getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+            "GroupedVertical" to getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
         }
-
-        return "Grouped" to lineChartData
     }
 
     private fun getSpecificTemplateDifferentParams(applicationsIndexes: String, startTime: String, stopTime: String,
                                                    template: String, param: String, paramValue: String): List<LineChart> {
-        val result = repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+        return repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toString()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -81,8 +82,6 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                 }
                 LineChart(name, series)
             }
-
-        return result
     }
 
     private fun checkAllParamsNumbers(specificTemplateData: List<VariableAnalysisSpecificTemplate>): Boolean {
@@ -94,6 +93,41 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
             }
         }
         return true
+    }
+
+    fun getTopNTemplates(applicationsIndexes: String): Map<String, List<TopNTemplatesData>> {
+        val top5TemplatesNow = repository.getTopNTemplates(applicationsIndexes, "now-1h", "now", 5).aggregations.listAggregations.buckets
+        val top5TemplatesNowNames = top5TemplatesNow.map { it.key }
+        val top5TemplatesOlder = repository.getTopNTemplates(applicationsIndexes, "now-2h", "now-1h", 20).aggregations.listAggregations.buckets
+            .filter { top5TemplatesNowNames.contains(it.key) }
+
+        return calculateTopTemplatesDifference(top5TemplatesNow, top5TemplatesOlder)
+    }
+
+    private fun calculateTopTemplatesDifference(top5TemplatesNow: List<ResultBucket>, top5TemplatesOlder: List<ResultBucket>): Map<String, List<TopNTemplatesData>> {
+        val result: MutableMap<String, List<TopNTemplatesData>> = HashMap()
+        val top5TemplatesOlderMap = top5TemplatesOlder.map { it.key to it }.toMap()
+        val top5TemplatesNowData = top5TemplatesNow.map {
+            val percentageDifference = if (top5TemplatesOlderMap.containsKey(it.key)) (top5TemplatesOlderMap[it.key]!!.docCount / it.docCount) * 100 else 0.0
+            TopNTemplatesData(template = it.key, count = it.docCount, percentage = percentageDifference)
+        }
+        result["now"] = top5TemplatesNowData
+        val top5TemplatesOlderData = top5TemplatesOlder.map {
+            TopNTemplatesData(template = it.key, count = it.docCount)
+        }
+        result["older"] = top5TemplatesOlderData
+        return result
+    }
+
+    fun getLogCountLineChart(applicationsIndexes: String, startTime: String, stopTime: String): List<LineChart> {
+        val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime))
+        val lineChartSeries = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
+            val obj = JSONObject(it.toString())
+            val date = ZonedDateTime.parse(obj.getString("key_as_string"), ISO_OFFSET_DATE_TIME)
+
+            LineChartSeries(date.toBookingTime(), obj.getDouble("doc_count"))
+        }
+        return listOf(LineChart("Log Count", lineChartSeries))
     }
 
     fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
