@@ -31,9 +31,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
     implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.11.3")
     implementation(group = "org.json", name = "json", version = "20201115")
-    implementation(group = "org.springframework.kafka", name= "spring-kafka", version= "2.6.5")
+    implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.6.5")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
+    implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
 }
 
 tasks.withType<KotlinCompile> {
