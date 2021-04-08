@@ -11,6 +11,7 @@ import com.loxbear.logsight.models.TopNTemplatesData
 import com.loxbear.logsight.repositories.elasticsearch.VariableAnalysisRepository
 import org.json.JSONObject
 import org.springframework.stereotype.Service
+import utils.UtilsService
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -60,8 +61,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
         return if (allParamsNumbers) {
             val lineChartSeries = specificTemplateData.mapNotNull {
                 try {
-                    val d: Double = it.param.toDouble()
-                    LineChartSeries(it.timestamp.toString(), d)
+                    val parsed = UtilsService.getLeadingNumber(it.param)
+                    LineChartSeries(it.timestamp.toString(), parsed.toDouble())
                 } catch (nfe: NumberFormatException) {
                     null
                 }
@@ -87,7 +88,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
     private fun checkAllParamsNumbers(specificTemplateData: List<VariableAnalysisSpecificTemplate>): Boolean {
         specificTemplateData.forEach {
             try {
-                val d: Double = it.param.toDouble()
+                val parsed = UtilsService.getLeadingNumber(it.param)
+                val d: Double = parsed.toDouble()
             } catch (nfe: NumberFormatException) {
                 return false
             }

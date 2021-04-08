@@ -24,3 +24,6 @@ kafka:
 
 elasticsearch:
   url: localhost:9200
+
+resources:
+  path: src/main/resources/

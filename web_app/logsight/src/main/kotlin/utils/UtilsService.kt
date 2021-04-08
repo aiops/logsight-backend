@@ -1,34 +1,26 @@
 package utils
 
-import java.io.BufferedReader
-
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.lang.RuntimeException
-import java.util.stream.Collectors
-
+import org.json.JSONObject
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class UtilsService {
-
-
     companion object {
-
-        fun readFileAsString(fileName: String?): String {
-            val inStream = getResourceFileAsInputStream(fileName)
-            return if (inStream != null) {
-                val reader = BufferedReader(InputStreamReader(inStream))
-                reader.lines().collect(Collectors.joining(System.lineSeparator())) as String
-            } else {
-                throw RuntimeException("resource not found")
-            }
+        fun readFileAsString(path: String): String {
+            return String(Files.readAllBytes(Paths.get(path)))
         }
 
-        private fun getResourceFileAsInputStream(fileName: String?): InputStream {
-            val classLoader = UtilsService::class.java.classLoader
-            return classLoader.getResourceAsStream(fileName)
+        fun createElasticSearchRequestWithHeaders(timeJsonString: String): HttpEntity<String> {
+            val headers = HttpHeaders()
+            headers.contentType = MediaType.APPLICATION_JSON
+            val json = JSONObject(timeJsonString)
+            return HttpEntity(json.toString(), headers)
         }
+
+        fun getLeadingNumber(param: String): String = param.trim().takeWhile { c -> c.isDigit() || c == '.' }
 
     }
-
-
 }
