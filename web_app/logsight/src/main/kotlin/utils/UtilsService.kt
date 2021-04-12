@@ -20,6 +20,7 @@ class UtilsService {
             return HttpEntity(json.toString(), headers)
         }
 
+        //TODO should be improved
         fun getLeadingNumber(param: String): String = param.trim().takeWhile { c -> c.isDigit() || c == '.' }
 
     }

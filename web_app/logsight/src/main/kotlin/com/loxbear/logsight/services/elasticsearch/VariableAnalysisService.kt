@@ -62,7 +62,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
             val lineChartSeries = specificTemplateData.mapNotNull {
                 try {
                     val parsed = UtilsService.getLeadingNumber(it.param)
-                    LineChartSeries(it.timestamp.toString(), parsed.toDouble())
+                    LineChartSeries(name = it.timestamp.toHourMinute(), value = parsed.toDouble())
                 } catch (nfe: NumberFormatException) {
                     null
                 }
@@ -77,7 +77,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                                                    template: String, param: String, paramValue: String): List<LineChart> {
         return repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
             .aggregations.listAggregations.buckets.map {
-                val name = it.date.toString()
+                val name = it.date.toHourMinute()
                 val series = it.listBuckets.buckets.map { it2 ->
                     LineChartSeries(name = it2.key, value = it2.docCount)
                 }
@@ -111,7 +111,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
         val top5TemplatesOlderMap = top5TemplatesOlder.map { it.key to it }.toMap()
         val top5TemplatesNowData = top5TemplatesNow.map {
             val percentageDifference = if (top5TemplatesOlderMap.containsKey(it.key)) (top5TemplatesOlderMap[it.key]!!.docCount / it.docCount) * 100 else 0.0
-            TopNTemplatesData(template = it.key, count = it.docCount, percentage = percentageDifference)
+            TopNTemplatesData(template = it.key, count = it.docCount, percentage = String.format("%.1f", percentageDifference).toDouble())
         }
         result["now"] = top5TemplatesNowData
         val top5TemplatesOlderData = top5TemplatesOlder.map {
@@ -127,12 +127,13 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
             val obj = JSONObject(it.toString())
             val date = ZonedDateTime.parse(obj.getString("key_as_string"), ISO_OFFSET_DATE_TIME)
 
-            LineChartSeries(date.toBookingTime(), obj.getDouble("doc_count"))
+            LineChartSeries(date.toHourMinute(), obj.getDouble("doc_count"))
         }
         return listOf(LineChart("Log Count", lineChartSeries))
     }
 
-    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun LocalDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
 
 }
 
