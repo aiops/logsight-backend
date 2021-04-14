@@ -19,6 +19,7 @@ class IncidentService(val repository: IncidentRepository) {
        JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime)).getJSONObject("hits").
        getJSONArray("hits").forEach {
            val jsonData = JSONObject(it.toString())
+
            dataList.add(TopKIncidentTable(indexName = jsonData["_index"].toString(),
                    startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
                    stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),
