@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/applications")
 class ApplicationController(val applicationService: ApplicationService,
-                            val usersService: UsersService,
-                            val kafkaTemplate: KafkaTemplate<String, String>) {
+                            val usersService: UsersService) {
 
     @PostMapping
     fun createApplication(@RequestBody body: ApplicationRequest): Application {

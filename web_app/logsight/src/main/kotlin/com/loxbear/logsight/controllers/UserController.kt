@@ -17,7 +17,4 @@ class UserController(val usersService: UsersService) {
             return UserModel(id = id, email = email, activated = activated, key = key)
         }
     }
-
-    @PostMapping("/activate")
-    fun activateUser(@RequestBody body: Map<String, String>): UserModel = usersService.activateUser(body["key"]!!)
 }

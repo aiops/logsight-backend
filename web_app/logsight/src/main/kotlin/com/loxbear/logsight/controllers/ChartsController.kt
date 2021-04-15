@@ -1,6 +1,5 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.data.LogLevelPieChart
 import com.loxbear.logsight.charts.data.LogLevelStackedLineChart
 import com.loxbear.logsight.charts.data.SystemOverviewHeatmapChart
@@ -18,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController
 class ChartsController(val chartsService: ChartsService, val usersService: UsersService, val applicationService: ApplicationService) {
 
 
-    @GetMapping("/line_chart")
-    fun getLineChartData(): LineChart {
-        return chartsService.getLineChartData()
-    }
+//    @GetMapping("/line_chart")
+//    fun getLineChartData(): LineChart {
+//        return chartsService.getLineChartData()
+//    }
 
     @GetMapping("/log_level_advanced_pie_chart")
     fun getLogLevelPieData(authentication: Authentication): LogLevelPieChart {

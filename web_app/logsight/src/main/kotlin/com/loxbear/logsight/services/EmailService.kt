@@ -15,17 +15,18 @@ class EmailService(val emailConfiguration: EmailConfiguration,
         val activationUrl = "$baseUrl/auth/activate/${user.key}"
         val emailTo = user.email
         val body = "Please activate on the following link $activationUrl"
+        print(activationUrl)
         sendEmail(emailTo, body)
     }
 
     fun sendEmail(emailTo: String, body: String) {
-        val sender = emailConfiguration.getEmailSender()
-        val message = SimpleMailMessage()
-        message.setFrom("LogSight")
-        message.setTo(emailTo)
-        message.setSubject("Activate your account")
-        message.setText(body)
-        sender.send(message)
+//        val sender = emailConfiguration.getEmailSender()
+//        val message = SimpleMailMessage()
+//        message.setFrom("LogSight")
+//        message.setTo(emailTo)
+//        message.setSubject("Activate your account")
+//        message.setText(body)
+//        sender.send(message)
     }
 
 }

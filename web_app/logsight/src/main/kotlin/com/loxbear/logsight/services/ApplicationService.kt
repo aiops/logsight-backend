@@ -9,6 +9,7 @@ import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
+import java.lang.Exception
 import javax.transaction.Transactional
 
 @Service
@@ -36,4 +37,6 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         logger.info("Activating application with id [{}]", applicationId)
         repository.updateApplicationStatus(applicationId, ApplicationStatus.ACTIVE)
     }
+
+    fun findById(id: Long): Application = repository.findById(id).orElseThrow { Exception("Application with id [$id] not found") }
 }

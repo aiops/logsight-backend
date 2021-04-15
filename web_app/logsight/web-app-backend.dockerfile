@@ -21,4 +21,4 @@ RUN gradle bootJar -i --stacktrace
 FROM openjdk:11-jre-slim
 WORKDIR /
 COPY --from=build /build/build/libs/logsight-0.0.1-SNAPSHOT.jar ./web-app-backend.jar
-ENTRYPOINT ["java", "-jar", "web-app-backend.jar"]
+ENTRYPOINT ["java", "-jar", "web-app-backend.jar", "--spring.profiles.active=prod"]
