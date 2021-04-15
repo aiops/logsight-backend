@@ -1,0 +1,59 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "30s",
+        "time_zone": "Europe/Berlin",
+        "min_doc_count": 1
+      },
+      "aggs": {
+        "listBuckets": {
+          "terms": {
+            "field": "severity_score",
+            "order": {
+              "_count": "desc"
+            },
+            "size": 5
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
+  "_source": {
+    "excludes": []
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {},
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
+      "filter": [
+        {
+          "match_all": {}
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

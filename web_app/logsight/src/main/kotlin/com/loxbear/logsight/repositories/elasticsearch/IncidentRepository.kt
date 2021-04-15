@@ -29,4 +29,12 @@ class IncidentRepository {
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
+
+    fun getIncidentsBarChartData(esIndexUserApp: String, startTime: String, stopTime: String): String {
+        val path = ClassPathResource("${resourcesPath}queries/incidents_bar_chart_data_request.json").path
+        val jsonString: String = readFileAsString(path)
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
+        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+    }
 }

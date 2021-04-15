@@ -8,6 +8,7 @@ import org.json.JSONObject
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -24,5 +25,12 @@ class IncidentController(val incidentsService: IncidentService, val usersService
         return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, stopTime)
     }
 
-
+    @GetMapping("/bar_chart_data")
+    fun getIncidentsBarChartData(authentication: Authentication, @RequestParam startTime: String, endTime: String) {
+        val user = usersService.findByEmail(authentication.name)
+        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val startTimee = "now-12h"
+        val stopTime = "now"
+        incidentsService.getIncidentsBarChartData(applicationsIndexes, startTimee, stopTime)
+    }
 }
