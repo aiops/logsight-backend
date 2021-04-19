@@ -17,6 +17,8 @@ class UserDetailsServiceImpl(val applicationUserRepository: UserRepository) : Us
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
         val logsightUser = applicationUserRepository.findByEmail(username).orElseThrow { UsernameNotFoundException(username) }
-        return User(logsightUser.email, logsightUser.password, emptyList())
+        if (logsightUser.activated)
+            return User(logsightUser.email, logsightUser.password, emptyList())
+        else throw UsernameNotFoundException(username)
     }
 }

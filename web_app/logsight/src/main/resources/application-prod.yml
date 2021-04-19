@@ -5,7 +5,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     # show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    url: jdbc:postgresql://postgres:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
     username: logsight
     password: logsight
 
@@ -19,11 +19,8 @@ app:
   baseUrl: http://localhost:4200
 
 kafka:
-  bootstrapAddress: localhost:9093 # localhost:9093
+  bootstrapAddress: kafka:9092 # localhost:9093
   groupId: 1
 
 elasticsearch:
-  url: localhost:9200
-
-resources:
-  path: src/main/resources/
+  url: elasticsearch:9200

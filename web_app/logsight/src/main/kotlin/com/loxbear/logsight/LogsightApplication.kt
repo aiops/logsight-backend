@@ -6,13 +6,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 
-
-
 @SpringBootApplication
 class LogsightApplication
 
 fun main(args: Array<String>) {
-
 	runApplication<LogsightApplication>(*args)
 }
 

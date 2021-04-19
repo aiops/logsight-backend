@@ -18,7 +18,7 @@ class IncidentController(val incidentsService: IncidentService, val usersService
     @GetMapping("/top_k_incidents")
     fun getTopKIncidentsTableData(authentication: Authentication): List<TopKIncidentTable> {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val applicationsIndexes = applicationService.getApplicationIndexesIncidents(user)
         val startTime = "now-12h"
         val stopTime = "now"
         return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, stopTime)

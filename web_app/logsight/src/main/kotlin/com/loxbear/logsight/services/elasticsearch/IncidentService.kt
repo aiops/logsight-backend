@@ -22,9 +22,9 @@ class IncidentService(val repository: IncidentRepository) {
            dataList.add(TopKIncidentTable(indexName = jsonData["_index"].toString(),
                    startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
                    stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),
-                   firstLog = jsonData.getJSONObject("_source")["first_log"].toString(),
-                   lastLog = jsonData.getJSONObject("_source")["first_log"].toString(),
-                   totalScore = jsonData.getJSONObject("_source")["total_score"] as BigDecimal
+                   firstLog = "",// jsonData.getJSONObject("_source")["first_log"].toString()
+                   lastLog = "", // jsonData.getJSONObject("_source")["first_log"].toString()
+                   totalScore = jsonData.getJSONObject("_source")["severity_score"] as BigDecimal
                    ))
        }
         dataList.sortByDescending {it.totalScore}

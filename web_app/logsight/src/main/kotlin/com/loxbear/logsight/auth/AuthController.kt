@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.LoginUserForm
 import com.loxbear.logsight.models.RegisterUserForm
+import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.security.SecurityConstants
 import com.loxbear.logsight.services.UsersService
 import org.springframework.http.HttpStatus
@@ -23,7 +24,6 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/auth")
-//TODO refactor with Spring Security
 class AuthController(val usersService: UsersService, val authenticationManager: AuthenticationManager) {
 
     @PostMapping("/register")
@@ -32,7 +32,7 @@ class AuthController(val usersService: UsersService, val authenticationManager: 
     }
 
     @PostMapping("/register/demo")
-    fun registerDemo(@RequestBody body: Map<String, String>): ResponseEntity<String> {
+    fun registerDemo(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
         val result = usersService.registerUser(body["email"]!!)
         return if (result == null)
             ResponseEntity(HttpStatus.OK)
@@ -52,4 +52,7 @@ class AuthController(val usersService: UsersService, val authenticationManager: 
 
         return mapOf("token" to token)
     }
+
+    @PostMapping("/activate")
+    fun activateUser(@RequestBody body: Map<String, String>): UserModel = usersService.activateUser(body["key"]!!)
 }
