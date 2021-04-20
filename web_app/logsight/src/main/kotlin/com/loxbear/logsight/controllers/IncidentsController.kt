@@ -1,5 +1,6 @@
 package com.loxbear.logsight.controllers
 
+import com.loxbear.logsight.charts.data.IncidentTableData
 import com.loxbear.logsight.charts.data.IncidentTimelineData
 import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.services.ApplicationService
@@ -35,11 +36,11 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     }
 
     @GetMapping("/table_data")
-    fun getIncidentsTableData(authentication: Authentication, @RequestParam startTime: String, endTime: String) {
+    fun getIncidentsTableData(authentication: Authentication, @RequestParam startTime: String, endTime: String): IncidentTableData {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         val startTimee = "now-12h"
         val stopTime = "now"
-        incidentsService.getIncidentsTableData(applicationsIndexes, startTimee, stopTime)
+        return incidentsService.getIncidentsTableData(applicationsIndexes, startTimee, stopTime)
     }
 }
