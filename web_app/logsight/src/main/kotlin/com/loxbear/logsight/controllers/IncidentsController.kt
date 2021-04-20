@@ -1,10 +1,10 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.incidents.data.TopKIncidentTable
+import com.loxbear.logsight.charts.data.IncidentTimelineData
+import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.IncidentService
-import org.json.JSONObject
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/incidents")
-class IncidentController(val incidentsService: IncidentService, val usersService: UsersService,
-                         val applicationService: ApplicationService) {
+class IncidentsController(val incidentsService: IncidentService, val usersService: UsersService,
+                          val applicationService: ApplicationService) {
 
     @GetMapping("/top_k_incidents")
     fun getTopKIncidentsTableData(authentication: Authentication): List<TopKIncidentTable> {
@@ -26,11 +26,20 @@ class IncidentController(val incidentsService: IncidentService, val usersService
     }
 
     @GetMapping("/bar_chart_data")
-    fun getIncidentsBarChartData(authentication: Authentication, @RequestParam startTime: String, endTime: String) {
+    fun getIncidentsTimelineData(authentication: Authentication, @RequestParam startTime: String, endTime: String): List<IncidentTimelineData> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
         val startTimee = "now-12h"
         val stopTime = "now"
-        incidentsService.getIncidentsBarChartData(applicationsIndexes, startTimee, stopTime)
+        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTimee, stopTime)
+    }
+
+    @GetMapping("/table_data")
+    fun getIncidentsTableData(authentication: Authentication, @RequestParam startTime: String, endTime: String) {
+        val user = usersService.findByEmail(authentication.name)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
+        val startTimee = "now-12h"
+        val stopTime = "now"
+        incidentsService.getIncidentsTableData(applicationsIndexes, startTimee, stopTime)
     }
 }

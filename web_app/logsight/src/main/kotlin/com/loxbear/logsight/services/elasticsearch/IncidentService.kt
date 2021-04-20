@@ -1,8 +1,9 @@
 package com.loxbear.logsight.services.elasticsearch
 
-import com.loxbear.logsight.charts.data.LineChart
+import com.loxbear.logsight.charts.data.IncidentTimeline
+import com.loxbear.logsight.charts.data.IncidentTimelineData
 import com.loxbear.logsight.charts.data.LineChartSeries
-import com.loxbear.logsight.incidents.data.TopKIncidentTable
+import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject
 
@@ -33,16 +34,21 @@ class IncidentService(val repository: IncidentRepository) {
         return dataList
     }
 
-    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String) {
+    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String): List<IncidentTimelineData> {
         val resp = JSONObject(repository.getIncidentsBarChartData(applicationsIndexes, startTime, stopTime))
-        val lineChartSeries = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
+        val incidentTimeline = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
             val date = ZonedDateTime.parse(obj.getString("key_as_string"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-
-            LineChartSeries(date.toHourMinute(), obj.getDouble("doc_count"))
+            IncidentTimeline(date.toInstant().toEpochMilli(), obj.getDouble("doc_count"))
         }
-        val a = 0
+        return listOf(IncidentTimelineData(key = "data", values = incidentTimeline))
     }
+
+    fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String) {
+        val resp = JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
+        println(resp)
+    }
+
 
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
 }

@@ -3,6 +3,6 @@ package com.loxbear.logsight.charts.data
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class PieExtra (
+class PieExtra(
     val code: String
-    )
+)

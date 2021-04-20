@@ -1,4 +1,4 @@
-package com.loxbear.logsight.incidents.data
+package com.loxbear.logsight.charts.data
 
 import java.math.BigDecimal
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
