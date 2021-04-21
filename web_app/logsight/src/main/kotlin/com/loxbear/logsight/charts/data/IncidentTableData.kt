@@ -1,19 +1,27 @@
 package com.loxbear.logsight.charts.data
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class IncidentTableData(
-    @JsonProperty("count_ads")
-    val countAds: List<String>,
+class IncidentTableData(
+    private val count_ads: List<String>,
 
-    @JsonProperty("semantic_count_ads")
-    val semanticCountAds: List<String>,
+    private val semantic_count_ads: List<String>,
 
-    @JsonProperty("new_templates")
-    val newTemplates: List<String>,
+    private val new_templates: List<String>,
 
-    @JsonProperty("semantic_ad")
-    val semanticAd: List<String>,
-)
+    private val semantic_ad: List<String>
+) {
+    val countAds: List<String>
+        get() = count_ads
+
+    val semanticCountAds: List<String>
+        get() = semantic_count_ads
+
+    val newTemplates: List<String>
+        get() = new_templates
+
+    val semanticAd: List<String>
+        get() = semantic_ad
+}
+
