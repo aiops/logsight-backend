@@ -29,7 +29,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     fun getApplicationIndexes(user: LogsightUser) =
         findAllByUser(user).joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_ad" }
 
-    fun getApplicationIndexesIncidents(user: LogsightUser) =
+    fun getApplicationIndexesForIncidents(user: LogsightUser) =
         findAllByUser(user).joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_incidents" }
 
     @KafkaListener(topics = ["container_settings_ack"])
