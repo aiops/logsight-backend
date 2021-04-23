@@ -51,7 +51,6 @@ class IncidentService(val repository: IncidentRepository) {
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
         val data = JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits")[0].toString()
-
         return gson.fromJson(JSONObject(data).getJSONObject("_source").toString(), IncidentTableData::class.java)
     }
 

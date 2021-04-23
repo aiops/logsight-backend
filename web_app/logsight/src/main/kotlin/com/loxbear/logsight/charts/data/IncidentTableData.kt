@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class IncidentTableData(
-    private val count_ads: List<String>,
+    private val count_ads: List<String> = listOf(),
 
-    private val semantic_count_ads: List<String>,
+    private val semantic_count_ads: List<String> = listOf(),
 
-    private val new_templates: List<String>,
+    private val new_templates: List<String> = listOf(),
 
-    private val semantic_ad: List<String>
+    private val semantic_ad: List<String> = listOf()
 ) {
     val countAds: List<String>
         get() = count_ads
