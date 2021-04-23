@@ -20,7 +20,7 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     @GetMapping("/top_k_incidents")
     fun getTopKIncidentsTableData(authentication: Authentication): List<TopKIncidentTable> {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         val startTime = "now-12h"
         val stopTime = "now"
         return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, stopTime)
@@ -29,7 +29,7 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     @GetMapping("/bar_chart_data")
     fun getIncidentsTimelineData(authentication: Authentication, @RequestParam startTime: String, endTime: String): List<IncidentTimelineData> {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         val startTimee = "now-12h"
         val stopTime = "now"
         return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTimee, stopTime)

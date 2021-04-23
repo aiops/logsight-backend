@@ -44,7 +44,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     @GetMapping("/system_overview_heatmap")
     fun getSystemOverViewHeatmapData(authentication: Authentication): SystemOverviewHeatmapChart {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         val startTime = "now-2h"
         val stopTime = "now"
         return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, stopTime)
