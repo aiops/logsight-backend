@@ -49,7 +49,6 @@ class ChartsService(val repository: ChartsRepository) {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
 
         val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets
-        print(res)
         res.forEach {
             for (i in it.listBuckets.buckets) {
                 val list = dict[i.key] ?: mutableListOf()

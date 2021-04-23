@@ -8,7 +8,8 @@ data class TopKIncidentTable(
         val indexName: String,
         val startTimestamp: String,
         val stopTimestamp: String,
-        val firstLog: String,
-        val lastLog: String,
+        val newTemplates: String,
+        val semanticAD: String,
+        val countAD: String,
         val totalScore: BigDecimal // incident severities
 )

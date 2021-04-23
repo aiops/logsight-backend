@@ -3,8 +3,8 @@
     "listAggregations": {
       "date_histogram": {
         "field": "@timestamp",
-        "interval": "5m",
-        "time_zone": "Europe/Zagreb",
+        "interval": "10s",
+        "time_zone": "Europe/Berlin",
         "min_doc_count": 1
       },
       "aggs": {
@@ -12,14 +12,14 @@
           "terms": {
             "field": "_index",
             "order": {
-              "1": "desc"
+              "_key": "desc"
             },
-            "size": 5
+            "size": 50
           },
           "aggs": {
             "1": {
               "avg": {
-                "field": "prediction"
+                "field": "total_score"
               }
             }
           }
