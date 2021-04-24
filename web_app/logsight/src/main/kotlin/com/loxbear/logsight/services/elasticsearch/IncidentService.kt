@@ -53,10 +53,14 @@ class IncidentService(val repository: IncidentRepository) {
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                 val tableData = gson.fromJson((it as JSONObject).getJSONObject("_source").toString(), IncidentTableData::class.java)
                 IncidentTableData(
-                    count_ads = acc.countAds + tableData.countAds,
-                    semantic_count_ads = acc.semanticCountAds + tableData.semanticCountAds,
-                    new_templates = acc.newTemplates + tableData.newTemplates,
-                    semantic_ad = acc.semanticAd + tableData.semanticAd
+                    count_ads = acc.countAds + tableData.countAds.filter { it.isNotEmpty() }
+                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
+                    semantic_count_ads = acc.semanticCountAds + tableData.semanticCountAds.filter { it.isNotEmpty() }
+                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
+                    new_templates = acc.newTemplates + tableData.newTemplates.filter { it.isNotEmpty() }
+                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
+                    semantic_ad = acc.semanticAd + tableData.semanticAd.filter { it.isNotEmpty() }
+                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
                 )
             })
     }
