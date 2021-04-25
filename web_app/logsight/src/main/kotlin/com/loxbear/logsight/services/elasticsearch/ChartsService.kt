@@ -36,6 +36,25 @@ class ChartsService(val repository: ChartsRepository) {
 //        return LineChart(labels = labels, datasets = dataSets)
 //    }
 
+
+    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String): List<LineChart> {
+
+        return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime)
+            .aggregations.listAggregations.buckets.map {
+                val name = it.date.toHourMinute()
+                val series = it.listBuckets.buckets.map { it2 ->
+                    var tmp = ""
+                    if(it2.key.toString()=="0"){
+                        tmp = "Normal"
+                    }else{
+                        tmp = "Anomaly"
+                    }
+                    LineChartSeries(name = tmp, value = it2.docCount)
+                }
+                LineChart(name, series)
+            }
+    }
+
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChart {
         val data = mutableListOf<LogLevelPoint>()
 
@@ -71,16 +90,16 @@ class ChartsService(val repository: ChartsRepository) {
             stopTime).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
-                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_")[1] + i.key.split("_")[2] + i.key.split("_")[3], value = i.valueData.value, extra = PieExtra("")))
-            }
-            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toBookingTime(), series = listPoints))
-        }
 
+                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1,i.key.split("_").size-1).toString(), value = i.valueData.value, extra = PieExtra("")))
+            }
+            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toHourMinute(), series = listPoints))
+        }
         return SystemOverviewHeatmapChart(data = heatMapLogLevelSeries)
     }
 
-
-    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
-    fun ZonedDateTime.toBookingTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+    fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+    fun ZonedDateTime.toBookingTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
 
 }

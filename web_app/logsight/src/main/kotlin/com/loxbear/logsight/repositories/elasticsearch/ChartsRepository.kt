@@ -14,6 +14,8 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import utils.UtilsService.Companion.readFileAsString
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Repository
 class ChartsRepository {
@@ -29,6 +31,13 @@ class ChartsRepository {
         val jsonRequest: String = readFileAsString("${resourcesPath}queries/first_plot_request.json")
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/1234-213_app_name_test_log_ad/_search", request).body!!
+    }
+
+    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String): LineChartData {
+        val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot.json")
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
+        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChartData {
@@ -53,5 +62,5 @@ class ChartsRepository {
         return restTemplate.postForEntity<SystemOverviewData>("http://$elasticsearchUrl/$esIndexUserAppLogAd/_search", request).body!!
     }
 
-
+    fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
 }

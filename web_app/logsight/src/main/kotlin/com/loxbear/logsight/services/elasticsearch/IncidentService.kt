@@ -9,6 +9,7 @@ import com.google.gson.*
 import com.loxbear.logsight.charts.data.IncidentTableData
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -26,16 +27,22 @@ class IncidentService(val repository: IncidentRepository) {
             val jsonData = JSONObject(it.toString())
 
             dataList.add(TopKIncidentTable(indexName = jsonData["_index"].toString(),
+                timestamp = jsonData.getJSONObject("_source")["@timestamp"].toString(),
                 startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
                 stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),
                 newTemplates = jsonData.getJSONObject("_source")["new_templates"].toString(),// jsonData.getJSONObject("_source")["first_log"].toString()
                 semanticAD = jsonData.getJSONObject("_source")["semantic_ad"].toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
                 countAD = jsonData.getJSONObject("_source")["count_ads"].toString(),
-                totalScore = jsonData.getJSONObject("_source")["total_score"] as BigDecimal
+                totalScore = jsonData.getJSONObject("_source")["total_score"] as Int
             ))
         }
         dataList.sortByDescending { it.totalScore }
-        return dataList
+        return if(dataList.size <= 5){
+            dataList
+        }else{
+            dataList.subList(0,5)
+        }
+
     }
 
     fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String): List<IncidentTimelineData> {

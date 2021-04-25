@@ -2,6 +2,7 @@ package com.loxbear.logsight.charts.elasticsearch
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.joda.time.DateTimeZone
 import java.time.LocalDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)

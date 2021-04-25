@@ -1,5 +1,6 @@
 package com.loxbear.logsight.controllers
 
+import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.data.LogLevelPieChart
 import com.loxbear.logsight.charts.data.LogLevelStackedLineChart
 import com.loxbear.logsight.charts.data.SystemOverviewHeatmapChart
@@ -26,16 +27,26 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     fun getLogLevelPieData(authentication: Authentication): LogLevelPieChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-1h"
+        val startTime = "now-12h"
         val stopTime = "now"
         return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, stopTime)
+    }
+
+    @GetMapping("/dashboard_bar_anomalies")
+    fun getAnomaliesBarChartData(authentication: Authentication): List<LineChart> {
+        val user = usersService.findByEmail(authentication.name)
+        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val startTime = "now-6h"
+        val stopTime = "now"
+        val tmp = chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, stopTime)
+        return tmp
     }
 
     @GetMapping("/log_level_stacked_line_chart")
     fun getLogLevelStackedLineData(authentication: Authentication): LogLevelStackedLineChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-1h"
+        val startTime = "now-12h"
         val stopTime = "now"
         return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, stopTime)
     }
@@ -45,7 +56,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     fun getSystemOverViewHeatmapData(authentication: Authentication): SystemOverviewHeatmapChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
-        val startTime = "now-2h"
+        val startTime = "now-12h"
         val stopTime = "now"
         return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, stopTime)
     }

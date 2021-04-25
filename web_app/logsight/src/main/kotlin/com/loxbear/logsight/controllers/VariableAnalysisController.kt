@@ -37,7 +37,6 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val stopTime = "now"
         with(specificTemplate) {
             val tmp = variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, stopTime, template, param, paramValue)
-            println(tmp)
             return variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, stopTime, template, param, paramValue)
         }
     }
