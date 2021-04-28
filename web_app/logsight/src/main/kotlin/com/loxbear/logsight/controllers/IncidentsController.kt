@@ -27,12 +27,12 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     }
 
     @GetMapping("/bar_chart_data")
-    fun getIncidentsTimelineData(authentication: Authentication, @RequestParam startTime: String, endTime: String): List<IncidentTimelineData> {
+    fun getIncidentsTimelineData(authentication: Authentication,
+                                 @RequestParam startTime: String,
+                                 @RequestParam endTime: String): List<IncidentTimelineData> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
-        val startTimee = "now-12h"
-        val stopTime = "now"
-        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTimee, stopTime)
+        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime)
     }
 
     @GetMapping("/table_data")
