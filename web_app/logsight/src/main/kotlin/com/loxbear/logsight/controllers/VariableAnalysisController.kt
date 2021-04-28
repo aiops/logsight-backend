@@ -33,7 +33,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        val startTime = "now-15m"
+        val startTime = "now-2h"
         val stopTime = "now"
         with(specificTemplate) {
             val tmp = variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, stopTime, template, param, paramValue)

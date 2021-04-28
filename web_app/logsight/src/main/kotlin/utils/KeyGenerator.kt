@@ -11,6 +11,6 @@ object KeyGenerator {
     fun generate(): String {
         val buffer = ByteArray(SIZE)
         secureRandom.nextBytes(buffer)
-        return encoder.encodeToString(buffer)
+        return encoder.encodeToString(buffer).toLowerCase().filter { it.isLetterOrDigit()}
     }
 }
