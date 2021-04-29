@@ -36,11 +36,11 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     }
 
     @GetMapping("/table_data")
-    fun getIncidentsTableData(authentication: Authentication, @RequestParam startTime: String, endTime: String): IncidentTableData {
+    fun getIncidentsTableData(authentication: Authentication,
+                              @RequestParam startTime: String,
+                              @RequestParam endTime: String): IncidentTableData {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
-        val startTimee = "now-12h"
-        val stopTime = "now"
-        return incidentsService.getIncidentsTableData(applicationsIndexes, startTimee, stopTime)
+        return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime)
     }
 }
