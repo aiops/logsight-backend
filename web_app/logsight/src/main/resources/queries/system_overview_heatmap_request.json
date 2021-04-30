@@ -3,7 +3,7 @@
     "listAggregations": {
       "date_histogram": {
         "field": "@timestamp",
-        "interval": "5m",
+        "interval": "30s",
         "time_zone": "Europe/Berlin",
         "min_doc_count": 1
       },

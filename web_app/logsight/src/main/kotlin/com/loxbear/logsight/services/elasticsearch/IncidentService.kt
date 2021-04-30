@@ -33,6 +33,7 @@ class IncidentService(val repository: IncidentRepository) {
                 newTemplates = jsonData.getJSONObject("_source")["new_templates"].toString(),// jsonData.getJSONObject("_source")["first_log"].toString()
                 semanticAD = jsonData.getJSONObject("_source")["semantic_ad"].toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
                 countAD = jsonData.getJSONObject("_source")["count_ads"].toString(),
+                scAnomalies = jsonData.getJSONObject("_source")["semantic_count_ads"].toString(),
                 totalScore = jsonData.getJSONObject("_source")["total_score"] as Int
             ))
         }
