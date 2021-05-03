@@ -7,7 +7,13 @@ import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject
 import com.google.gson.*
 import com.loxbear.logsight.charts.data.IncidentTableData
+import com.loxbear.logsight.charts.elasticsearch.HitParam
+import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
+import org.json.JSONArray
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
+import utils.UtilsService
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.ZonedDateTime
@@ -16,8 +22,6 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class IncidentService(val repository: IncidentRepository) {
-
-    val gson = Gson()
 
     fun getTopKIncidentsTableData(esIndexUserApp: String, startTime: String, stopTime: String): List<TopKIncidentTable> {
 
@@ -57,20 +61,46 @@ class IncidentService(val repository: IncidentRepository) {
     }
 
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
+        val anomalies = listOf<String>("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
-            .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
-                val tableData = gson.fromJson((it as JSONObject).getJSONObject("_source").toString(), IncidentTableData::class.java)
-                IncidentTableData(
-                    count_ads = acc.countAds + tableData.countAds.filter { it.isNotEmpty() }
-                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
-                    semantic_count_ads = acc.semanticCountAds + tableData.semanticCountAds.filter { it.isNotEmpty() }
-                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
-                    new_templates = acc.newTemplates + tableData.newTemplates.filter { it.isNotEmpty() }
-                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
-                    semantic_ad = acc.semanticAd + tableData.semanticAd.filter { it.isNotEmpty() }
-                        .fold(listOf<String>(), { previous, next -> previous + next.split("||") }),
-                )
-            })
+                .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
+                    val tableData = JSONObject(it.toString()).getJSONObject("_source")
+                    val incidentTableData = anomalies.mapIndexed { index, anomaly ->
+                        if (tableData.has(anomaly)) {
+                            val hit = tableData.getJSONArray(anomalies[index])
+                            if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
+                                val data = JSONObject(JSONArray(hit[0].toString())[0].toString())
+                                val template = data.getString("template")
+                                val message = data.getString("message")
+                                val params = mutableListOf<HitParam>();
+                                val keys: Iterator<String> = data.keys()
+                                while (keys.hasNext()) {
+                                    val key = keys.next()
+                                    if (key.startsWith("param_")) {
+                                        params.add(HitParam(key, data.getString(key)))
+                                    }
+                                }
+                                anomalies[index] to VariableAnalysisHit(message, template, params)
+                            } else {
+                                anomalies[index] to null
+                            }
+                        } else {
+                            anomalies[index] to null
+                        }
+                    }.toMap()
+
+                    val countAds = if (incidentTableData["count_ads"] != null) listOf(incidentTableData["count_ads"]!!) else listOf<VariableAnalysisHit>()
+                    val semanticCountAds = if (incidentTableData["semantic_count_ads"] != null) listOf(incidentTableData["semantic_count_ads"]!!) else listOf<VariableAnalysisHit>()
+                    val newTemplates = if (incidentTableData["new_templates"] != null) listOf(incidentTableData["new_templates"]!!) else listOf<VariableAnalysisHit>()
+                    val semanticAd = if (incidentTableData["semantic_ad"] != null) listOf(incidentTableData["semantic_ad"]!!) else listOf<VariableAnalysisHit>()
+
+                    IncidentTableData(
+                            count_ads = acc.countAds + countAds,
+                            semantic_count_ads = acc.semanticCountAds + semanticCountAds,
+                            new_templates = acc.newTemplates + newTemplates,
+                            semantic_ad = acc.semanticAd + semanticAd,
+                    )
+                })
     }
 
 
