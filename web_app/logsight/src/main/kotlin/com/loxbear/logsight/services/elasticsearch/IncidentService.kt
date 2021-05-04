@@ -61,13 +61,14 @@ class IncidentService(val repository: IncidentRepository) {
     }
     //TODO
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
-        val anomalies = listOf<String>("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
+        val anomalies = listOf<String>("semantic_count_ads", "count_ads", "new_templates", "semantic_ad")
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
                 .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                     val tableData = JSONObject(it.toString()).getJSONObject("_source")
                     val incidentTableData = anomalies.mapIndexed { index, anomaly ->
                         if (tableData.has(anomaly)) {
                             val hit = tableData.getJSONArray(anomalies[index])
+
                             if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
                                 val data = JSONObject(JSONArray(hit[0].toString())[0].toString())
                                 val template = data.getString("template")
