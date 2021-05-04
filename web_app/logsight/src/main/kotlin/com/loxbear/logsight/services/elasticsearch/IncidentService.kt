@@ -55,7 +55,7 @@ class IncidentService(val repository: IncidentRepository) {
         }
         return listOf(IncidentTimelineData(key = "data", values = incidentTimeline))
     }
-
+    //TODO
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
