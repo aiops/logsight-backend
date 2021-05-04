@@ -5,17 +5,12 @@ import com.loxbear.logsight.charts.data.IncidentTimelineData
 import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject
-import com.google.gson.*
 import com.loxbear.logsight.charts.data.IncidentTableData
 import com.loxbear.logsight.charts.elasticsearch.HitParam
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import org.json.JSONArray
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.ClassPathResource
+
 import org.springframework.stereotype.Service
-import utils.UtilsService
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -29,7 +24,6 @@ class IncidentService(val repository: IncidentRepository) {
 
         JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime)).getJSONObject("hits").getJSONArray("hits").forEach {
             val jsonData = JSONObject(it.toString())
-
             dataList.add(TopKIncidentTable(indexName = jsonData["_index"].toString(),
                 timestamp = jsonData.getJSONObject("_source")["@timestamp"].toString(),
                 startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
@@ -59,21 +53,20 @@ class IncidentService(val repository: IncidentRepository) {
         }
         return listOf(IncidentTimelineData(key = "data", values = incidentTimeline))
     }
-    //TODO
+
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
-        val anomalies = listOf<String>("semantic_count_ads", "count_ads", "new_templates", "semantic_ad")
+        val anomalies = listOf<String>("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
                 .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                     val tableData = JSONObject(it.toString()).getJSONObject("_source")
                     val incidentTableData = anomalies.mapIndexed { index, anomaly ->
                         if (tableData.has(anomaly)) {
                             val hit = tableData.getJSONArray(anomalies[index])
-
                             if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
                                 val data = JSONObject(JSONArray(hit[0].toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
-                                val params = mutableListOf<HitParam>();
+                                val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()
                                 while (keys.hasNext()) {
                                     val key = keys.next()
@@ -104,7 +97,5 @@ class IncidentService(val repository: IncidentRepository) {
                 })
     }
 
-
-    fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
 }
 
