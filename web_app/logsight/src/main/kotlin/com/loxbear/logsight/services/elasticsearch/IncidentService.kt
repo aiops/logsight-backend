@@ -83,10 +83,10 @@ class IncidentService(val repository: IncidentRepository) {
                         }
                     }.toMap()
 
-                    val countAds = if (incidentTableData["count_ads"] != null) listOf(incidentTableData["count_ads"]!!) else listOf<VariableAnalysisHit>()
-                    val semanticCountAds = if (incidentTableData["semantic_count_ads"] != null) listOf(incidentTableData["semantic_count_ads"]!!) else listOf<VariableAnalysisHit>()
-                    val newTemplates = if (incidentTableData["new_templates"] != null) listOf(incidentTableData["new_templates"]!!) else listOf<VariableAnalysisHit>()
-                    val semanticAd = if (incidentTableData["semantic_ad"] != null) listOf(incidentTableData["semantic_ad"]!!) else listOf<VariableAnalysisHit>()
+                    val countAds = if (incidentTableData["count_ads"] != null) listOf(incidentTableData["count_ads"]!!) else listOf<VariableAnalysisHit>() // flow anomalies
+                    val semanticCountAds = if (incidentTableData["semantic_count_ads"] != null) listOf(incidentTableData["semantic_count_ads"]!!) else listOf<VariableAnalysisHit>() // critical
+                    val newTemplates = if (incidentTableData["new_templates"] != null) listOf(incidentTableData["new_templates"]!!) else listOf<VariableAnalysisHit>() // new log types
+                    val semanticAd = if (incidentTableData["semantic_ad"] != null) listOf(incidentTableData["semantic_ad"]!!) else listOf<VariableAnalysisHit>() //cognitive anomalies
 
                     IncidentTableData(
                             count_ads = acc.countAds + countAds,
@@ -96,6 +96,5 @@ class IncidentService(val repository: IncidentRepository) {
                     )
                 })
     }
-
 }
 
