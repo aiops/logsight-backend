@@ -63,7 +63,7 @@ class IncidentService(val repository: IncidentRepository) {
                         if (tableData.has(anomaly)) {
                             val hit = tableData.getJSONArray(anomalies[index])
                             if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
-                                val data = JSONObject(JSONArray(hit[0].toString())[0].toString())
+                                val data = JSONObject(JSONArray(hit.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
                                 val params = mutableListOf<HitParam>()
