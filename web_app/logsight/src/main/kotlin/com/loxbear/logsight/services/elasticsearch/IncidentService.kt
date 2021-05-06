@@ -36,10 +36,10 @@ class IncidentService(val repository: IncidentRepository) {
             ))
         }
         dataList.sortByDescending { it.totalScore }
-        return if(dataList.size <= 5){
+        return if (dataList.size <= 5) {
             dataList
-        }else{
-            dataList.subList(0,5)
+        } else {
+            dataList.subList(0, 5)
         }
 
     }
@@ -57,13 +57,14 @@ class IncidentService(val repository: IncidentRepository) {
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
         val anomalies = listOf<String>("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
-                .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
-                    val tableData = JSONObject(it.toString()).getJSONObject("_source")
-                    val incidentTableData = anomalies.mapIndexed { index, anomaly ->
-                        if (tableData.has(anomaly)) {
-                            val hit = tableData.getJSONArray(anomalies[index])
-                            if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
-                                val data = JSONObject(JSONArray(hit.toString())[0].toString())
+            .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
+                val tableData = JSONObject(it.toString()).getJSONObject("_source")
+                val incidentTableData = anomalies.mapIndexed { index: Int, anomaly: String ->
+                    if (tableData.has(anomaly)) {
+                        val hit = tableData.getJSONArray(anomalies[index])
+                        if (!hit.isEmpty && hit[0].toString().isNotEmpty()) {
+                            val list = JSONArray(hit.toString()).map { one ->
+                                val data = JSONObject(JSONArray(one.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
                                 val params = mutableListOf<HitParam>()
@@ -75,26 +76,27 @@ class IncidentService(val repository: IncidentRepository) {
                                     }
                                 }
                                 anomalies[index] to VariableAnalysisHit(message, template, params)
-                            } else {
-                                anomalies[index] to null
                             }
+                            list
                         } else {
-                            anomalies[index] to null
+                            listOf()
                         }
-                    }.toMap()
+                    } else {
+                        listOf()
+                    }
+                }.flatten().groupBy({ it.first }, { it.second })
 
-                    val countAds = if (incidentTableData["count_ads"] != null) listOf(incidentTableData["count_ads"]!!) else listOf<VariableAnalysisHit>() // flow anomalies
-                    val semanticCountAds = if (incidentTableData["semantic_count_ads"] != null) listOf(incidentTableData["semantic_count_ads"]!!) else listOf<VariableAnalysisHit>() // critical
-                    val newTemplates = if (incidentTableData["new_templates"] != null) listOf(incidentTableData["new_templates"]!!) else listOf<VariableAnalysisHit>() // new log types
-                    val semanticAd = if (incidentTableData["semantic_ad"] != null) listOf(incidentTableData["semantic_ad"]!!) else listOf<VariableAnalysisHit>() //cognitive anomalies
-
-                    IncidentTableData(
-                            count_ads = acc.countAds + countAds,
-                            semantic_count_ads = acc.semanticCountAds + semanticCountAds,
-                            new_templates = acc.newTemplates + newTemplates,
-                            semantic_ad = acc.semanticAd + semanticAd,
-                    )
-                })
+                val countAds = if (incidentTableData["count_ads"] != null) incidentTableData["count_ads"]!! else listOf<VariableAnalysisHit>() // flow anomalies
+                val semanticCountAds = if (incidentTableData["semantic_count_ads"] != null) incidentTableData["semantic_count_ads"]!! else listOf<VariableAnalysisHit>() // critical
+                val newTemplates = if (incidentTableData["new_templates"] != null) incidentTableData["new_templates"]!! else listOf<VariableAnalysisHit>() // new log types
+                val semanticAd = if (incidentTableData["semantic_ad"] != null) incidentTableData["semantic_ad"]!! else listOf<VariableAnalysisHit>() //cognitive anomalies
+                IncidentTableData(
+                    count_ads = acc.countAds + countAds,
+                    semantic_count_ads = acc.semanticCountAds + semanticCountAds,
+                    new_templates = acc.newTemplates + newTemplates,
+                    semantic_ad = acc.semanticAd + semanticAd,
+                )
+            })
     }
 }
 
