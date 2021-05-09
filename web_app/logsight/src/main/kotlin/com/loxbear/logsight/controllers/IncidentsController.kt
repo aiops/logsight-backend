@@ -2,6 +2,7 @@ package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.charts.data.IncidentTableData
 import com.loxbear.logsight.charts.data.IncidentTimelineData
+import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
@@ -27,9 +28,9 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     }
 
     @GetMapping("/bar_chart_data")
-    fun getIncidentsTimelineData(authentication: Authentication,
+    fun getIncidentsBarChartData(authentication: Authentication,
                                  @RequestParam startTime: String,
-                                 @RequestParam endTime: String): List<IncidentTimelineData> {
+                                 @RequestParam endTime: String): List<LineChartSeries> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime)

@@ -1,11 +1,8 @@
 package com.loxbear.logsight.services.elasticsearch
 
-import com.loxbear.logsight.charts.data.IncidentTimeline
-import com.loxbear.logsight.charts.data.IncidentTimelineData
-import com.loxbear.logsight.charts.data.TopKIncidentTable
+import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject
-import com.loxbear.logsight.charts.data.IncidentTableData
 import com.loxbear.logsight.charts.elasticsearch.HitParam
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import org.json.JSONArray
@@ -44,18 +41,17 @@ class IncidentService(val repository: IncidentRepository) {
 
     }
 
-    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String): List<IncidentTimelineData> {
+    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String): List<LineChartSeries> {
         val resp = JSONObject(repository.getIncidentsBarChartData(applicationsIndexes, startTime, stopTime))
-        val incidentTimeline = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
+        return resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
             val date = ZonedDateTime.parse(obj.getString("key_as_string"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-            IncidentTimeline(date.toInstant().toEpochMilli(), obj.getDouble("doc_count"))
+            LineChartSeries(date.toDateTime(), obj.getDouble("doc_count"))
         }
-        return listOf(IncidentTimelineData(key = "data", values = incidentTimeline))
     }
 
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
-        val anomalies = listOf<String>("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
+        val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
@@ -98,5 +94,7 @@ class IncidentService(val repository: IncidentRepository) {
                 )
             })
     }
+
+    fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
 }
 

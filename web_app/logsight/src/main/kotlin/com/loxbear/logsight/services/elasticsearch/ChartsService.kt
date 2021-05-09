@@ -44,9 +44,9 @@ class ChartsService(val repository: ChartsRepository) {
                 val name = it.date.toHourMinute()
                 val series = it.listBuckets.buckets.map { it2 ->
                     var tmp = ""
-                    if(it2.key.toString()=="0"){
+                    if (it2.key.toString() == "0") {
                         tmp = "Normal"
-                    }else{
+                    } else {
                         tmp = "Anomaly"
                     }
                     LineChartSeries(name = tmp, value = it2.docCount)
@@ -71,7 +71,7 @@ class ChartsService(val repository: ChartsRepository) {
         res.forEach {
             for (i in it.listBuckets.buckets) {
                 val list = dict[i.key] ?: mutableListOf()
-                list.add(StackedLogLevelPoint(it.date.toBookingTimeWithSeconds(), i.docCount))
+                list.add(StackedLogLevelPoint(it.date.toTimeWithSeconds(), i.docCount))
                 dict[i.key] = list
             }
         }
@@ -91,15 +91,15 @@ class ChartsService(val repository: ChartsRepository) {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
 
-                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1,i.key.split("_").size-1).toString(), value = i.valueData.value, extra = PieExtra("")))
+                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1, i.key.split("_").size - 1).toString(), value = i.valueData.value, extra = PieExtra("")))
             }
-            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toHourMinute(), series = listPoints))
+            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))
         }
         return SystemOverviewHeatmapChart(data = heatMapLogLevelSeries)
     }
 
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
-    fun ZonedDateTime.toBookingTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-    fun ZonedDateTime.toBookingTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun ZonedDateTime.toTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
 
 }
