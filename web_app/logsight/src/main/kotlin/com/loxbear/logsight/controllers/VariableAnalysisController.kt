@@ -21,7 +21,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        val startTime = "now-15m"
+        val startTime = "now-2h"
         val stopTime = "now"
         return variableAnalysisService.getTemplates(applicationsIndexes, startTime, stopTime, search)
     }
@@ -54,7 +54,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        val startTime = "now-15m"
+        val startTime = "now-2h"
         val stopTime = "now"
         return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, stopTime)
     }
