@@ -9,14 +9,17 @@ import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisSpecificTemplat
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.models.TopNTemplatesData
 import com.loxbear.logsight.repositories.elasticsearch.VariableAnalysisRepository
+import org.elasticsearch.cluster.routing.UnassignedInfo.DATE_TIME_FORMATTER
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import utils.UtilsService
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
-import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
+
 
 @Service
 class VariableAnalysisService(val repository: VariableAnalysisRepository) {
@@ -126,8 +129,10 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
         val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime))
         val lineChartSeries = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
-            val date = ZonedDateTime.parse(obj.getString("key_as_string"), ISO_DATE_TIME).toDateTime()
-            LineChartSeries(date.split('+')[0], obj.getDouble("doc_count"))
+            val odtInstanceAtOffset = OffsetDateTime.parse(obj.getString("key_as_string"))
+            val odtInstanceAtUTC = odtInstanceAtOffset.withOffsetSameInstant(ZoneOffset.UTC)
+            val date = odtInstanceAtUTC.toZonedDateTime()
+            LineChartSeries(date.toDateTime(), obj.getDouble("doc_count"))
         }
         return listOf(LineChart("Log Count", lineChartSeries))
     }
