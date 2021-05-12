@@ -12,7 +12,7 @@ CREATE TABLE users
 CREATE TABLE applications
 (
   id                BIGSERIAL PRIMARY KEY,
-  name              TEXT    NOT NULL unique,
+  name              TEXT    NOT NULL,
   status            TEXT    NOT NULL default 'IN_PROGRESS',
   user_id           BIGINT REFERENCES users(id)
 );

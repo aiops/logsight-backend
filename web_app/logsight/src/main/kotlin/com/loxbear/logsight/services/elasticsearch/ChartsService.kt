@@ -41,7 +41,7 @@ class ChartsService(val repository: ChartsRepository) {
 
         return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime)
             .aggregations.listAggregations.buckets.map {
-                val name = it.date.toHourMinute()
+                val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
                     var tmp = ""
                     if (it2.key.toString() == "0") {
@@ -66,7 +66,6 @@ class ChartsService(val repository: ChartsRepository) {
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
-
         val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets
         res.forEach {
             for (i in it.listBuckets.buckets) {
@@ -93,6 +92,7 @@ class ChartsService(val repository: ChartsRepository) {
 
                 listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1, i.key.split("_").size - 1).toString(), value = i.valueData.value, extra = PieExtra("")))
             }
+
             heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))
         }
         return SystemOverviewHeatmapChart(data = heatMapLogLevelSeries)
@@ -100,6 +100,6 @@ class ChartsService(val repository: ChartsRepository) {
 
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
-    fun ZonedDateTime.toTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
+    fun ZonedDateTime.toTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
 
 }

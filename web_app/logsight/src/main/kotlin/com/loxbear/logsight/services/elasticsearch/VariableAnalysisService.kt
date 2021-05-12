@@ -15,6 +15,7 @@ import utils.UtilsService
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 import java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
 @Service
@@ -125,13 +126,12 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
         val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime))
         val lineChartSeries = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
-            val date = ZonedDateTime.parse(obj.getString("key_as_string"), ISO_OFFSET_DATE_TIME)
-
-            LineChartSeries(date.toHourMinute(), obj.getDouble("doc_count"))
+            val date = ZonedDateTime.parse(obj.getString("key_as_string"), ISO_DATE_TIME).toDateTime()
+            LineChartSeries(date.split('+')[0], obj.getDouble("doc_count"))
         }
         return listOf(LineChart("Log Count", lineChartSeries))
     }
-
+    fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
     fun LocalDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
 
