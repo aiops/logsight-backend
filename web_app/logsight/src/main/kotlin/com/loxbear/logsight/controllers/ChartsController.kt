@@ -36,7 +36,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
     fun getAnomaliesBarChartData(authentication: Authentication): List<LineChart> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-6h"
+        val startTime = "now-12h"
         val stopTime = "now"
         val tmp = chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, stopTime)
         return tmp
