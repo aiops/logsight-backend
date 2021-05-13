@@ -70,7 +70,7 @@ class ChartsService(val repository: ChartsRepository) {
         res.forEach {
             for (i in it.listBuckets.buckets) {
                 val list = dict[i.key] ?: mutableListOf()
-                list.add(StackedLogLevelPoint(it.date.toTimeWithSeconds(), i.docCount))
+                list.add(StackedLogLevelPoint(it.date.toDateTime(), i.docCount))
                 dict[i.key] = list
             }
         }
