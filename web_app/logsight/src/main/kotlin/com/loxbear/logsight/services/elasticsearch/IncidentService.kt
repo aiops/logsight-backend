@@ -10,6 +10,7 @@ import org.json.JSONArray
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.system.exitProcess
 
 
 @Service
@@ -52,6 +53,7 @@ class IncidentService(val repository: IncidentRepository) {
 
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
         val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
+
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
