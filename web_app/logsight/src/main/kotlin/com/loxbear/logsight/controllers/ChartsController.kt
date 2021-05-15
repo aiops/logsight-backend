@@ -10,6 +10,7 @@ import com.loxbear.logsight.services.elasticsearch.ChartsService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 
@@ -17,49 +18,39 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/charts")
 class ChartsController(val chartsService: ChartsService, val usersService: UsersService, val applicationService: ApplicationService) {
 
-
-//    @GetMapping("/line_chart")
-//    fun getLineChartData(): LineChart {
-//        return chartsService.getLineChartData()
-//    }
-
     @GetMapping("/log_level_advanced_pie_chart")
-    fun getLogLevelPieData(authentication: Authentication): LogLevelPieChart {
+    fun getLogLevelPieData(authentication: Authentication,
+                           @RequestParam startTime: String,
+                           @RequestParam endTime: String): LogLevelPieChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-12h"
-        val stopTime = "now"
-        return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, stopTime)
+        return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime)
     }
 
     @GetMapping("/dashboard_bar_anomalies")
-    fun getAnomaliesBarChartData(authentication: Authentication): List<LineChart> {
+    fun getAnomaliesBarChartData(authentication: Authentication,
+                                 @RequestParam startTime: String,
+                                 @RequestParam endTime: String): List<LineChart> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-12h"
-        val stopTime = "now"
-        val tmp = chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, stopTime)
-        return tmp
+        return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime)
     }
 
     @GetMapping("/log_level_stacked_line_chart")
-    fun getLogLevelStackedLineData(authentication: Authentication): LogLevelStackedLineChart {
+    fun getLogLevelStackedLineData(authentication: Authentication,
+                                   @RequestParam startTime: String,
+                                   @RequestParam endTime: String): LogLevelStackedLineChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        val startTime = "now-12h"
-        val stopTime = "now"
-        return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, stopTime)
+        return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, endTime)
     }
-
 
     @GetMapping("/system_overview_heatmap")
-    fun getSystemOverViewHeatmapData(authentication: Authentication): SystemOverviewHeatmapChart {
+    fun getSystemOverViewHeatmapData(authentication: Authentication,
+                                     @RequestParam startTime: String,
+                                     @RequestParam endTime: String): SystemOverviewHeatmapChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
-        val startTime = "now-12h"
-        val stopTime = "now"
-        return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, stopTime)
+        return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, endTime)
     }
-
-
 }
