@@ -8,6 +8,7 @@ import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import org.json.JSONArray
 
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.system.exitProcess
@@ -15,6 +16,7 @@ import kotlin.system.exitProcess
 
 @Service
 class IncidentService(val repository: IncidentRepository) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
 
     fun getTopKIncidentsTableData(esIndexUserApp: String, startTime: String, stopTime: String): List<TopKIncidentTable> {
 
@@ -65,6 +67,8 @@ class IncidentService(val repository: IncidentRepository) {
                                 val data = JSONObject(JSONArray(one.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
+                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toDateTime()
+                                val actualLevel = data.getString("actual_level")
                                 val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()
                                 while (keys.hasNext()) {
@@ -73,7 +77,7 @@ class IncidentService(val repository: IncidentRepository) {
                                         params.add(HitParam(key, data.getString(key)))
                                     }
                                 }
-                                anomalies[index] to VariableAnalysisHit(message, template, params)
+                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel)
                             }
                             list
                         } else {
@@ -98,5 +102,6 @@ class IncidentService(val repository: IncidentRepository) {
     }
 
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
 }
 
