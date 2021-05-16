@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 @Service
 class VariableAnalysisService(val repository: VariableAnalysisRepository) {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
 
     fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?): List<VariableAnalysisHit> {
         val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
@@ -30,6 +31,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
             val template = hit.getString("template")
             val message = hit.getString("message")
+            val timeStamp = LocalDateTime.parse(hit.getString("@timestamp"), formatter).toDateTime()
+            val actualLevel = hit.getString("actual_level")
             val params = mutableListOf<HitParam>();
             val keys: Iterator<String> = hit.keys()
             while (keys.hasNext()) {
@@ -38,7 +41,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                     params.add(HitParam(key, hit.getString(key)))
                 }
             }
-            VariableAnalysisHit(message, template, params)
+            VariableAnalysisHit(message, template, params, timeStamp, actualLevel)
         }
     }
 
@@ -136,7 +139,9 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
         }
         return listOf(LineChart("Log Count", lineChartSeries))
     }
+
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
     fun LocalDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
 
