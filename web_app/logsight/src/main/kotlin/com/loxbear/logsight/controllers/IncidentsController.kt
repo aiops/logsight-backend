@@ -31,6 +31,8 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     fun getIncidentsBarChartData(authentication: Authentication,
                                  @RequestParam startTime: String,
                                  @RequestParam endTime: String): List<LineChartSeries> {
+        println(startTime)
+        println(endTime)
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
         return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime)
