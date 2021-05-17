@@ -5,9 +5,12 @@ import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject
 import com.loxbear.logsight.charts.elasticsearch.HitParam
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
+import com.loxbear.logsight.entities.LogsightUser
+import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONArray
 
 import org.springframework.stereotype.Service
+import utils.UtilsService
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -15,16 +18,18 @@ import kotlin.system.exitProcess
 
 
 @Service
-class IncidentService(val repository: IncidentRepository) {
+class IncidentService(val repository: IncidentRepository, val applicationService: ApplicationService) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
 
-    fun getTopKIncidentsTableData(esIndexUserApp: String, startTime: String, stopTime: String): List<TopKIncidentTable> {
-
+    fun getTopKIncidentsTableData(esIndexUserApp: String, startTime: String, stopTime: String, user: LogsightUser): List<TopKIncidentTable> {
+        val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         val dataList = mutableListOf<TopKIncidentTable>()
 
         JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime)).getJSONObject("hits").getJSONArray("hits").forEach {
             val jsonData = JSONObject(it.toString())
-            dataList.add(TopKIncidentTable(indexName = jsonData["_index"].toString(),
+            dataList.add(TopKIncidentTable(
+                applicationId = UtilsService.getApplicationIdFromIndex(applications, jsonData["_index"].toString()),
+                indexName = jsonData["_index"].toString(),
                 timestamp = jsonData.getJSONObject("_source")["@timestamp"].toString(),
                 startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
                 stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),

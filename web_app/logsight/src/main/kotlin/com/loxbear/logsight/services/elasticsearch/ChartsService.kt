@@ -1,13 +1,17 @@
 package com.loxbear.logsight.services.elasticsearch
 
 import com.loxbear.logsight.charts.data.*
+import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
+import com.loxbear.logsight.services.ApplicationService
 import org.springframework.stereotype.Service
+import utils.UtilsService
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class ChartsService(val repository: ChartsRepository) {
+class ChartsService(val repository: ChartsRepository,
+                    val applicationService: ApplicationService) {
 
     fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String): List<LineChart> {
 
@@ -54,14 +58,20 @@ class ChartsService(val repository: ChartsRepository) {
     }
 
     fun getSystemOverviewHeatmapChart(esIndexUserAppLogAd: String,
-                                      startTime: String, stopTime: String): SystemOverviewHeatmapChart {
+                                      startTime: String, stopTime: String, user: LogsightUser): SystemOverviewHeatmapChart {
+        val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
         repository.getSystemOverviewHeatmapChartData(esIndexUserAppLogAd,
             startTime,
             stopTime).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
-                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("  "), value = i.valueData.value, extra = PieExtra("")))
+                listPoints.add(HeatMapLogLevelPoint(
+                    name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("  "),
+                    value = i.valueData.value,
+                    extra = PieExtra(""),
+                    id = UtilsService.getApplicationIdFromIndex(applications, i.key))
+                )
             }
 
             heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))

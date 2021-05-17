@@ -1,5 +1,6 @@
 package utils
 
+import javafx.application.Application
 import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -22,6 +23,10 @@ class UtilsService {
 
         //TODO should be improved
         fun getLeadingNumber(param: String): String = param.trim().takeWhile { c -> c.isDigit() || c == '.' }
+
+        fun getApplicationIdFromIndex(applications: Map<String, Long>, index: String): Long {
+            return applications[index.split("_").subList(1, index.split("_").size - 1).joinToString("_")] ?: -1L
+        }
 
     }
 }

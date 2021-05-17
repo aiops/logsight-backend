@@ -6,5 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 data class HeatMapLogLevelPoint (
         val name: String,
         val value: Double,
-        val extra: PieExtra
+        val extra: PieExtra,
+        val id: Long
 )

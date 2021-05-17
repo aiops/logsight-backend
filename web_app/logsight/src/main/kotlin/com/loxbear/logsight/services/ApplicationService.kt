@@ -3,7 +3,6 @@ package com.loxbear.logsight.services
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.entities.enums.ApplicationStatus
-import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.repositories.ApplicationRepository
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -29,8 +28,10 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     fun getApplicationIndexes(user: LogsightUser) =
         findAllByUser(user).joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_ad" }
 
-    fun getApplicationIndexesForIncidents(user: LogsightUser) =
-        findAllByUser(user).joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_incidents" }
+    fun getApplicationIndexesForIncidents(user: LogsightUser, application: Application?) =
+        findAllByUser(user).filter {
+            application?.let { application -> application.id == it.id } ?: true
+        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_incidents" }
 
     @KafkaListener(topics = ["container_settings_ack"])
     @Transactional

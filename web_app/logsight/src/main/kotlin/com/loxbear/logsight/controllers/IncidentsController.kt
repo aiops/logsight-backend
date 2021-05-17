@@ -1,7 +1,6 @@
 package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.charts.data.IncidentTableData
-import com.loxbear.logsight.charts.data.IncidentTimelineData
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.services.ApplicationService
@@ -19,29 +18,35 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
                           val applicationService: ApplicationService) {
 
     @GetMapping("/top_k_incidents")
-    fun getTopKIncidentsTableData(authentication: Authentication): List<TopKIncidentTable> {
+    fun getTopKIncidentsTableData(authentication: Authentication,
+                                  @RequestParam startTime: String,
+                                  @RequestParam endTime: String,
+                                  @RequestParam(required = false) applicationId: Long?): List<TopKIncidentTable> {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
-        val startTime = "now-12h"
-        val stopTime = "now"
-        return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, stopTime)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, endTime, user)
     }
 
     @GetMapping("/bar_chart_data")
     fun getIncidentsBarChartData(authentication: Authentication,
                                  @RequestParam startTime: String,
-                                 @RequestParam endTime: String): List<LineChartSeries> {
+                                 @RequestParam endTime: String,
+                                 @RequestParam(required = false) applicationId: Long?): List<LineChartSeries> {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
         return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime)
     }
 
     @GetMapping("/table_data")
     fun getIncidentsTableData(authentication: Authentication,
                               @RequestParam startTime: String,
-                              @RequestParam endTime: String): IncidentTableData {
+                              @RequestParam endTime: String,
+                              @RequestParam(required = false) applicationId: Long?): IncidentTableData {
         val user = usersService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
         return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime)
     }
 }
