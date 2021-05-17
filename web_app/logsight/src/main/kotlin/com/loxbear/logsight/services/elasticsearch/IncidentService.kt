@@ -67,7 +67,7 @@ class IncidentService(val repository: IncidentRepository) {
                                 val data = JSONObject(JSONArray(one.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
-                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toDateTime()
+                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toString()
                                 val actualLevel = data.getString("actual_level")
                                 val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()

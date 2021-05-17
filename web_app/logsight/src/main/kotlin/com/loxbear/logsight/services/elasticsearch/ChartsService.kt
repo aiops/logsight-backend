@@ -61,8 +61,7 @@ class ChartsService(val repository: ChartsRepository) {
             stopTime).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
-
-                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1, i.key.split("_").size - 1).toString(), value = i.valueData.value, extra = PieExtra("")))
+                listPoints.add(HeatMapLogLevelPoint(name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("  "), value = i.valueData.value, extra = PieExtra("")))
             }
 
             heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))
