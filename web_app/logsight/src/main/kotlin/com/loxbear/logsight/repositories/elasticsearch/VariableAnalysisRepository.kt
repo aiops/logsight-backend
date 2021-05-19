@@ -4,6 +4,7 @@ import com.loxbear.logsight.charts.elasticsearch.LineChartData
 import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -15,7 +16,10 @@ import utils.UtilsService.Companion.readFileAsString
 
 @Repository
 class VariableAnalysisRepository {
-    val restTemplate = RestTemplate()
+    val restTemplate = RestTemplateBuilder()
+        .basicAuthentication("elastic", "elasticsearchpassword")
+        .build();
+
     @Value("\${elasticsearch.url}")
     private val elasticsearchUrl: String? = null
     

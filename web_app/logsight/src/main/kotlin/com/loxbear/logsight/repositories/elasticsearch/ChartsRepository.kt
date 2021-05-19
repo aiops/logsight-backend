@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Repository
 import org.springframework.web.client.RestTemplate
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import utils.UtilsService.Companion.readFileAsString
@@ -19,7 +20,10 @@ import java.time.format.DateTimeFormatter
 
 @Repository
 class ChartsRepository {
-    val restTemplate = RestTemplate()
+    val restTemplate = RestTemplateBuilder()
+    .basicAuthentication("elastic", "elasticsearchpassword")
+    .build();
+//    val restTemplate = RestTemplate()
 
     @Value("\${elasticsearch.url}")
     private val elasticsearchUrl: String = "localhost:9200"
@@ -37,6 +41,7 @@ class ChartsRepository {
         val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
+
         return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 

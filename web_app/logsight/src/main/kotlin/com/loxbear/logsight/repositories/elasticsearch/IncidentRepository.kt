@@ -1,6 +1,7 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Repository
 import org.springframework.web.client.RestTemplate
@@ -10,7 +11,9 @@ import utils.UtilsService.Companion.readFileAsString
 
 @Repository
 class IncidentRepository {
-    val restTemplate = RestTemplate()
+    val restTemplate = RestTemplateBuilder()
+        .basicAuthentication("elastic", "elasticsearchpassword")
+        .build();
 
     @Value("\${elasticsearch.url}")
     private val elasticsearchUrl: String? = null
