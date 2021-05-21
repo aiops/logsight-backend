@@ -24,3 +24,6 @@ kafka:
 
 elasticsearch:
   url: elasticsearch:9200
+
+kibana:
+  url: kibana:5601

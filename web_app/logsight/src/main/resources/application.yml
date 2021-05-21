@@ -25,5 +25,8 @@ kafka:
 elasticsearch:
   url: localhost:9200
 
+kibana:
+  url: localhost:5601
+
 resources:
   path: src/main/resources/

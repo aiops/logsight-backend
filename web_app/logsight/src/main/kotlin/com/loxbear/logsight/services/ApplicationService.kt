@@ -6,20 +6,42 @@ import com.loxbear.logsight.entities.enums.ApplicationStatus
 import com.loxbear.logsight.repositories.ApplicationRepository
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
+import utils.UtilsService
+import utils.UtilsService.Companion.createElasticSearchRequestWithHeaders
 import java.lang.Exception
 import javax.transaction.Transactional
 
 @Service
 class ApplicationService(val repository: ApplicationRepository, val kafkaService: KafkaService) {
     val logger = LoggerFactory.getLogger(ApplicationService::class.java)
+    val restTemplate = RestTemplateBuilder()
+        .basicAuthentication("elastic", "elasticsearchpassword")
+        .build();
+
+    @Value("\${kibana.url}")
+    private val kibanaUrl: String? = null
 
     fun createApplication(name: String, user: LogsightUser): Application {
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         repository.save(application)
         kafkaService.applicationCreated(application)
+        println("APPlications")
+        println(getApplicationIndexes(user))
+        val request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"metadata\" : { \"version\" : 1 }, " +
+                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                    " \"privileges\" : [ \"all\" ]}] }, " +
+                    "\"kibana\": [ { \"base\": [], " +
+                    "\"feature\": { \"discover\": [ \"all\" ], " +
+                    "\"logs\":[ \"all\" ], " +
+                    "\"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }")
+        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
         return application
     }
 
@@ -27,6 +49,14 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
 
     fun getApplicationIndexes(user: LogsightUser) =
         findAllByUser(user).joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_ad" }
+
+    fun getApplicationIndicesForKibana(user: LogsightUser) =
+        findAllByUser(user).joinToString(",") { "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+        }_${it.name}_log_ad\", \"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_count_ad\", \"${
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+        }_${it.name}_incidents\"" }
+
 
     fun getApplicationIndexesForIncidents(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
