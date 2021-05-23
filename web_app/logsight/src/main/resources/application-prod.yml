@@ -26,4 +26,4 @@ elasticsearch:
   url: elasticsearch:9200
 
 kibana:
-  url: kibana:5601
+  url: kibana-demo:5601
