@@ -6,5 +6,7 @@ data class VariableAnalysisHit(
     val params: List<HitParam>,
     val timestamp: String,
     val actualLevel: String,
-    val applicationId: Long
+    val applicationId: Long,
+    val smr: Double,
+    val rate_now: Double
 )

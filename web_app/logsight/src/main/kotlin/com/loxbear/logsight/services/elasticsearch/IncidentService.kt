@@ -75,13 +75,20 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                 val actualLevel = data.getString("actual_level")
                                 val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()
+                                var smr = 0.0
+                                var rate_now = 1.0
+                                try {
+                                    smr = data.getDouble("smrs")
+                                    rate_now = data.getDouble("rate_now")
+                                }catch (e: Exception) {
+                                }
                                 while (keys.hasNext()) {
                                     val key = keys.next()
                                     if (key.startsWith("param_")) {
                                         params.add(HitParam(key, data.getString(key)))
                                     }
                                 }
-                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[data.getString("source")]!!)
+                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[data.getString("source")]!!, smr, rate_now)
                             }
                             list
                         } else {

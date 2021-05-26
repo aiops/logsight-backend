@@ -19,6 +19,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 
 @Service
@@ -43,7 +44,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
                     params.add(HitParam(key, hit.getString(key)))
                 }
             }
-            VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[hit.getString("source")]!!)
+            VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[hit.getString("source")]!!, 0.0,1.0)
         }
     }
 
@@ -119,7 +120,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         val result: MutableMap<String, List<TopNTemplatesData>> = HashMap()
         val top5TemplatesOlderMap = top5TemplatesOlder.map { it.key to it }.toMap()
         val top5TemplatesNowData = top5TemplatesNow.map {
-            val percentageDifference = if (top5TemplatesOlderMap.containsKey(it.key)) (top5TemplatesOlderMap[it.key]!!.docCount / it.docCount) * 100 else 0.0
+            val percentageDifference = if (top5TemplatesOlderMap.containsKey(it.key)) (abs(it.docCount - top5TemplatesOlderMap[it.key]!!.docCount) / top5TemplatesOlderMap[it.key]!!.docCount) * 100 else 0.0
             TopNTemplatesData(template = it.key, count = it.docCount, percentage = String.format("%.1f", percentageDifference).toDouble())
         }
         result["now"] = top5TemplatesNowData
