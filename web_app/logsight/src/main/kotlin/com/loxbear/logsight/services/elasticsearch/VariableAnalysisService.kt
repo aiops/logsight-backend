@@ -7,9 +7,10 @@ import com.loxbear.logsight.charts.elasticsearch.ResultBucket
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisSpecificTemplate
 import com.loxbear.logsight.entities.Application
+import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.TopNTemplatesData
 import com.loxbear.logsight.repositories.elasticsearch.VariableAnalysisRepository
-import org.elasticsearch.cluster.routing.UnassignedInfo.DATE_TIME_FORMATTER
+import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import utils.UtilsService
@@ -18,15 +19,16 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 
 @Service
-class VariableAnalysisService(val repository: VariableAnalysisRepository) {
+class VariableAnalysisService(val repository: VariableAnalysisRepository,
+                              val applicationService: ApplicationService) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
 
-    fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?): List<VariableAnalysisHit> {
+    fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?, user: LogsightUser): List<VariableAnalysisHit> {
         val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
+        val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         return resp.getJSONObject("hits").getJSONArray("hits").map {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
             val template = hit.getString("template")
@@ -41,7 +43,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository) {
                     params.add(HitParam(key, hit.getString(key)))
                 }
             }
-            VariableAnalysisHit(message, template, params, timeStamp, actualLevel)
+            VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[hit.getString("source")]!!)
         }
     }
 

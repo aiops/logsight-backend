@@ -47,6 +47,6 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
         val user = usersService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime)
+        return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime, user)
     }
 }

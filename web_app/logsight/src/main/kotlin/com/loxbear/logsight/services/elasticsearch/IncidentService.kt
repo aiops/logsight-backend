@@ -14,7 +14,6 @@ import utils.UtilsService
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.system.exitProcess
 
 
 @Service
@@ -58,9 +57,9 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         }
     }
 
-    fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String): IncidentTableData {
+    fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String, user: LogsightUser): IncidentTableData {
         val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
-
+        val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
@@ -82,7 +81,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                         params.add(HitParam(key, data.getString(key)))
                                     }
                                 }
-                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel)
+                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[data.getString("source")]!!)
                             }
                             list
                         } else {
