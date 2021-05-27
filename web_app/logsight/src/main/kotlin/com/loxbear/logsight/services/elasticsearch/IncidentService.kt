@@ -61,8 +61,8 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
-            .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
-                val app_name = JSONObject(it.toString()).getString("_index").split("_").subList(1,JSONObject(it.toString()).getString("_index").split("_").size-1).joinToString("_")
+            .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData()) { acc, it ->
+                val app_name = JSONObject(it.toString()).getString("_index").split("_").subList(1, JSONObject(it.toString()).getString("_index").split("_").size - 1).joinToString("_")
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
                 val incidentTableData = anomalies.mapIndexed { index: Int, anomaly: String ->
                     if (tableData.has(anomaly)) {
@@ -72,7 +72,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                 val data = JSONObject(JSONArray(one.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
-                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toString()
+                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toDateTime()
                                 val actualLevel = data.getString("actual_level")
                                 val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()
@@ -81,7 +81,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                 try {
                                     smr = data.getDouble("smrs")
                                     rate_now = data.getDouble("rate_now")
-                                }catch (e: Exception) {
+                                } catch (e: Exception) {
                                 }
                                 while (keys.hasNext()) {
                                     val key = keys.next()
@@ -110,7 +110,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                     new_templates = acc.newTemplates + newTemplates,
                     semantic_ad = acc.semanticAd + semanticAd,
                 )
-            })
+            }
     }
 
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
