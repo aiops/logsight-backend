@@ -62,6 +62,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData(), { acc, it ->
+                val app_name = JSONObject(it.toString()).getString("_index").split("_").subList(1,JSONObject(it.toString()).getString("_index").split("_").size-1).joinToString("_")
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
                 val incidentTableData = anomalies.mapIndexed { index: Int, anomaly: String ->
                     if (tableData.has(anomaly)) {
@@ -88,7 +89,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                         params.add(HitParam(key, data.getString(key)))
                                     }
                                 }
-                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[data.getString("source")]!!, smr, rate_now)
+                                anomalies[index] to VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[app_name]!!, smr, rate_now)
                             }
                             list
                         } else {
