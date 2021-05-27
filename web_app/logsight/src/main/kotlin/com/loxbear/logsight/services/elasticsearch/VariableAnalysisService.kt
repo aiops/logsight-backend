@@ -30,6 +30,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
     fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?, user: LogsightUser): List<VariableAnalysisHit> {
         val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
+        val app_name = es_index_user_app.split("_").subList(1,es_index_user_app.split("_").size-1).joinToString("_")
         return resp.getJSONObject("hits").getJSONArray("hits").map {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
             val template = hit.getString("template")
@@ -44,7 +45,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
                     params.add(HitParam(key, hit.getString(key)))
                 }
             }
-            VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[hit.getString("source")]!!, 0.0,1.0)
+            VariableAnalysisHit(message, template, params, timeStamp, actualLevel, applications[app_name]!!, 0.0,1.0)
         }
     }
 
