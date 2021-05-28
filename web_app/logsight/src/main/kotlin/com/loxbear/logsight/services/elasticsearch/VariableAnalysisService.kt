@@ -73,7 +73,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
             val lineChartSeries = specificTemplateData.mapNotNull {
                 try {
                     val parsed = UtilsService.getLeadingNumber(it.param)
-                    LineChartSeries(name = it.timestamp.toHourMinute(), value = parsed.toDouble())
+                    LineChartSeries(name = it.timestamp.toDateTime(), value = parsed.toDouble())
                 } catch (nfe: NumberFormatException) {
                     null
                 }
@@ -147,10 +147,9 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         return listOf(LineChart("Log Count", lineChartSeries))
     }
 
-    fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
-    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))
+    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
     fun LocalDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"))
-
 }
 
