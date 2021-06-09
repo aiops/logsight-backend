@@ -29,9 +29,6 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         repository.save(application)
-        kafkaService.applicationCreated(application)
-        println("APPlications")
-        println(getApplicationIndexes(user))
         val request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }, " +
                     "\"elasticsearch\": { \"cluster\" : [ ], " +
@@ -42,6 +39,8 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
                     "\"logs\":[ \"all\" ], " +
                     "\"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }")
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+        kafkaService.applicationCreated(application)
+
         return application
     }
 

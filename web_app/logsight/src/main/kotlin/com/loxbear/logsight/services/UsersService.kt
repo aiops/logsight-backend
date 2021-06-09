@@ -20,7 +20,8 @@ import utils.UtilsService
 
 @Service
 class UsersService(val repository: UserRepository,
-                   val emailService: EmailService) {
+                   val emailService: EmailService,
+                    val applicationService: ApplicationService) {
 
     val logger = LoggerFactory.getLogger(UsersService::class.java)
     val restTemplate = RestTemplateBuilder()
@@ -38,7 +39,12 @@ class UsersService(val repository: UserRepository,
             if (repository.findByEmail(email).isPresent) {
                 throw Exception("User with email $email already exists")
             }
-            repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
+            val user = repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
+            createPersonalKibana(user)
+            applicationService.createApplication("compute_sample_app", user)
+            applicationService.createApplication("auth_sample_app", user)
+            applicationService.createApplication("auth2_sample_app", user)
+            user
         }
 
     }
@@ -59,13 +65,9 @@ class UsersService(val repository: UserRepository,
     @Transactional
     fun activateUser(key: String): UserModel {
         logger.info("Activating user with key [{}]", key)
-
-
-
         val user = findByKey(key)
         repository.activateUser(key)
         with(user) {
-            createPersonalKibana(user)
             return UserModel(id = id, email = email, activated = activated, key = key)
         }
     }
