@@ -27,7 +27,7 @@ class ApplicationController(
         return applicationService.findAllByUser(user)
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}")
     fun deleteApplication(@PathVariable id: Long) {
         applicationService.deleteApplication(id)
     }
