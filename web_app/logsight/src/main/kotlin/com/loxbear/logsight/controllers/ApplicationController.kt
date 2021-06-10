@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/applications")
-class ApplicationController(val applicationService: ApplicationService,
-                            val usersService: UsersService) {
+class ApplicationController(
+    val applicationService: ApplicationService,
+    val usersService: UsersService
+) {
 
     @PostMapping
     fun createApplication(@RequestBody body: ApplicationRequest): Application {
@@ -23,5 +25,10 @@ class ApplicationController(val applicationService: ApplicationService,
     fun getApplicationsForUser(@PathVariable key: String): List<Application> {
         val user = usersService.findByKey(key)
         return applicationService.findAllByUser(user)
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteApplication(@PathVariable id: Long) {
+        applicationService.deleteApplication(id)
     }
 }
