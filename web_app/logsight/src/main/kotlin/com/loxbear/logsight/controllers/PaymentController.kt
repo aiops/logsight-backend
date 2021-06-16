@@ -20,7 +20,7 @@ class PaymentController {
 
     fun init() {
         Stripe.apiKey =
-            "sk_test_51J2hYvL4BgW4lbGurDXQe6WalAumK7iPH3e8Y1nUHOEQ7PFQKuHItA47NsWTFyczGusKCJ64jDgrmV1aYwwRKOHU00TRTO9Rg5"
+            "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
     }
 
     @Throws(StripeException::class)
@@ -29,21 +29,13 @@ class PaymentController {
         init()
         val params: SessionCreateParams = SessionCreateParams.builder() // We will use the credit card payment method
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-            .setMode(SessionCreateParams.Mode.PAYMENT).setSuccessUrl(payment.successUrl)
+            .setMode(SessionCreateParams.Mode.SUBSCRIPTION).setSuccessUrl(payment.successUrl)
             .setCancelUrl(
                 payment.cancelUrl
             )
             .addLineItem(
                 SessionCreateParams.LineItem.builder().setQuantity(payment.quantity)
-                    .setPriceData(
-                        SessionCreateParams.LineItem.PriceData.builder()
-                            .setCurrency(payment.currency).setUnitAmount(payment.amount)
-                            .setProductData(
-                                SessionCreateParams.LineItem.PriceData.ProductData
-                                    .builder().setName(payment.name).build()
-                            )
-                            .build()
-                    )
+                    .setPrice(payment.priceID)
                     .build()
             )
             .build()

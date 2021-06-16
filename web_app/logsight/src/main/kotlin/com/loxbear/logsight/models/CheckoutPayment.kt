@@ -6,5 +6,6 @@ data class CheckoutPayment(
     val successUrl: String,
     val cancelUrl: String,
     val amount: Long,
-    val quantity: Long
+    val quantity: Long,
+    val priceID: String
 )
