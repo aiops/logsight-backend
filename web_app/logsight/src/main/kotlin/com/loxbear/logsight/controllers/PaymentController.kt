@@ -3,13 +3,13 @@ package com.loxbear.logsight.controllers
 import com.google.gson.Gson
 import com.loxbear.logsight.models.CheckoutPayment
 import com.stripe.Stripe
+import com.stripe.exception.SignatureVerificationException
 import com.stripe.exception.StripeException
 import com.stripe.model.checkout.Session
+import com.stripe.net.Webhook
 import com.stripe.param.checkout.SessionCreateParams
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 
 
 @RestController
@@ -42,6 +42,49 @@ class PaymentController {
         val session: Session = Session.create(params)
         val responseData: MutableMap<String, String> = HashMap()
         responseData["id"] = session.id
+        return gson.toJson(responseData)
+    }
+
+    @PostMapping("/webhook")
+    fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
+        val sigHeader: String = request.getHeader("Stripe-Signature")
+        val endpointSecret: String = "STRIPE_WEBHOOK_SECRET"
+
+        val event = try {
+            Webhook.constructEvent(json, sigHeader, endpointSecret)
+        } catch (e: SignatureVerificationException) {
+            // Invalid signature
+            return ""
+        }
+
+        when (event?.type) {
+            "checkout.session.completed" -> {
+            }
+            "invoice.paid" -> {
+            }
+            "invoice.payment_failed" -> {
+            }
+            else -> {
+            }
+        }
+
+        return ""
+    }
+
+
+    //not working for now
+    @PostMapping("/customer_portal/{id}")
+    fun customerPortal(@PathVariable id: String): String? {
+        val customer = id
+        val domainUrl = "http://localhost:4200"
+
+        val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
+            .setReturnUrl(domainUrl)
+            .setCustomer(customer)
+            .build()
+        val portalsession = com.stripe.model.billingportal.Session.create(params)
+        val responseData: MutableMap<String, Any> = HashMap()
+        responseData["url"] = portalsession.url
         return gson.toJson(responseData)
     }
 }
