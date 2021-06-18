@@ -28,7 +28,6 @@ class PaymentController {
     @Throws(StripeException::class)
     @PostMapping
     fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment): String? {
-        logger.info("Payment subscription [{}]", payment)
         init()
         val params: SessionCreateParams = SessionCreateParams.builder() // We will use the credit card payment method
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
@@ -53,7 +52,7 @@ class PaymentController {
         init()
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
-        val endpointSecret: String = "STRIPE_WEBHOOK_SECRET"
+        val endpointSecret: String = "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
 
         val event = try {
             Webhook.constructEvent(json, sigHeader, endpointSecret)
