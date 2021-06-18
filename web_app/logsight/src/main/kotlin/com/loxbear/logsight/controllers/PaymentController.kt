@@ -49,7 +49,7 @@ class PaymentController (val usersService: UsersService){
     }
 
     @PostMapping("/webhook")
-    fun webhook(authentication: Authentication, request: HttpServletRequest, @RequestBody json: String): String? {
+    fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
         init()
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
@@ -64,9 +64,6 @@ class PaymentController (val usersService: UsersService){
 
         when (event?.type) {
             "checkout.session.completed" -> {
-                val user = usersService.findByEmail(authentication.name)
-                println("User:")
-                println(user)
             }
             "invoice.paid" -> {
                 // is_active = 1
@@ -86,7 +83,8 @@ class PaymentController (val usersService: UsersService){
     fun customerPortal(@PathVariable id: String, authentication: Authentication): String? {
         init()
         val user = usersService.findByEmail(authentication.name)
-
+        println("USER:")
+        println(user)
         val customer = "cus_JgRuT7L6zbjtic"
         val domainUrl = "http://localhost:4200"
 
