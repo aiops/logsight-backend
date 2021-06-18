@@ -50,6 +50,7 @@ class PaymentController {
 
     @PostMapping("/webhook")
     fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
+        init()
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
         val endpointSecret: String = "STRIPE_WEBHOOK_SECRET"
@@ -63,6 +64,7 @@ class PaymentController {
 
         when (event?.type) {
             "checkout.session.completed" -> {
+                println("Checkout session completed!!!")
             }
             "invoice.paid" -> {
             }
@@ -76,10 +78,12 @@ class PaymentController {
     }
 
 
-    //not working for now
+    //not working completely for now, costumer ID should be added here
     @PostMapping("/customer_portal/{id}")
     fun customerPortal(@PathVariable id: String): String? {
-        val customer = id
+        init()
+        println("Initialized")
+        val customer = "cus_JgRuT7L6zbjtic"
         val domainUrl = "http://localhost:4200"
 
         val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
