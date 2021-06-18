@@ -63,12 +63,21 @@ class PaymentController (val usersService: UsersService){
         }
 
         when (event?.type) {
+
+            "customer.created" -> {
+                //add the customer id to the user table
+            }
+
             "checkout.session.completed" -> {
+                // add the costumer
             }
             "invoice.paid" -> {
-                // is_active = 1
+                // add is_active_subscription = 1 in user table
+                // and send on kafka topic to enable sending of data
             }
             "invoice.payment_failed" -> {
+                // add is_active_subscription = 0 in user table
+                // and send on kafka topic to forbid sending of data
             }
             else -> {
             }
