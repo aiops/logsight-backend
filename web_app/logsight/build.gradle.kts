@@ -35,6 +35,8 @@ dependencies {
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
+    implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
+
 }
 
 tasks.withType<KotlinCompile> {
