@@ -10,13 +10,14 @@ import com.stripe.model.checkout.Session
 import com.stripe.net.Webhook
 import com.stripe.param.checkout.SessionCreateParams
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
 
 @RestController
 @RequestMapping("/api/payments")
-class PaymentController {
+class PaymentController (val usersService: UsersService){
     val logger = LoggerFactory.getLogger(PaymentController::class.java)
     private val gson = Gson()
 
@@ -48,7 +49,7 @@ class PaymentController {
     }
 
     @PostMapping("/webhook")
-    fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
+    fun webhook(authentication: Authentication, request: HttpServletRequest, @RequestBody json: String): String? {
         init()
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
@@ -63,9 +64,12 @@ class PaymentController {
 
         when (event?.type) {
             "checkout.session.completed" -> {
-                println("Checkout session completed!!!")
+                val user = usersService.findByEmail(authentication.name)
+                println("User:")
+                println(user)
             }
             "invoice.paid" -> {
+                // is_active = 1
             }
             "invoice.payment_failed" -> {
             }
@@ -79,9 +83,10 @@ class PaymentController {
 
     //not working completely for now, costumer ID should be added here
     @PostMapping("/customer_portal/{id}")
-    fun customerPortal(@PathVariable id: String): String? {
+    fun customerPortal(@PathVariable id: String, authentication: Authentication): String? {
         init()
-        println("Initialized")
+        val user = usersService.findByEmail(authentication.name)
+
         val customer = "cus_JgRuT7L6zbjtic"
         val domainUrl = "http://localhost:4200"
 
