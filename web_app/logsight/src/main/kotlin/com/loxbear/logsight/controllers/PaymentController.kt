@@ -2,6 +2,8 @@ package com.loxbear.logsight.controllers
 
 import com.google.gson.Gson
 import com.loxbear.logsight.models.CheckoutPayment
+import com.loxbear.logsight.services.KafkaService
+import com.loxbear.logsight.services.PaymentService
 import com.loxbear.logsight.services.UsersService
 import com.stripe.Stripe
 import com.stripe.exception.SignatureVerificationException
@@ -9,6 +11,7 @@ import com.stripe.exception.StripeException
 import com.stripe.model.checkout.Session
 import com.stripe.net.Webhook
 import com.stripe.param.checkout.SessionCreateParams
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -17,7 +20,11 @@ import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/payments")
-class PaymentController (val usersService: UsersService){
+class PaymentController(
+    val usersService: UsersService,
+    val paymentService: PaymentService,
+    val kafkaService: KafkaService
+) {
     val logger = LoggerFactory.getLogger(PaymentController::class.java)
     private val gson = Gson()
 
@@ -49,8 +56,9 @@ class PaymentController (val usersService: UsersService){
     }
 
     @PostMapping("/webhook")
-    fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
+    fun webhook(request: HttpServletRequest, @RequestBody json: String, authentication: Authentication): String? {
         init()
+        val user = usersService.findByEmail(authentication.name)
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
         val endpointSecret: String = "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
@@ -62,6 +70,7 @@ class PaymentController (val usersService: UsersService){
             return ""
         }
 
+        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
         when (event?.type) {
 
             "customer.created" -> {
@@ -72,10 +81,16 @@ class PaymentController (val usersService: UsersService){
                 // add the costumer
             }
             "invoice.paid" -> {
+                logger.info("Received [invoice.paid] for user [{}] with stripeCustomerId [{}]", user, customerId)
+                paymentService.paymentSuccessful(user, customerId)
+                kafkaService.updatePayment(user.key, true)
                 // add is_active_subscription = 1 in user table
                 // and send on kafka topic to enable sending of data
             }
             "invoice.payment_failed" -> {
+                logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)
+                paymentService.updateHasPaid(user, false)
+                kafkaService.updatePayment(user.key, false)
                 // add is_active_subscription = 0 in user table
                 // and send on kafka topic to forbid sending of data
             }

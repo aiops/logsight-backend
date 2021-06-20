@@ -24,4 +24,16 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
     )
     fun activateUser(key: String)
 
+    @Modifying
+    @Query(
+        """update LogsightUser u set u.hasPaid = true, u.stripeCustomerId = :customerId where u.id = :id"""
+    )
+    fun updateCustomerIdAndHasPaid(customerId: String?, id: Long)
+
+    @Modifying
+    @Query(
+        """update LogsightUser u set u.hasPaid = :hasPaid where u.id = :id"""
+    )
+    fun updateHasPaid(hasPaid: Boolean, id: Long)
+
 }
