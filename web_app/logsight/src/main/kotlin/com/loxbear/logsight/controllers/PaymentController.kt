@@ -50,15 +50,15 @@ class PaymentController(
             )
             .build()
         val session: Session = Session.create(params)
+
         val responseData: MutableMap<String, String> = HashMap()
         responseData["id"] = session.id
         return gson.toJson(responseData)
     }
 
     @PostMapping("/webhook")
-    fun webhook(request: HttpServletRequest, @RequestBody json: String, authentication: Authentication): String? {
+    fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
         init()
-        val user = usersService.findByEmail(authentication.name)
         logger.info("Webhook [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
         val endpointSecret: String = "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
@@ -71,6 +71,9 @@ class PaymentController(
         }
 
         val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
+        val customerEmail = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer_email")
+        val user = usersService.findByEmail(customerEmail)
+
         when (event?.type) {
 
             "customer.created" -> {
