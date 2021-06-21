@@ -17,4 +17,9 @@ class KafkaService(val kafkaTemplate: KafkaTemplate<String, String>) {
             kafkaTemplate.send("container_settings", message.toString())
         }
     }
+
+    fun updatePayment(userKey: String, hasPaid: Boolean) {
+        val message = JSONObject().put("is_active", if (hasPaid) 1 else 0)
+        kafkaTemplate.send("${userKey}_subscription", message.toString())
+    }
 }

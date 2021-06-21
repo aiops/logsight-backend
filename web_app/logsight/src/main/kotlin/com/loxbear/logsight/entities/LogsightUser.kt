@@ -28,9 +28,13 @@ data class LogsightUser(
     @Column(name = "activated", nullable = false)
     val activated: Boolean = false,
 
+    @Column(name = "has_paid", nullable = false)
+    val hasPaid: Boolean = false,
 
-    ) {
+    @Column(name = "stripe_customer_id")
+    val stripeCustomerId: String? = null,
+) {
     override fun toString(): String {
-        return "LogsightUser(id=$id, email='$email', password='$password', key='$key', dateCreated=$dateCreated, activationDate=$activationDate, activated=$activated)"
+        return "LogsightUser(id=$id, email='$email')"
     }
 }
