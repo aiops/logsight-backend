@@ -76,6 +76,10 @@ class UsersService(val repository: UserRepository,
         return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
     }
 
+    fun findByStripeCustomerID(id: String): LogsightUser {
+        return repository.findByStripeCustomerId(id).orElseThrow { Exception("User with StripeID $id not found") }
+    }
+
     fun createPersonalKibana(user: LogsightUser){
         val userKey = user.key
         var request = UtilsService.createKibanaRequestWithHeaders(

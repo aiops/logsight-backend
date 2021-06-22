@@ -18,11 +18,19 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
 
     fun findByKey(key: String): Optional<LogsightUser>
 
+    fun findByStripeCustomerId(key: String): Optional<LogsightUser>
+
     @Modifying
     @Query(
         """update LogsightUser u set u.activated = true where u.key = :key"""
     )
     fun activateUser(key: String)
+
+    @Modifying
+    @Query(
+        """update LogsightUser u set u.stripeCustomerId = :customerId where u.id = :id"""
+    )
+    fun createCustomerId(customerId: String?, id: Long)
 
     @Modifying
     @Query(
