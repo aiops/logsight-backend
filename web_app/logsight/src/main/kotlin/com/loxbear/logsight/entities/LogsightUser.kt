@@ -33,6 +33,12 @@ data class LogsightUser(
 
     @Column(name = "stripe_customer_id")
     val stripeCustomerId: String? = null,
+
+    @Column(name = "used_data")
+    val usedData: Long = 0L,
+
+    @Column(name = "available_data")
+    val availableData: Long = 1000000000L,
 ) {
     override fun toString(): String {
         return "LogsightUser(id=$id, email='$email')"

@@ -8,8 +8,10 @@ import com.loxbear.logsight.services.UsersService
 import com.stripe.Stripe
 import com.stripe.exception.SignatureVerificationException
 import com.stripe.exception.StripeException
+import com.stripe.model.Customer
 import com.stripe.model.checkout.Session
 import com.stripe.net.Webhook
+import com.stripe.param.CustomerCreateParams
 import com.stripe.param.checkout.SessionCreateParams
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -35,10 +37,26 @@ class PaymentController(
 
     @Throws(StripeException::class)
     @PostMapping
-    fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment): String? {
+    fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment, authentication: Authentication): String? {
         init()
-        val params: SessionCreateParams = SessionCreateParams.builder() // We will use the credit card payment method
+        val user = usersService.findByEmail(authentication.name)
+        var stripeCustomerID: String
+
+        if (user.stripeCustomerId == null){
+            val customerParams = CustomerCreateParams
+                .builder()
+                .setEmail(payment.email)
+                .build()
+            val customer = Customer.create(customerParams)
+            stripeCustomerID = customer.id
+            paymentService.createCustomerId(user, customer.id)
+        }else{
+            stripeCustomerID = user.stripeCustomerId
+        }
+
+        val params: SessionCreateParams = SessionCreateParams.builder()
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+            .setCustomer(stripeCustomerID)
             .setMode(SessionCreateParams.Mode.SUBSCRIPTION).setSuccessUrl(payment.successUrl)
             .setCancelUrl(
                 payment.cancelUrl
@@ -50,7 +68,6 @@ class PaymentController(
             )
             .build()
         val session: Session = Session.create(params)
-
         val responseData: MutableMap<String, String> = HashMap()
         responseData["id"] = session.id
         return gson.toJson(responseData)
@@ -66,36 +83,33 @@ class PaymentController(
         val event = try {
             Webhook.constructEvent(json, sigHeader, endpointSecret)
         } catch (e: SignatureVerificationException) {
-            // Invalid signature
             return ""
         }
 
-        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
-        val customerEmail = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer_email")
-        val user = usersService.findByEmail(customerEmail)
+        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("quantity")
+        val user = usersService.findByStripeCustomerID(customerId)
 
         when (event?.type) {
 
-            "customer.created" -> {
-                //add the customer id to the user table
-            }
-
-            "checkout.session.completed" -> {
-                // add the costumer
-            }
+//            "customer.created" -> {
+//                //add the customer id to the user table
+//            }
+//
+//            "checkout.session.completed" -> {
+//                // add the costumer
+//            }
             "invoice.paid" -> {
                 logger.info("Received [invoice.paid] for user [{}] with stripeCustomerId [{}]", user, customerId)
-                paymentService.paymentSuccessful(user, customerId)
+                val availableData = JSONObject(event.dataObjectDeserializer.rawJson).getLong("quantity")
+                println("Available data:")
+                println(availableData)
+                paymentService.paymentSuccessful(user, customerId, availableData)
                 kafkaService.updatePayment(user.key, true)
-                // add is_active_subscription = 1 in user table
-                // and send on kafka topic to enable sending of data
             }
             "invoice.payment_failed" -> {
                 logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)
                 paymentService.updateHasPaid(user, false)
                 kafkaService.updatePayment(user.key, false)
-                // add is_active_subscription = 0 in user table
-                // and send on kafka topic to forbid sending of data
             }
             else -> {
             }
@@ -106,18 +120,16 @@ class PaymentController(
 
 
     //not working completely for now, costumer ID should be added here
-    @PostMapping("/customer_portal/{id}")
-    fun customerPortal(@PathVariable id: String, authentication: Authentication): String? {
+    @PostMapping("/customer_portal")
+    fun customerPortal(authentication: Authentication): String? {
         init()
         val user = usersService.findByEmail(authentication.name)
-        println("USER:")
-        println(user)
-        val customer = "cus_JgRuT7L6zbjtic"
+        val stripeCustomerID = user.stripeCustomerId
         val domainUrl = "http://localhost:4200"
 
         val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
             .setReturnUrl(domainUrl)
-            .setCustomer(customer)
+            .setCustomer(stripeCustomerID)
             .build()
         val portalsession = com.stripe.model.billingportal.Session.create(params)
         val responseData: MutableMap<String, Any> = HashMap()

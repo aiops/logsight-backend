@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class EmailService(val emailConfiguration: EmailConfiguration,
-                   @Value("\${app.baseUrl}") val baseUrl: String) {
+class EmailService(
+    val emailConfiguration: EmailConfiguration,
+    @Value("\${app.baseUrl}") val baseUrl: String
+) {
 
     fun sendActivationEmail(user: LogsightUser) {
         val activationUrl = "$baseUrl/auth/activate/${user.key}"
@@ -27,6 +29,12 @@ class EmailService(val emailConfiguration: EmailConfiguration,
         message.setSubject("Activate your account")
         message.setText(body)
         sender.send(message)
+    }
+
+    fun sendAvailableDataExceededEmail(user: LogsightUser) {
+        val emailTo = user.email
+        val body = "Your data has exceeded" //put a good message here
+        sendEmail(emailTo, body)
     }
 
 }

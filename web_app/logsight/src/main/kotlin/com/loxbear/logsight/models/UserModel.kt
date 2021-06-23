@@ -5,4 +5,7 @@ data class UserModel(
     val email: String,
     val key: String,
     val activated: Boolean,
+    val hasPaid: Boolean,
+    val availableData: Long,
+    val usedData: Long
 )

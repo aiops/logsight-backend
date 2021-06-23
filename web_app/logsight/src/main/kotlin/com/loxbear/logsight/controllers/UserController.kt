@@ -14,7 +14,8 @@ class UserController(val usersService: UsersService) {
     fun getUser(authentication: Authentication): UserModel {
         val user = usersService.findByEmail(authentication.name)
         with(user) {
-            return UserModel(id = id, email = email, activated = activated, key = key)
+            return UserModel(id = id, email = email, activated = activated, key = key, availableData = availableData,
+                usedData = usedData, hasPaid = hasPaid)
         }
     }
 }

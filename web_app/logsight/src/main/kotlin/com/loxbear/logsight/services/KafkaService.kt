@@ -22,4 +22,10 @@ class KafkaService(val kafkaTemplate: KafkaTemplate<String, String>) {
         val message = JSONObject().put("is_active", if (hasPaid) 1 else 0)
         kafkaTemplate.send("${userKey}_subscription", message.toString())
     }
+
+    //private_key + '_application_stats'
+    //quantity
+    //proverka ako e nadminato
+    //mail da se prati mail do userot
+    // na profilot da pokazhuva momentalna sostojba
 }

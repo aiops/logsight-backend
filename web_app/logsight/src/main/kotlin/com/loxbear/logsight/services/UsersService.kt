@@ -12,6 +12,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.postForEntity
@@ -19,9 +20,12 @@ import utils.KeyGenerator
 import utils.UtilsService
 
 @Service
-class UsersService(val repository: UserRepository,
-                   val emailService: EmailService,
-                    val applicationService: ApplicationService) {
+class UsersService(
+    val repository: UserRepository,
+    val emailService: EmailService,
+    val applicationService: ApplicationService,
+    val kafkaService: KafkaService
+) {
 
     val logger = LoggerFactory.getLogger(UsersService::class.java)
     val restTemplate = RestTemplateBuilder()
@@ -39,7 +43,8 @@ class UsersService(val repository: UserRepository,
             if (repository.findByEmail(email).isPresent) {
                 throw Exception("User with email $email already exists")
             }
-            val user = repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
+            val user =
+                repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
             createPersonalKibana(user)
             applicationService.createApplication("compute_sample_app", user)
             applicationService.createApplication("auth_sample_app", user)
@@ -60,7 +65,8 @@ class UsersService(val repository: UserRepository,
         }
     }
 
-    fun findByKey(key: String): LogsightUser = repository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
+    fun findByKey(key: String): LogsightUser =
+        repository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
 
     @Transactional
     fun activateUser(key: String): UserModel {
@@ -68,7 +74,8 @@ class UsersService(val repository: UserRepository,
         val user = findByKey(key)
         repository.activateUser(key)
         with(user) {
-            return UserModel(id = id, email = email, activated = activated, key = key)
+            return UserModel(id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
+                availableData = availableData, usedData = usedData)
         }
     }
 
@@ -76,27 +83,50 @@ class UsersService(val repository: UserRepository,
         return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
     }
 
-    fun createPersonalKibana(user: LogsightUser){
+    fun findByStripeCustomerID(id: String): LogsightUser {
+        return repository.findByStripeCustomerId(id).orElseThrow { Exception("User with StripeID $id not found") }
+    }
+
+    fun createPersonalKibana(user: LogsightUser) {
         val userKey = user.key
         var request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"id\": \"kibana_space_$userKey\", " +
-                    "\"name\": \"Logsight\", " +
-                    "\"description\" : \"This is your Logsight Space\" }")
+                "\"name\": \"Logsight\", " +
+                "\"description\" : \"This is your Logsight Space\" }"
+        )
 
         restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
 
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
-                    "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], " +
-                    "\"logs\":[ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
-                    "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }")
+                "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], " +
+                "\"logs\":[ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
+        )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
 
         request = UtilsService.createElasticSearchRequestWithHeaders(
             "{ \"password\" : \"test-test\", " +
-                    "\"roles\" : [\"kibana_role_$userKey\"] }")
+                "\"roles\" : [\"kibana_role_$userKey\"] }"
+        )
         restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
 
+    }
+
+    @KafkaListener(topics = ["application_stats"], groupId = "1")
+    fun applicationStatsChange(message: String) {
+        val json = JSONObject(message)
+        updateUsedData(json.getString("private_key"), json.getLong("quantity"))
+    }
+
+    @Transactional
+    fun updateUsedData(key: String, usedData: Long) {
+        val user = findByKey(key)
+        repository.updateUsedData(key, user.usedData + usedData)
+        if (usedData > user.availableData) {
+            emailService.sendAvailableDataExceededEmail(user)
+            kafkaService.updatePayment(user.key, false)
+        }
     }
 
 }
