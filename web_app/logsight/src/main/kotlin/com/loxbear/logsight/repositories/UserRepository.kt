@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.math.BigInteger
 import java.util.*
 
 @Repository
@@ -34,9 +35,9 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
 
     @Modifying
     @Query(
-        """update LogsightUser u set u.hasPaid = true, u.stripeCustomerId = :customerId where u.id = :id"""
+        """update LogsightUser u set u.availableData = :availableData, u.hasPaid = true, u.stripeCustomerId = :customerId where u.id = :id"""
     )
-    fun updateCustomerIdAndHasPaid(customerId: String?, id: Long)
+    fun updateCustomerIdAndHasPaidandAndAvailableData(customerId: String?, id: Long, availableData: Long)
 
     @Modifying
     @Query(

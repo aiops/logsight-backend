@@ -86,31 +86,30 @@ class PaymentController(
             return ""
         }
 
-        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
+        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("quantity")
         val user = usersService.findByStripeCustomerID(customerId)
 
         when (event?.type) {
 
-            "customer.created" -> {
-                //add the customer id to the user table
-            }
-
-            "checkout.session.completed" -> {
-                // add the costumer
-            }
+//            "customer.created" -> {
+//                //add the customer id to the user table
+//            }
+//
+//            "checkout.session.completed" -> {
+//                // add the costumer
+//            }
             "invoice.paid" -> {
                 logger.info("Received [invoice.paid] for user [{}] with stripeCustomerId [{}]", user, customerId)
-                paymentService.paymentSuccessful(user, customerId)
+                val availableData = JSONObject(event.dataObjectDeserializer.rawJson).getLong("quantity")
+                println("Available data:")
+                println(availableData)
+                paymentService.paymentSuccessful(user, customerId, availableData)
                 kafkaService.updatePayment(user.key, true)
-                // add is_active_subscription = 1 in user table
-                // and send on kafka topic to enable sending of data
             }
             "invoice.payment_failed" -> {
                 logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)
                 paymentService.updateHasPaid(user, false)
                 kafkaService.updatePayment(user.key, false)
-                // add is_active_subscription = 0 in user table
-                // and send on kafka topic to forbid sending of data
             }
             else -> {
             }

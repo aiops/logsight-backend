@@ -21,7 +21,8 @@ import utils.UtilsService
 @Service
 class UsersService(val repository: UserRepository,
                    val emailService: EmailService,
-                    val applicationService: ApplicationService) {
+                    val applicationService: ApplicationService,
+                    val kafkaService: KafkaService) {
 
     val logger = LoggerFactory.getLogger(UsersService::class.java)
     val restTemplate = RestTemplateBuilder()
@@ -109,6 +110,7 @@ class UsersService(val repository: UserRepository,
         repository.updateUsedData(key, usedData)
         if (usedData > user.availableData) {
             emailService.sendAvailableDataExceededEmail(user)
+            kafkaService.updatePayment(user.key, false)
         }
     }
 
