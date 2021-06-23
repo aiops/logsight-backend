@@ -74,7 +74,8 @@ class UsersService(
         val user = findByKey(key)
         repository.activateUser(key)
         with(user) {
-            return UserModel(id = id, email = email, activated = activated, key = key)
+            return UserModel(id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
+                availableData = availableData, usedData = usedData)
         }
     }
 
@@ -121,7 +122,7 @@ class UsersService(
     @Transactional
     fun updateUsedData(key: String, usedData: Long) {
         val user = findByKey(key)
-        repository.updateUsedData(key, usedData)
+        repository.updateUsedData(key, user.usedData + usedData)
         if (usedData > user.availableData) {
             emailService.sendAvailableDataExceededEmail(user)
             kafkaService.updatePayment(user.key, false)
