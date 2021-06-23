@@ -32,8 +32,6 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         repository.save(application)
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
-        println("APPlications")
-        println(getApplicationIndexes(user))
         val request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }, " +
                 "\"elasticsearch\": { \"cluster\" : [ ], " +
