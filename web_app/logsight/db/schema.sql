@@ -7,7 +7,8 @@ CREATE TABLE users (
     activation_date    TIMESTAMP WITHOUT TIME ZONE,
     activated          boolean not null default false,
     stripe_customer_id TEXT,
-    has_paid           boolean not null default false
+    has_paid           boolean not null default false,
+    used_data          bigint  not null default 0;
 );
 
 CREATE TABLE applications (
