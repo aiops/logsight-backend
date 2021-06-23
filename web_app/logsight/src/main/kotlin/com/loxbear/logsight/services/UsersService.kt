@@ -103,4 +103,13 @@ class UsersService(val repository: UserRepository,
 
     }
 
+    @Transactional
+    fun updateUsedData(key: String, usedData: Long) {
+        val user = findByKey(key)
+        repository.updateUsedData(key, usedData)
+        if (usedData > user.availableData) {
+            emailService.sendAvailableDataExceededEmail(user)
+        }
+    }
+
 }

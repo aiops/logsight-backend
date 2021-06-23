@@ -8,7 +8,8 @@ CREATE TABLE users (
     activated          boolean not null default false,
     stripe_customer_id TEXT,
     has_paid           boolean not null default false,
-    paid_quantity      INTEGER
+    used_data          bigint  not null default 0;
+    available_data     bigint  not null default 0;
 );
 
 CREATE TABLE applications (
