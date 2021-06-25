@@ -112,8 +112,8 @@ class UsersService(
         restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
 
     }
-
-    @KafkaListener(topics = ["application_stats"], groupId = "1")
+    @Transactional
+    @KafkaListener(topics = ["application_stats"])
     fun applicationStatsChange(message: String) {
         val json = JSONObject(message)
         updateUsedData(json.getString("private_key"), json.getLong("quantity"))
@@ -122,7 +122,8 @@ class UsersService(
     @Transactional
     fun updateUsedData(key: String, usedData: Long) {
         val user = findByKey(key)
-        repository.updateUsedData(key, user.usedData + usedData)
+        val usedDataSum = user.usedData + usedData
+        repository.updateUsedData(key, usedDataSum)
         if (usedData > user.availableData) {
             emailService.sendAvailableDataExceededEmail(user)
             kafkaService.updatePayment(user.key, false)

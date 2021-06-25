@@ -41,6 +41,6 @@ data class LogsightUser(
     val availableData: Long = 1000000000L,
 ) {
     override fun toString(): String {
-        return "LogsightUser(id=$id, email='$email')"
+        return "LogsightUser(id=$id, email=$email, availableData=$availableData, usedData=$usedData)"
     }
 }
