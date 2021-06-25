@@ -8,5 +8,6 @@ data class CheckoutPayment(
     val amount: Long,
     val email: String,
     val quantity: Long,
-    val priceID: String
+    val priceID: String,
+    val subscription: Boolean
 )
