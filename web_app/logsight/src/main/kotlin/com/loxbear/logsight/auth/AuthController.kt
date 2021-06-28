@@ -8,6 +8,8 @@ import com.loxbear.logsight.models.RegisterUserForm
 import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.security.SecurityConstants
 import com.loxbear.logsight.services.UsersService
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,12 +21,21 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.client.postForEntity
+import utils.UtilsService
 import java.util.*
 
 
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(val usersService: UsersService, val authenticationManager: AuthenticationManager) {
+
+    val restTemplate = RestTemplateBuilder()
+        .basicAuthentication("elastic", "elasticsearchpassword")
+        .build();
+
+    @Value("\${kibana.url}")
+    private val kibanaUrl: String? = null
 
     @PostMapping("/register")
     fun register(@RequestBody form: RegisterUserForm): LogsightUser? {
@@ -51,6 +62,13 @@ class AuthController(val usersService: UsersService, val authenticationManager: 
             .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
 
         return mapOf("token" to token)
+    }
+
+    @PostMapping("/kibana/login")
+    fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
+        val request = UtilsService.createKibanaRequestWithHeaders(requestBody)
+        val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
+        return response
     }
 
     @PostMapping("/activate")
