@@ -5,6 +5,7 @@ import com.loxbear.logsight.entities.LogsightUser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.stereotype.Service
+import java.util.*
 
 
 @Service
@@ -17,16 +18,24 @@ class EmailService(
         val activationUrl = "$baseUrl/auth/activate/${user.key}"
         val emailTo = user.email
         val body = "Please activate on the following link $activationUrl"
-        print(activationUrl)
-        sendEmail(emailTo, body)
+        val subject = "Activate your account"
+        sendEmail(emailTo, body, subject)
     }
 
-    fun sendEmail(emailTo: String, body: String) {
+    fun sendLoginEmail(user: LogsightUser, newLoginID: String) {
+        val activationUrl = "$baseUrl/auth/activate/${newLoginID}" + "_" + user.key
+        val emailTo = user.email
+        val body = "Please login on the following link $activationUrl"
+        val subject = "EasyLogin to logsight.ai"
+        sendEmail(emailTo, body, subject)
+    }
+
+    fun sendEmail(emailTo: String, body: String, subject: String) {
         val sender = emailConfiguration.getEmailSender()
         val message = SimpleMailMessage()
         message.setFrom("LogSight")
         message.setTo(emailTo)
-        message.setSubject("Activate your account")
+        message.setSubject(subject)
         message.setText(body)
         sender.send(message)
     }
@@ -34,7 +43,8 @@ class EmailService(
     fun sendAvailableDataExceededEmail(user: LogsightUser) {
         val emailTo = user.email
         val body = "Your data has exceeded" //put a good message here
-        sendEmail(emailTo, body)
+        val subject = "logsight.ai data limit exceeded"
+        sendEmail(emailTo, body, subject)
     }
 
 }

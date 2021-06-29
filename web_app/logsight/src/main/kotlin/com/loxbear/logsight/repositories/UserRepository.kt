@@ -47,6 +47,12 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
 
     @Modifying
     @Query(
+        """update LogsightUser u set u.loginID = :loginID where u.key = :key"""
+    )
+    fun updateLoginID(loginID: String, key: String)
+
+    @Modifying
+    @Query(
         """update LogsightUser u set u.usedData = :usedData where u.key = :key"""
     )
     fun updateUsedData(key: String, usedData: Long)

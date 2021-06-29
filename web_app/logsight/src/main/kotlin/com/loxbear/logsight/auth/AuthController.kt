@@ -6,7 +6,9 @@ import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.LoginUserForm
 import com.loxbear.logsight.models.RegisterUserForm
 import com.loxbear.logsight.models.UserModel
+import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.security.SecurityConstants
+import com.loxbear.logsight.services.EmailService
 import com.loxbear.logsight.services.UsersService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -16,19 +18,23 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.User
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.postForEntity
+import utils.KeyGenerator
 import utils.UtilsService
+import java.lang.RuntimeException
 import java.util.*
 
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(val usersService: UsersService, val authenticationManager: AuthenticationManager) {
+class AuthController(val usersService: UsersService,
+                     val authenticationManager: AuthenticationManager,
+                     val emailService: EmailService,
+                     val repository: UserRepository) {
 
     val restTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
@@ -64,11 +70,29 @@ class AuthController(val usersService: UsersService, val authenticationManager: 
         return mapOf("token" to token)
     }
 
+
+    @PostMapping("/login/login-link")
+    fun loginLink(@RequestBody form: LoginUserForm): ResponseEntity<String> {
+        val user = repository.findByEmail(form.email).orElseThrow{
+            RuntimeException("User not found!")
+        }
+        val newLoginID = usersService.createLoginID(user)
+        emailService.sendLoginEmail(user, newLoginID)
+        return ResponseEntity(HttpStatus.OK)
+
+    }
+
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
         val request = UtilsService.createKibanaRequestWithHeaders(requestBody)
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
         return response
+    }
+
+
+    @PostMapping("/activate/login-link")
+    fun loginLinkUser(@RequestBody body: Map<String, String>): UserModel?{
+        return usersService.activateUserLoginLink(body["loginID"]!!, body["key"]!!)
     }
 
     @PostMapping("/activate")

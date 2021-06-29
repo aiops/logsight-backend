@@ -9,9 +9,6 @@ import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -78,6 +75,35 @@ class UsersService(
                 availableData = availableData, usedData = usedData)
         }
     }
+
+    @Transactional
+    fun createLoginID(user: LogsightUser): String {
+        val loginID = KeyGenerator.generate()
+        repository.updateLoginID(loginID, user.key)
+        return loginID
+    }
+
+    fun activateUserLoginLink(loginID: String, key: String): UserModel? {
+        val user = findByKey(key)
+
+        if (user.loginID == loginID){
+            with(user) {
+                return UserModel(
+                    id = user.id,
+                    email = user.email,
+                    activated = user.activated,
+                    key = user.key,
+                    hasPaid = user.hasPaid,
+                    availableData = user.availableData,
+                    usedData = user.usedData
+                )
+            }
+        }
+        else{
+            return null
+        }
+    }
+
 
     fun findByEmail(email: String): LogsightUser {
         return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
