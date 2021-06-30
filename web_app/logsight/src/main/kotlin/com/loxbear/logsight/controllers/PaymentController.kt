@@ -111,7 +111,7 @@ class PaymentController(
             return ""
         }
 
-        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("quantity")
+        val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
         val user = usersService.findByStripeCustomerID(customerId)
 
         when (event?.type) {
