@@ -7,6 +7,7 @@ import com.loxbear.logsight.charts.data.SystemOverviewHeatmapChart
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.ChartsService
+import org.json.JSONObject
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
