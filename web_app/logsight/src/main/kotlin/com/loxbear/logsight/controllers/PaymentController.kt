@@ -126,7 +126,7 @@ class PaymentController(
             "invoice.paid" -> {
                 logger.info("Received [invoice.paid] for user [{}] with stripeCustomerId [{}]", user, customerId)
                 val data = JSONObject(event.dataObjectDeserializer.rawJson).getJSONObject("data").getJSONObject("object").getJSONObject("lines").getJSONArray("data")[0]
-                val quantity = JSONObject(data).getLong("quantity")
+                val quantity = JSONObject(data.toString()).getLong("quantity")
 
                 val availableData = quantity*1000000000 + user.availableData - user.usedData
                 paymentService.paymentSuccessful(user, customerId, availableData)
