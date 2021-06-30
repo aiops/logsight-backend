@@ -125,12 +125,19 @@ class PaymentController(
 //            }
             "invoice.paid" -> {
                 logger.info("Received [invoice.paid] for user [{}] with stripeCustomerId [{}]", user, customerId)
-                val data = JSONObject(event.toString()).getJSONObject("data").getJSONObject("object").getJSONObject("lines").getJSONArray("data")[0]
+                logger.info(event.dataObjectDeserializer.rawJson.toString())
+                logger.info(event.dataObjectDeserializer.rawJson)
+                val data = JSONObject(event.dataObjectDeserializer.rawJson).getJSONObject("lines").getJSONArray("data")[0]
+                logger.info("data obtained")
                 val quantity = JSONObject(data.toString()).getLong("quantity")
-
+                logger.info("quantity obtained")
+                logger.info(quantity.toString())
                 val availableData = quantity*1000000000 + user.availableData - user.usedData
+                logger.info(availableData.toString())
                 paymentService.paymentSuccessful(user, customerId, availableData)
+                logger.info("Updated database")
                 kafkaService.updatePayment(user.key, true)
+                logger.info("Updated payment kafka")
             }
             "invoice.payment_failed" -> {
                 logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)
