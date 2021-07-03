@@ -1,6 +1,5 @@
 package utils
 
-import javafx.application.Application
 import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
