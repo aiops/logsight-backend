@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
+import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import utils.UtilsService.Companion.createElasticSearchRequestWithHeaders
 import java.lang.Exception
@@ -38,11 +39,16 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
                 "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
                 " \"privileges\" : [ \"all\" ]}] }, " +
                 "\"kibana\": [ { \"base\": [], " +
-                "\"feature\": { \"discover\": [ \"all\" ], " +
-                "\"logs\":[ \"all\" ], " +
-                "\"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+                "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
         )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+
+        val requestDefaultIndex = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"value\": null}"
+        )
+        restTemplate.postForEntity<String>(
+            "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex", requestDefaultIndex).body!!
+
         return application
     }
 
@@ -63,7 +69,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_count_ad\", \"${
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_incidents\" , \".kibana_1\", \".kibana\", \".kibana_task_manager\""
+            }_${it.name}_incidents\""
         }
 
 

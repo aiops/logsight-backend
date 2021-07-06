@@ -1,9 +1,11 @@
 package com.loxbear.logsight.services
 
 import com.loxbear.logsight.encoder
+import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.RegisterUserForm
 import com.loxbear.logsight.models.UserModel
+import com.loxbear.logsight.repositories.ApplicationRepository
 import com.loxbear.logsight.repositories.UserRepository
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
@@ -19,6 +21,7 @@ import utils.UtilsService
 @Service
 class UsersService(
     val repository: UserRepository,
+    val applicationRepository: ApplicationRepository,
     val emailService: EmailService,
     val applicationService: ApplicationService,
     val kafkaService: KafkaService
@@ -87,6 +90,16 @@ class UsersService(
         val user = findByKey(key)
 
         if (user.loginID == loginID){
+            val request = UtilsService.createKibanaRequestWithHeaders(
+                "{ \"metadata\" : { \"version\" : 1 }, " +
+                        "\"elasticsearch\": { \"cluster\" : [ ], " +
+                        "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                        " \"privileges\" : [ \"all\" ]}] }, " +
+                        "\"kibana\": [ { \"base\": [], " +
+                        "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+            )
+            restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+
             with(user) {
                 return UserModel(
                     id = user.id,
@@ -104,6 +117,18 @@ class UsersService(
         }
     }
 
+    fun findAllByUser(user: LogsightUser): List<Application> = applicationRepository.findAllByUser(user)
+
+    fun getApplicationIndicesForKibana(user: LogsightUser) =
+        findAllByUser(user).joinToString(",") {
+            "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
+                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            }_${it.name}_log_ad\", \"${
+                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            }_${it.name}_count_ad\", \"${
+                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            }_${it.name}_incidents\""
+        }
 
     fun findByEmail(email: String): LogsightUser {
         return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
@@ -120,16 +145,16 @@ class UsersService(
                 "\"name\": \"Logsight\", " +
                 "\"description\" : \"This is your Logsight Space\" }"
         )
-
         restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
 
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
-                "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], " +
-                "\"logs\":[ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
+                    "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
                 "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
         )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
+
 
         request = UtilsService.createElasticSearchRequestWithHeaders(
             "{ \"password\" : \"test-test\", " +
