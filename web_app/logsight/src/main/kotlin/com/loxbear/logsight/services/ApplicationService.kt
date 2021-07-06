@@ -63,7 +63,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_count_ad\", \"${
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_incidents\""
+            }_${it.name}_incidents\" , \".kibana_1\", \".kibana\", \".kibana_task_manager\""
         }
 
 

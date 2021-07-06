@@ -126,7 +126,7 @@ class UsersService(
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
                 "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], " +
-                "\"logs\":[ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                "\"logs\":[ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
                 "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
         )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
