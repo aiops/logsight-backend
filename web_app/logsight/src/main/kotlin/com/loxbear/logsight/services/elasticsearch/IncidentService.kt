@@ -72,7 +72,8 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                                 val data = JSONObject(JSONArray(one.toString())[0].toString())
                                 val template = data.getString("template")
                                 val message = data.getString("message")
-                                val timeStamp = LocalDateTime.parse(data.getString("@timestamp"), formatter).toDateTime()
+                                val timestampTmp = data.getString("@timestamp")
+                                val timeStamp = LocalDateTime.parse(timestampTmp, formatter).toDateTime()
                                 val actualLevel = data.getString("actual_level")
                                 val params = mutableListOf<HitParam>()
                                 val keys: Iterator<String> = data.keys()
@@ -114,6 +115,6 @@ class IncidentService(val repository: IncidentRepository, val applicationService
     }
 
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
-    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))
 }
 
