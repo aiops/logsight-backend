@@ -62,8 +62,17 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         }
 
     fun getApplicationIndicesForKibana(user: LogsightUser) =
+//        findAllByUser(user).joinToString(",") {
+//            "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
+//                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+//            }_${it.name}_log_ad\", \"${
+//                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+//            }_${it.name}_count_ad\", \"${
+//                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+//            }_${it.name}_incidents\""
+//        }
         findAllByUser(user).joinToString(",") {
-            "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
+            "\"${
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_ad\", \"${
                 user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }

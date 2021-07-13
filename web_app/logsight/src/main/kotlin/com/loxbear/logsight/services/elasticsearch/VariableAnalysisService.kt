@@ -30,7 +30,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
     fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?, user: LogsightUser): List<VariableAnalysisHit> {
         val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val app_name = es_index_user_app.split("_").subList(1, es_index_user_app.split("_").size - 1).joinToString("_")
+        val app_name = es_index_user_app.split("_").subList(1, es_index_user_app.split("_").size - 2).joinToString("_")
         return resp.getJSONObject("hits").getJSONArray("hits").map {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
             val template = hit.getString("template")
@@ -49,8 +49,10 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         }
     }
 
+//    fun getApplicationIndex(application: Application, key: String): String =
+//        "${key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${application.name}_parsing"
     fun getApplicationIndex(application: Application, key: String): String =
-        "${key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${application.name}_parsing"
+        "${key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${application.name}_log_ad"
 
     fun getSpecificTemplate(es_index_user_app: String, startTime: String, stopTime: String, template: String,
                             param: String, paramValue: String): List<VariableAnalysisSpecificTemplate> {
@@ -88,7 +90,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
                                                    template: String, param: String, paramValue: String): List<LineChart> {
         return repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
             .aggregations.listAggregations.buckets.map {
-                val name = it.date.toHourMinute()
+                val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
                     LineChartSeries(name = it2.key, value = it2.docCount)
                 }
