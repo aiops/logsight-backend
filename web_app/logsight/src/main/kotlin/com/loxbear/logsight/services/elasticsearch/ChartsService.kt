@@ -70,7 +70,8 @@ class ChartsService(val repository: ChartsRepository,
                     name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("  "),
                     value = i.valueData.value,
                     extra = PieExtra(""),
-                    id = UtilsService.getApplicationIdFromIndex(applications, i.key))
+                    id = UtilsService.getApplicationIdFromIndex(applications, i.key),
+                    count = i.docCount)
                 )
             }
 
