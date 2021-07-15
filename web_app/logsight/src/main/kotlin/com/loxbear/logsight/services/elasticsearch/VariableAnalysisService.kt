@@ -28,7 +28,7 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
 
     fun getTemplates(es_index_user_app: String, startTime: String, stopTime: String, search: String?, user: LogsightUser): List<VariableAnalysisHit> {
-        val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search))
+        val resp = JSONObject(repository.getTemplates(es_index_user_app, startTime, stopTime, search, user.key))
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         val app_name = es_index_user_app.split("_").subList(1, es_index_user_app.split("_").size - 2).joinToString("_")
         return resp.getJSONObject("hits").getJSONArray("hits").map {
@@ -55,8 +55,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         "${key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${application.name}_log_ad"
 
     fun getSpecificTemplate(es_index_user_app: String, startTime: String, stopTime: String, template: String,
-                            param: String, paramValue: String): List<VariableAnalysisSpecificTemplate> {
-        val resp = JSONObject(repository.getSpecificTemplate(es_index_user_app, startTime, stopTime, template, param, paramValue))
+                            param: String, paramValue: String, userKey: String): List<VariableAnalysisSpecificTemplate> {
+        val resp = JSONObject(repository.getSpecificTemplate(es_index_user_app, startTime, stopTime, template, param, paramValue, userKey))
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
         return resp.getJSONObject("hits").getJSONArray("hits").mapNotNull {
             val hit = JSONObject(it.toString()).getJSONObject("_source")
@@ -68,8 +68,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
     }
 
     fun getSpecificTemplateGrouped(applicationsIndexes: String, startTime: String, stopTime: String,
-                                   template: String, param: String, paramValue: String): Pair<String, List<LineChart>> {
-        val specificTemplateData = getSpecificTemplate(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+                                   template: String, param: String, paramValue: String, user: LogsightUser): Pair<String, List<LineChart>> {
+        val specificTemplateData = getSpecificTemplate(applicationsIndexes, startTime, stopTime, template, param, paramValue, user.key)
         val allParamsNumbers = checkAllParamsNumbers(specificTemplateData)
         return if (allParamsNumbers) {
             val lineChartSeries = specificTemplateData.mapNotNull {
@@ -82,13 +82,13 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
             }
             "LineChart" to listOf(LineChart(name = template, series = lineChartSeries))
         } else {
-            "GroupedVertical" to getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+            "GroupedVertical" to getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue, user)
         }
     }
 
     private fun getSpecificTemplateDifferentParams(applicationsIndexes: String, startTime: String, stopTime: String,
-                                                   template: String, param: String, paramValue: String): List<LineChart> {
-        return repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue)
+                                                   template: String, param: String, paramValue: String, user: LogsightUser): List<LineChart> {
+        return repository.getSpecificTemplateDifferentParams(applicationsIndexes, startTime, stopTime, template, param, paramValue, user.key)
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -113,10 +113,10 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         return true
     }
 
-    fun getTopNTemplates(applicationsIndexes: String): Map<String, List<TopNTemplatesData>> {
-        val top5TemplatesNow = repository.getTopNTemplates(applicationsIndexes, "now-1h", "now", 5).aggregations.listAggregations.buckets
+    fun getTopNTemplates(applicationsIndexes: String, user: LogsightUser): Map<String, List<TopNTemplatesData>> {
+        val top5TemplatesNow = repository.getTopNTemplates(applicationsIndexes, "now-1h", "now", 5, user.key).aggregations.listAggregations.buckets
         val top5TemplatesNowNames = top5TemplatesNow.map { it.key }
-        val top5TemplatesOlder = repository.getTopNTemplates(applicationsIndexes, "now-2h", "now-1h", 20).aggregations.listAggregations.buckets
+        val top5TemplatesOlder = repository.getTopNTemplates(applicationsIndexes, "now-2h", "now-1h", 20, user.key).aggregations.listAggregations.buckets
             .filter { top5TemplatesNowNames.contains(it.key) }
 
         return calculateTopTemplatesDifference(top5TemplatesNow, top5TemplatesOlder)
@@ -137,8 +137,8 @@ class VariableAnalysisService(val repository: VariableAnalysisRepository,
         return result
     }
 
-    fun getLogCountLineChart(applicationsIndexes: String, startTime: String, stopTime: String): List<LineChart> {
-        val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime))
+    fun getLogCountLineChart(applicationsIndexes: String, startTime: String, stopTime: String, user: LogsightUser): List<LineChart> {
+        val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime, user.key))
         val lineChartSeries = resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
             val odtInstanceAtOffset = OffsetDateTime.parse(obj.getString("key_as_string"))

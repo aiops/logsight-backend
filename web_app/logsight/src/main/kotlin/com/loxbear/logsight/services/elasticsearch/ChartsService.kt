@@ -4,6 +4,7 @@ import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
 import com.loxbear.logsight.services.ApplicationService
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import utils.UtilsService
 import java.time.ZonedDateTime
@@ -13,9 +14,9 @@ import java.time.format.DateTimeFormatter
 class ChartsService(val repository: ChartsRepository,
                     val applicationService: ApplicationService) {
 
-    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String): List<LineChart> {
+    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): List<LineChart> {
 
-        return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime)
+        return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -31,18 +32,18 @@ class ChartsService(val repository: ChartsRepository,
             }
     }
 
-    fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelPieChart {
+    fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelPieChart {
         val data = mutableListOf<LogLevelPoint>()
 
-        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets.forEach {
+        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
             data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
         }
         return LogLevelPieChart(data = data)
     }
 
-    fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String): LogLevelStackedLineChart {
+    fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
-        val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime).aggregations.listAggregations.buckets
+        val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets
         res.forEach {
             for (i in it.listBuckets.buckets) {
                 val list = dict[i.key] ?: mutableListOf()
@@ -63,7 +64,7 @@ class ChartsService(val repository: ChartsRepository,
         val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
         repository.getSystemOverviewHeatmapChartData(esIndexUserAppLogAd,
             startTime,
-            stopTime).aggregations.listAggregations.buckets.forEach {
+            stopTime, user.key).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
                 listPoints.add(HeatMapLogLevelPoint(

@@ -38,7 +38,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         with(specificTemplate) {
-            return variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, endTime, template, param, paramValue)
+            return variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, endTime, template, param, paramValue, user)
         }
     }
 
@@ -48,7 +48,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getTopNTemplates(applicationsIndexes)
+        return variableAnalysisService.getTopNTemplates(applicationsIndexes, user)
     }
 
     @GetMapping("/application/{id}/log_count_line_chart")
@@ -59,7 +59,7 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime)
+        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user)
     }
 
 }

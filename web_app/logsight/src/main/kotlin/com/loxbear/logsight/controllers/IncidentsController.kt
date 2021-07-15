@@ -36,7 +36,7 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
         val user = usersService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime)
+        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime, user)
     }
 
     @GetMapping("/table_data")

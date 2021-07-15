@@ -25,7 +25,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
                            @RequestParam endTime: String): LogLevelPieChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime)
+        return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
     }
 
     @GetMapping("/dashboard_bar_anomalies")
@@ -34,7 +34,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
                                  @RequestParam endTime: String): List<LineChart> {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime)
+        return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
     }
 
     @GetMapping("/log_level_stacked_line_chart")
@@ -43,7 +43,7 @@ class ChartsController(val chartsService: ChartsService, val usersService: Users
                                    @RequestParam endTime: String): LogLevelStackedLineChart {
         val user = usersService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, endTime)
+        return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, endTime, user.key)
     }
 
     @GetMapping("/system_overview_heatmap")

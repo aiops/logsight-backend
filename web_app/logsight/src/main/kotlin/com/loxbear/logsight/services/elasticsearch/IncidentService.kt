@@ -24,7 +24,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         val dataList = mutableListOf<TopKIncidentTable>()
 
-        JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime)).getJSONObject("hits").getJSONArray("hits").forEach {
+        JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime, user.key)).getJSONObject("hits").getJSONArray("hits").forEach {
             val jsonData = JSONObject(it.toString())
             dataList.add(TopKIncidentTable(
                 applicationId = UtilsService.getApplicationIdFromIndex(applications, jsonData["_index"].toString()),
@@ -48,8 +48,8 @@ class IncidentService(val repository: IncidentRepository, val applicationService
 
     }
 
-    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String): List<LineChartSeries> {
-        val resp = JSONObject(repository.getIncidentsBarChartData(applicationsIndexes, startTime, stopTime))
+    fun getIncidentsBarChartData(applicationsIndexes: String, startTime: String, stopTime: String, user: LogsightUser): List<LineChartSeries> {
+        val resp = JSONObject(repository.getIncidentsBarChartData(applicationsIndexes, startTime, stopTime, user.key))
         return resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
             val obj = JSONObject(it.toString())
             val date = ZonedDateTime.parse(obj.getString("key_as_string"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)
@@ -60,7 +60,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
     fun getIncidentsTableData(applicationsIndexes: String, startTime: String, stopTime: String, user: LogsightUser): IncidentTableData {
         val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime))
+        return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime, user.key))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData()) { acc, it ->
                 val app_name = JSONObject(it.toString()).getString("_index").split("_").subList(1, JSONObject(it.toString()).getString("_index").split("_").size - 1).joinToString("_")
                 val tableData = JSONObject(it.toString()).getJSONObject("_source")
