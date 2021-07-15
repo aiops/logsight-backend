@@ -2,10 +2,10 @@ package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.models.ApplicationRequest
+import com.loxbear.logsight.models.IdResponse
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -17,10 +17,11 @@ class ApplicationController(
     val usersService: UsersService
 ) {
 
-    @PostMapping
-    fun createApplication(@RequestBody body: ApplicationRequest): Application {
+    @PostMapping("/create")
+    fun createApplication(@RequestBody body: ApplicationRequest): IdResponse {
         val user = usersService.findByKey(body.key)
-        return applicationService.createApplication(body.name, user)
+        val app = applicationService.createApplication(body.name, user)
+        return IdResponse(app.id)
     }
 
     @GetMapping("/user/{key}")
@@ -34,13 +35,13 @@ class ApplicationController(
         @PathVariable id: Long,
         @RequestParam(required = false) key: String?,
         authentication: Authentication?
-    ): ResponseEntity.BodyBuilder {
+    ): HttpStatus {
         if (authentication == null) {
             if (key == null || !usersService.existsByKey(key)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                return HttpStatus.FORBIDDEN
             }
         }
         applicationService.deleteApplication(id)
-        return ResponseEntity.status(HttpStatus.OK)
+        return HttpStatus.OK
     }
 }
