@@ -92,15 +92,15 @@ class UsersService(
         val user = findByKey(key)
 
         if (user.loginID == loginID) {
-            val request = UtilsService.createKibanaRequestWithHeaders(
-                "{ \"metadata\" : { \"version\" : 1 }, " +
-                    "\"elasticsearch\": { \"cluster\" : [ ], " +
-                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-                    " \"privileges\" : [ \"all\" ]}] }, " +
-                    "\"kibana\": [ { \"base\": [], " +
-                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
-            )
-            restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+//            val request = UtilsService.createKibanaRequestWithHeaders(
+//                "{ \"metadata\" : { \"version\" : 1 }, " +
+//                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+//                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+//                    " \"privileges\" : [ \"all\" ]}] }, " +
+//                    "\"kibana\": [ { \"base\": [], " +
+//                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+//            )
+//            restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
 
             with(user) {
                 return UserModel(
