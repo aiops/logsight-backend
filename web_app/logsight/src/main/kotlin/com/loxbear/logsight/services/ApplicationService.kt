@@ -29,6 +29,8 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     private val kibanaUrl: String? = null
 
     fun createApplication(name: String, user: LogsightUser): Application {
+//        ALTER TABLE applications ADD UNIQUE (user_id, name);
+        // check if the appliction name exist for the user and return error.
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         repository.save(application)

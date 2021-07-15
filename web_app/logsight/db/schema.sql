@@ -1,3 +1,4 @@
+-- psql -h localhost -U logsight
 CREATE TABLE users (
     id                 BIGSERIAL PRIMARY KEY,
     password           TEXT    NOT NULL,
@@ -17,5 +18,6 @@ CREATE TABLE applications (
     id      BIGSERIAL PRIMARY KEY,
     name    TEXT NOT NULL,
     status  TEXT NOT NULL default 'IN_PROGRESS',
-    user_id BIGINT REFERENCES users(id)
+    user_id BIGINT REFERENCES users(id),
+    UNIQUE (user_id, name)
 );
