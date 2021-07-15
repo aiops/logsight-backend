@@ -74,8 +74,10 @@ class UsersService(
         val user = findByKey(key)
         repository.activateUser(key)
         with(user) {
-            return UserModel(id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
-                availableData = availableData, usedData = usedData)
+            return UserModel(
+                id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
+                availableData = availableData, usedData = usedData
+            )
         }
     }
 
@@ -89,14 +91,14 @@ class UsersService(
     fun activateUserLoginLink(loginID: String, key: String): UserModel? {
         val user = findByKey(key)
 
-        if (user.loginID == loginID){
+        if (user.loginID == loginID) {
             val request = UtilsService.createKibanaRequestWithHeaders(
                 "{ \"metadata\" : { \"version\" : 1 }, " +
-                        "\"elasticsearch\": { \"cluster\" : [ ], " +
-                        "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-                        " \"privileges\" : [ \"all\" ]}] }, " +
-                        "\"kibana\": [ { \"base\": [], " +
-                        "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                    " \"privileges\" : [ \"all\" ]}] }, " +
+                    "\"kibana\": [ { \"base\": [], " +
+                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
             )
             restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
 
@@ -111,8 +113,7 @@ class UsersService(
                     usedData = user.usedData
                 )
             }
-        }
-        else{
+        } else {
             return null
         }
     }
@@ -150,7 +151,7 @@ class UsersService(
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
                 "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
-                    "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
                 "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
         )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
@@ -163,6 +164,7 @@ class UsersService(
         restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
 
     }
+
     @Transactional
     @KafkaListener(topics = ["application_stats"])
     fun applicationStatsChange(message: String) {
@@ -181,4 +183,5 @@ class UsersService(
         }
     }
 
+    fun existsByKey(key: String) = repository.existsByKey(key)
 }

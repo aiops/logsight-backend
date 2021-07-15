@@ -25,6 +25,8 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
         http.cors().and().csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/applications/create").permitAll()
+            .antMatchers(HttpMethod.DELETE, "/api/applications/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .addFilter(JWTAuthenticationFilter(authenticationManager()))
