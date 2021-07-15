@@ -4,13 +4,10 @@ import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.models.ApplicationRequest
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.postForEntity
-import utils.UtilsService.Companion.createKibanaRequestWithHeaders
 
 
 @RestController
@@ -33,7 +30,17 @@ class ApplicationController(
     }
 
     @PostMapping("/{id}")
-    fun deleteApplication(@PathVariable id: Long) {
+    fun deleteApplication(
+        @PathVariable id: Long,
+        @RequestParam(required = false) key: String?,
+        authentication: Authentication?
+    ): ResponseEntity.BodyBuilder {
+        if (authentication == null) {
+            if (key == null || !usersService.existsByKey(key)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            }
+        }
         applicationService.deleteApplication(id)
+        return ResponseEntity.status(HttpStatus.OK)
     }
 }

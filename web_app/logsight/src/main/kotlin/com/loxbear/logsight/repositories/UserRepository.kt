@@ -57,4 +57,5 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
     )
     fun updateUsedData(key: String, usedData: Long)
 
+    fun existsByKey(key: String): Boolean
 }
