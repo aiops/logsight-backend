@@ -30,7 +30,7 @@ class ApplicationController(
             ResponseEntity(ApplicationResponse(
                 description= "Please choose another name. The application already exists or incorrect name. " +
                         "The name of the application should contain only numbers and lowercase letters. " +
-                        "Special signs are not allowed!", status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
+                        "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
         }
     }
 
