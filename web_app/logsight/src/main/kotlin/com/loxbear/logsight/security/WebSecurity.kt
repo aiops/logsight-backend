@@ -26,6 +26,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
             .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .addFilter(JWTAuthenticationFilter(authenticationManager()))

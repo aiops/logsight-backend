@@ -92,9 +92,6 @@ class UsersService(
         val user = findByKey(key)
 
         if (user.loginID == loginID) {
-            println("User login:")
-            println(user.loginID)
-            println(loginID)
 //            val request = UtilsService.createKibanaRequestWithHeaders(
 //                "{ \"metadata\" : { \"version\" : 1 }, " +
 //                    "\"elasticsearch\": { \"cluster\" : [ ], " +

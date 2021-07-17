@@ -9,13 +9,13 @@ import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
-import utils.UtilsService.Companion.createElasticSearchRequestWithHeaders
-import java.lang.Exception
-import java.lang.RuntimeException
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 import javax.transaction.Transactional
 
 @Service
@@ -28,12 +28,21 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
 
-    fun createApplication(name: String, user: LogsightUser): Application {
-//        ALTER TABLE applications ADD UNIQUE (user_id, name);
-        // check if the appliction name exist for the user and return error.
+    fun createApplication(name: String, user: LogsightUser): Application? {
+
+        val p: Pattern = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE)
+        val m: Matcher = p.matcher(name)
+        val b: Boolean = m.find()
+        if (b){
+            return null
+        }
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
-        repository.save(application)
+        try {
+            repository.save(application)
+        }catch (e: DataIntegrityViolationException){
+            return null
+        }
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
         val request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }, " +
@@ -101,10 +110,15 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     fun findById(id: Long): Application =
         repository.findById(id).orElseThrow { Exception("Application with id [$id] not found") }
 
-    fun deleteApplication(id: Long) {
+    fun deleteApplication(id: Long): Boolean {
         val application = findById(id)
         logger.info("Deleting application with id [{}]", id)
-        repository.delete(application)
+        try{
+            repository.delete(application)
+        }catch (e: java.lang.Exception){
+            return false
+        }
         kafkaService.applicationChange(application, ApplicationAction.DELETE)
+        return true
     }
 }

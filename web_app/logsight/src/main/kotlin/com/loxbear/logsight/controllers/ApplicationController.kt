@@ -6,6 +6,7 @@ import com.loxbear.logsight.models.IdResponse
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -18,16 +19,26 @@ class ApplicationController(
 ) {
 
     @PostMapping("/create")
-    fun createApplication(@RequestBody body: ApplicationRequest): IdResponse {
+    fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
         val user = usersService.findByKey(body.key)
         val app = applicationService.createApplication(body.name, user)
-        return IdResponse(app.id)
+        if (app != null) {
+            return ResponseEntity(IdResponse(app.id), HttpStatus.OK)
+        }
+        else{
+            return ResponseEntity("Please choose another name. The application already exists or incorrect name. The name of the application should contain only numbers and lowercase letters. Special signs are not allowed!", HttpStatus.BAD_REQUEST)
+        }
     }
 
     @GetMapping("/user/{key}")
-    fun getApplicationsForUser(@PathVariable key: String): List<Application> {
+    fun getApplicationsForUser(@PathVariable key: String): MutableList<com.loxbear.logsight.models.Application> {
         val user = usersService.findByKey(key)
-        return applicationService.findAllByUser(user)
+        val applications = applicationService.findAllByUser(user)
+        val returnApplications = mutableListOf<com.loxbear.logsight.models.Application>()
+        for (i in applications.indices){
+            returnApplications.add(com.loxbear.logsight.models.Application(id = applications[i].id, name = applications[i].name))
+        }
+        return returnApplications
     }
 
     @PostMapping("/{id}")
@@ -35,13 +46,17 @@ class ApplicationController(
         @PathVariable id: Long,
         @RequestParam(required = false) key: String?,
         authentication: Authentication?
-    ): HttpStatus {
+    ): ResponseEntity<String> {
         if (authentication == null) {
             if (key == null || !usersService.existsByKey(key)) {
-                return HttpStatus.FORBIDDEN
+                return ResponseEntity("User is not authenticated or the user does not exist!", HttpStatus.BAD_REQUEST)
             }
         }
-        applicationService.deleteApplication(id)
-        return HttpStatus.OK
+        return if (applicationService.deleteApplication(id)){
+            ResponseEntity(HttpStatus.OK)
+        }else{
+            ResponseEntity("Application with the provided id does not exist!.", HttpStatus.BAD_REQUEST)
+        }
+
     }
 }
