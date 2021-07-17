@@ -1,7 +1,7 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.models.ApplicationRequest
+import com.loxbear.logsight.models.ApplicationResponse
 import com.loxbear.logsight.models.IdResponse
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
@@ -22,11 +22,15 @@ class ApplicationController(
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
         val user = usersService.findByKey(body.key)
         val app = applicationService.createApplication(body.name, user)
-        if (app != null) {
-            return ResponseEntity(IdResponse(app.id), HttpStatus.OK)
-        }
-        else{
-            return ResponseEntity("Please choose another name. The application already exists or incorrect name. The name of the application should contain only numbers and lowercase letters. Special signs are not allowed!", HttpStatus.BAD_REQUEST)
+        return if (app != null) {
+            ResponseEntity(IdResponse(description = "Application created successfully!", status = HttpStatus.OK,
+                id = app.id),
+                HttpStatus.OK)
+        } else{
+            ResponseEntity(ApplicationResponse(
+                description= "Please choose another name. The application already exists or incorrect name. " +
+                        "The name of the application should contain only numbers and lowercase letters. " +
+                        "Special signs are not allowed!", status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
         }
     }
 
@@ -46,16 +50,22 @@ class ApplicationController(
         @PathVariable id: Long,
         @RequestParam(required = false) key: String?,
         authentication: Authentication?
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Any> {
         if (authentication == null) {
             if (key == null || !usersService.existsByKey(key)) {
-                return ResponseEntity("User is not authenticated or the user does not exist!", HttpStatus.BAD_REQUEST)
+                return ResponseEntity(ApplicationResponse(
+                    description = "User is not authenticated or the user does not exist!",
+                    status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
             }
         }
         return if (applicationService.deleteApplication(id)){
-            ResponseEntity(HttpStatus.OK)
+            ResponseEntity(ApplicationResponse(
+                description = "Application deleted successfully.",
+                status = HttpStatus.OK), HttpStatus.OK)
         }else{
-            ResponseEntity("Application with the provided id does not exist!.", HttpStatus.BAD_REQUEST)
+            ResponseEntity(ApplicationResponse(
+                description = "Application with the provided id does not exist!",
+                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
         }
 
     }
