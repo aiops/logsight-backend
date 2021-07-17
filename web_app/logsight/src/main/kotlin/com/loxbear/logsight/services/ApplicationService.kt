@@ -30,7 +30,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
 
     fun createApplication(name: String, user: LogsightUser): Application? {
 
-        val p: Pattern = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE)
+        val p: Pattern = Pattern.compile("[^a-z0-9_]", Pattern.CASE_INSENSITIVE)
         val m: Matcher = p.matcher(name)
         val b: Boolean = m.find()
         if (b){
