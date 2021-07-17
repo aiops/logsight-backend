@@ -40,7 +40,10 @@ class ApplicationController(
         val applications = applicationService.findAllByUser(user)
         val returnApplications = mutableListOf<com.loxbear.logsight.models.Application>()
         for (i in applications.indices){
-            returnApplications.add(com.loxbear.logsight.models.Application(id = applications[i].id, name = applications[i].name))
+            returnApplications.add(com.loxbear.logsight.models.Application(description = "Application list",
+                status = HttpStatus.OK,
+                id = applications[i].id,
+                name = applications[i].name))
         }
         return returnApplications
     }
