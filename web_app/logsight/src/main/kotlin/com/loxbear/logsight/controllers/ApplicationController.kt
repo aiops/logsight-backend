@@ -1,5 +1,6 @@
 package com.loxbear.logsight.controllers
 
+import com.loxbear.logsight.models.Application
 import com.loxbear.logsight.models.ApplicationRequest
 import com.loxbear.logsight.models.ApplicationResponse
 import com.loxbear.logsight.models.IdResponse
@@ -45,7 +46,7 @@ class ApplicationController(
                 id = applications[i].id,
                 name = applications[i].name))
         }
-        return returnApplications
+        return returnApplications.sortedBy { it.name } as MutableList<Application>
     }
 
     @PostMapping("/{id}")
