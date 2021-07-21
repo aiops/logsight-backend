@@ -46,7 +46,12 @@ class ApplicationController(
                 id = applications[i].id,
                 name = applications[i].name))
         }
-        return returnApplications.sortedBy { it.name } as MutableList<Application>
+        return if (returnApplications.size > 0){
+            returnApplications.sortedBy { it.name } as MutableList<Application>
+        } else{
+            returnApplications
+        }
+
     }
 
     @PostMapping("/{id}")
