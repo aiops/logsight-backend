@@ -16,17 +16,17 @@ email:
   password: logsight2021123!
 
 app:
-  baseUrl: https://logsight.ai/
+  baseUrl: http://localhost:4200
 
 kafka:
   bootstrapAddress: kafka:9092 # localhost:9093
   groupId: 1
 
 elasticsearch:
-  url: elasticsearch-demo:9200
+  url: elasticsearch:9200
 
 kibana:
-  url: kibana-demo:5601/demo
+  url: kibana:5601
 
 resources:
   path: /
