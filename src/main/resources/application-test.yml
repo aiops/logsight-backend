@@ -9,6 +9,11 @@ spring:
     username: logsight
     password: logsight
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
 email:
   host: smtp.gmail.com
   port: 587

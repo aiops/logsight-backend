@@ -5,19 +5,33 @@ import com.loxbear.logsight.models.ApplicationRequest
 import com.loxbear.logsight.models.ApplicationResponse
 import com.loxbear.logsight.models.IdResponse
 import com.loxbear.logsight.services.ApplicationService
+import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UsersService
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.json.JSONArray
+import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.http.*
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.postForEntity
+import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.lang.Thread.sleep
 
 
 @RestController
 @RequestMapping("/api/applications")
 class ApplicationController(
     val applicationService: ApplicationService,
-    val usersService: UsersService
+    val usersService: UsersService,
+    val kafkaService: KafkaService,
 ) {
+    val restTemplate = RestTemplateBuilder()
+        .build();
+
+    @Value("\${app.baseUrl}")
+    private val appUrl: String? = null
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
@@ -78,4 +92,52 @@ class ApplicationController(
         }
 
     }
+
+
+    @PostMapping("/uploadFile")
+    fun uploadFile(authentication: Authentication, @RequestParam("file") file: MultipartFile, @RequestParam("info") info: String): ResponseEntity<ApplicationResponse> {
+        val id = JSONObject(info).getLong("id")
+        if (file.isEmpty) {
+            return ResponseEntity(ApplicationResponse(
+                description = "No file attached.",
+                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
+        }
+        try {
+            val bytes = file.bytes
+            val jsonLogs = fileBytesToJson(bytes)
+            val jsonArrayLogs = jsonLogs.getJSONArray("log-messages")
+            val user = usersService.findByEmail(authentication.name)
+            val app = applicationService.findById(id)
+            val processedLogs = processLogs(jsonArrayLogs, jsonLogs, app, user.key) // verify json, include timestamps, etc.
+
+            this.restTemplate.postForEntity<String>(
+                "http://localhost:5444/api_v1/data", processedLogs).body!!
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return ResponseEntity(ApplicationResponse(
+            description = "Data uploaded successfully.",
+            status = HttpStatus.OK), HttpStatus.OK)
+    }
+
+    private fun processLogs(
+        jsonArrayLogs: JSONArray,
+        jsonLogs: JSONObject, application: com.loxbear.logsight.entities.Application?, userKey: String): Any {
+        for (i in 0 until jsonArrayLogs.length()){
+            jsonLogs.getJSONArray("log-messages").getJSONObject(i).put("private-key", userKey)
+            if (application != null) {
+                jsonLogs.getJSONArray("log-messages").getJSONObject(i).put("app", application.name)
+            }
+        }
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        return HttpEntity(jsonLogs.toString(), headers)
+    }
+
+    private fun fileBytesToJson(bytes: ByteArray): JSONObject {
+        return JSONObject(String(bytes, Charsets.UTF_8))
+    }
+
+
 }
