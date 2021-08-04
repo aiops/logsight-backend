@@ -21,3 +21,12 @@ CREATE TABLE applications (
     user_id BIGINT REFERENCES users(id),
     UNIQUE (user_id, name)
 );
+
+create table predefined_times(
+    id                BIGSERIAL PRIMARY KEY,
+    name text not null,
+    start_time    text not null,
+    end_time text not null,
+    date_time_type text not null,
+    user_id           BIGINT REFERENCES users(id)
+);
