@@ -147,6 +147,7 @@ class ApplicationController(
             val bytes = file.bytes
             val jsonLogs = fileBytesToJson(bytes)
             val jsonArrayLogs = jsonLogs.getJSONArray("log-messages")
+            println(jsonArrayLogs)
             val user = usersService.findByEmail(authentication.name)
             val app = applicationService.findById(id)
             val processedLogs = processLogs(jsonArrayLogs, jsonLogs, app, user.key) // verify json, include timestamps, etc.
@@ -154,10 +155,10 @@ class ApplicationController(
             pageUrl = if (appUrl?.contains("logsight.ai") == true){
                 appUrl.toString()
             } else {
-                appUrl.toString().split(":")[0] + ":5444"
+                "http://localhost:5444"
             }
             this.restTemplate.postForEntity<String>(
-                "http://$pageUrl/api_v1/data", processedLogs).body!!
+                "$pageUrl/api_v1/data", processedLogs).body!!
 
         } catch (e: IOException) {
             e.printStackTrace()
