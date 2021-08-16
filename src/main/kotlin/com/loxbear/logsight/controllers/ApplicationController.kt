@@ -25,7 +25,6 @@ class ApplicationController(
     val applicationService: ApplicationService,
     val usersService: UsersService,
     val kafkaService: KafkaService,
-    val usersService: UsersService,
     val predefinedTimesService: PredefinedTimesService
 ) {
     val restTemplate = RestTemplateBuilder()
