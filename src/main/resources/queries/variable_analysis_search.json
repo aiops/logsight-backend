@@ -16,7 +16,7 @@
     "2": {
       "date_histogram": {
         "field": "@timestamp",
-        "interval": "30s",
+        "interval": "interval_aggregate",
         "time_zone": "Europe/Berlin",
         "min_doc_count": 1
       }
