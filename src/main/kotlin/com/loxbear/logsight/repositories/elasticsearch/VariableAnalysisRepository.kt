@@ -22,11 +22,18 @@ class VariableAnalysisRepository {
 
     @Value("\${elasticsearch.url}")
     private val elasticsearchUrl: String? = null
-    
+
     @Value("\${resources.path}")
     private val resourcesPath: String = ""
-    
-    fun getTemplates(esIndexUserApp: String, startTime: String, stopTime: String, search: String?, userKey: String): String {
+
+    fun getTemplates(
+        esIndexUserApp: String,
+        startTime: String,
+        stopTime: String,
+        intervalAggregate: String,
+        search: String?,
+        userKey: String
+    ): String {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();
@@ -37,41 +44,74 @@ class VariableAnalysisRepository {
             readFileAsString("${resourcesPath}queries/variable_analysis.json")
         }
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("interval_aggregate", intervalAggregate)
             .replace("search_param", search ?: "")
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
-    fun getSpecificTemplate(esIndexUserApp: String, startTime: String, stopTime: String, template: String, param: String, paramValue: String, userKey: String): String {
+    fun getSpecificTemplate(
+        esIndexUserApp: String,
+        startTime: String,
+        stopTime: String,
+        intervalAggregate: String,
+        template: String,
+        param: String,
+        paramValue: String,
+        userKey: String
+    ): String {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();
         val jsonString = readFileAsString("${resourcesPath}queries/variable_analysis_specific_template.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("interval_aggregate", intervalAggregate)
             .replace("query_template", template)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
-    fun getSpecificTemplateDifferentParams(esIndexUserApp: String, startTime: String, stopTime: String, template: String, param: String, paramValue: String, userKey: String): LineChartData {
+    fun getSpecificTemplateDifferentParams(
+        esIndexUserApp: String,
+        startTime: String,
+        stopTime: String,
+        template: String,
+        param: String,
+        paramValue: String,
+        userKey: String
+    ): LineChartData {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();
-        val jsonString = readFileAsString("${resourcesPath}queries/variable_analysis_specific_template_grouped_stacked.json")
+        val jsonString =
+            readFileAsString("${resourcesPath}queries/variable_analysis_specific_template_grouped_stacked.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             .replace("query_template", template).replace("param_name", param)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>(
+            "http://$elasticsearchUrl/$esIndexUserApp/_search",
+            request
+        ).body!!
     }
 
-    fun getTopNTemplates(esIndexUserApp: String, startTime: String, stopTime: String, size: Int, userKey: String): LogLevelPieChartData {
+    fun getTopNTemplates(
+        esIndexUserApp: String,
+        startTime: String,
+        stopTime: String,
+        size: Int,
+        userKey: String
+    ): LogLevelPieChartData {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();
         val jsonString = readFileAsString("${resourcesPath}queries/top_5_templates.json")
-        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime).replace("template_size", size.toString())
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("template_size", size.toString())
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<LogLevelPieChartData>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<LogLevelPieChartData>(
+            "http://$elasticsearchUrl/$esIndexUserApp/_search",
+            request
+        ).body!!
     }
 
     fun getLogCountLineChart(esIndexUserApp: String, startTime: String, stopTime: String, userKey: String): String? {

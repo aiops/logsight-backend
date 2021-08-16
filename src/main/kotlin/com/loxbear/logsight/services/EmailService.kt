@@ -18,12 +18,14 @@ class EmailService(
         val activationUrl = "$baseUrl/auth/activate/${user.key}"
         val emailTo = user.email
         val body = "Please activate on the following link $activationUrl"
+        println(activationUrl)
         val subject = "Activate your account"
         sendEmail(emailTo, body, subject)
     }
 
     fun sendLoginEmail(user: LogsightUser, newLoginID: String) {
         val activationUrl = "$baseUrl/auth/activate/${newLoginID}" + "_" + user.key
+        println(activationUrl)
         val emailTo = user.email
         val body = "Please login on the following link $activationUrl"
         val subject = "EasyLogin to logsight.ai"

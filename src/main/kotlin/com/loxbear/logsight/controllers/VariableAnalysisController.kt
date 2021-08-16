@@ -9,42 +9,69 @@ import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.VariableAnalysisService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import utils.UtilsService
 
 
 @RestController
 @RequestMapping("/api/variable-analysis")
-class VariableAnalysisController(val variableAnalysisService: VariableAnalysisService,
-                                 val usersService: UsersService, val applicationService: ApplicationService) {
+class VariableAnalysisController(
+    val variableAnalysisService: VariableAnalysisService,
+    val usersService: UsersService, val applicationService: ApplicationService
+) {
 
     @GetMapping("/application/{id}")
-    fun getTemplates(@PathVariable id: Long,
-                     @RequestParam(required = false) search: String?,
-                     @RequestParam startTime: String,
-                     @RequestParam endTime: String,
-                     authentication: Authentication): List<VariableAnalysisHit> {
+    fun getTemplates(
+        @PathVariable id: Long,
+        @RequestParam(required = false) search: String?,
+        @RequestParam startTime: String,
+        @RequestParam endTime: String,
+        authentication: Authentication
+    ): List<VariableAnalysisHit> {
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getTemplates(applicationsIndexes, startTime, endTime, search, user)
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
+        return variableAnalysisService.getTemplates(
+            applicationsIndexes,
+            startTime,
+            endTime,
+            intervalAggregate,
+            search,
+            user
+        )
     }
 
     @PostMapping("/application/{id}/specific_template")
-    fun getSpecificTemplate(@PathVariable id: Long,
-                            @RequestBody specificTemplate: SpecificTemplateRequest,
-                            @RequestParam startTime: String,
-                            @RequestParam endTime: String,
-                            authentication: Authentication): Pair<String, List<LineChart>> {
+    fun getSpecificTemplate(
+        @PathVariable id: Long,
+        @RequestBody specificTemplate: SpecificTemplateRequest,
+        @RequestParam startTime: String,
+        @RequestParam endTime: String,
+        authentication: Authentication
+    ): Pair<String, List<LineChart>> {
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
         with(specificTemplate) {
-            return variableAnalysisService.getSpecificTemplateGrouped(applicationsIndexes, startTime, endTime, template, param, paramValue, user)
+            return variableAnalysisService.getSpecificTemplateGrouped(
+                applicationsIndexes,
+                startTime,
+                endTime,
+                intervalAggregate,
+                template,
+                param,
+                paramValue,
+                user
+            )
         }
     }
 
     @GetMapping("/application/{id}/top_n_templates")
-    fun getTop5Templates(@PathVariable id: Long,
-                         authentication: Authentication): Map<String, List<TopNTemplatesData>> {
+    fun getTop5Templates(
+        @PathVariable id: Long,
+        authentication: Authentication
+    ): Map<String, List<TopNTemplatesData>> {
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
@@ -52,10 +79,12 @@ class VariableAnalysisController(val variableAnalysisService: VariableAnalysisSe
     }
 
     @GetMapping("/application/{id}/log_count_line_chart")
-    fun getLogCountLineChart(@PathVariable id: Long,
-                             @RequestParam startTime: String,
-                             @RequestParam endTime: String,
-                             authentication: Authentication): List<LineChart> {
+    fun getLogCountLineChart(
+        @PathVariable id: Long,
+        @RequestParam startTime: String,
+        @RequestParam endTime: String,
+        authentication: Authentication
+    ): List<LineChart> {
         val user = usersService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)

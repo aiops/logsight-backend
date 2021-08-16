@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import utils.UtilsService.Companion.getTimeIntervalAggregate
 
 @RestController
 @RequestMapping("/api/incidents")
@@ -21,11 +22,12 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
     fun getTopKIncidentsTableData(authentication: Authentication,
                                   @RequestParam startTime: String,
                                   @RequestParam endTime: String,
+                                  @RequestParam numberOfIncidents: Int,
                                   @RequestParam(required = false) applicationId: Long?): List<TopKIncidentTable> {
         val user = usersService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, endTime, user)
+        return incidentsService.getTopKIncidentsTableData(applicationsIndexes, startTime, endTime, user, numberOfIncidents)
     }
 
     @GetMapping("/bar_chart_data")
@@ -36,7 +38,8 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
         val user = usersService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime, user)
+        val intervalAggregate = getTimeIntervalAggregate(startTime, endTime)
+        return incidentsService.getIncidentsBarChartData(applicationsIndexes, startTime, endTime, intervalAggregate, user)
     }
 
     @GetMapping("/table_data")
@@ -47,6 +50,7 @@ class IncidentsController(val incidentsService: IncidentService, val usersServic
         val user = usersService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime, user)
+        val intervalAggregate = getTimeIntervalAggregate(startTime, endTime)
+        return incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime, intervalAggregate, user)
     }
 }
