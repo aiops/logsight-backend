@@ -147,7 +147,6 @@ class ApplicationController(
             val bytes = file.bytes
             val jsonLogs = fileBytesToJson(bytes)
             val jsonArrayLogs = jsonLogs.getJSONArray("log-messages")
-            println(jsonArrayLogs)
             val user = usersService.findByEmail(authentication.name)
             val app = applicationService.findById(id)
             val processedLogs = processLogs(jsonArrayLogs, jsonLogs, app, user.key) // verify json, include timestamps, etc.
