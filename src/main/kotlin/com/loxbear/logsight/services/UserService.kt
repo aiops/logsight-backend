@@ -19,7 +19,7 @@ import utils.KeyGenerator
 import utils.UtilsService
 
 @Service
-class UsersService(
+class UserService(
     val repository: UserRepository,
     val applicationRepository: ApplicationRepository,
     val emailService: EmailService,
@@ -27,7 +27,7 @@ class UsersService(
     val kafkaService: KafkaService
 ) {
 
-    val logger = LoggerFactory.getLogger(UsersService::class.java)
+    val logger = LoggerFactory.getLogger(UserService::class.java)
     val restTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build();

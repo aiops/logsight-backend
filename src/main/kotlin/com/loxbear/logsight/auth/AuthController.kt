@@ -9,7 +9,7 @@ import com.loxbear.logsight.models.UserModel
 import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.security.SecurityConstants
 import com.loxbear.logsight.services.EmailService
-import com.loxbear.logsight.services.UsersService
+import com.loxbear.logsight.services.UserService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.postForEntity
-import utils.KeyGenerator
 import utils.UtilsService
 import java.lang.RuntimeException
 import java.util.*
@@ -31,7 +30,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(val usersService: UsersService,
+class AuthController(val userService: UserService,
                      val authenticationManager: AuthenticationManager,
                      val emailService: EmailService,
                      val repository: UserRepository) {
@@ -45,12 +44,12 @@ class AuthController(val usersService: UsersService,
 
     @PostMapping("/register")
     fun register(@RequestBody form: RegisterUserForm): LogsightUser? {
-        return usersService.createUser(form)
+        return userService.createUser(form)
     }
 
     @PostMapping("/register/demo")
     fun registerDemo(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
-        val result = usersService.registerUser(body["email"]!!)
+        val result = userService.registerUser(body["email"]!!)
         return if (result == null)
             ResponseEntity(HttpStatus.OK)
         else ResponseEntity(result, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -76,7 +75,7 @@ class AuthController(val usersService: UsersService,
         val user = repository.findByEmail(form.email).orElseThrow{
             RuntimeException("User not found!")
         }
-        val newLoginID = usersService.createLoginID(user)
+        val newLoginID = userService.createLoginID(user)
         emailService.sendLoginEmail(user, newLoginID)
         return ResponseEntity(HttpStatus.OK)
 
@@ -92,9 +91,9 @@ class AuthController(val usersService: UsersService,
 
     @PostMapping("/activate/login-link")
     fun loginLinkUser(@RequestBody body: Map<String, String>): UserModel?{
-        return usersService.activateUserLoginLink(body["loginID"]!!, body["key"]!!)
+        return userService.activateUserLoginLink(body["loginID"]!!, body["key"]!!)
     }
 
     @PostMapping("/activate")
-    fun activateUser(@RequestBody body: Map<String, String>): UserModel = usersService.activateUser(body["key"]!!)
+    fun activateUser(@RequestBody body: Map<String, String>): UserModel = userService.activateUser(body["key"]!!)
 }
