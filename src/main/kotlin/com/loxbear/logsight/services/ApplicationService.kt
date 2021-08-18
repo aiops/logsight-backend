@@ -100,6 +100,12 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
             application?.let { application -> application.id == it.id } ?: true
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_incidents" }
 
+
+    fun getApplicationIndexesForQuality(user: LogsightUser, application: Application?) =
+        findAllByUser(user).filter {
+            application?.let { application -> application.id == it.id } ?: true
+        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_quality" }
+
     @KafkaListener(topics = ["container_settings_ack"])
     @Transactional
     fun applicationCreatedListener(message: String) {

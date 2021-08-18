@@ -49,6 +49,9 @@ class UtilsService {
                     "30s"
                 }
             } else {
+                println("CC")
+                println(startTimeString)
+                println(endTimeString)
                 val startDate = LocalDateTime.parse(startTimeString, formatter)
                 val endDate = LocalDateTime.parse(endTimeString, formatter)
                 val differenceMinutes = ChronoUnit.MINUTES.between(startDate, endDate)
