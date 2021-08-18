@@ -4,16 +4,18 @@ import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 class UtilsService {
 
     companion object {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
         fun readFileAsString(path: String): String {
             return String(Files.readAllBytes(Paths.get(path)))
         }
@@ -49,8 +51,16 @@ class UtilsService {
                     "30s"
                 }
             } else {
-                val startDate = LocalDateTime.parse(startTimeString, formatter)
-                val endDate = LocalDateTime.parse(endTimeString, formatter)
+                val startDate = try {
+                    ZonedDateTime.parse(startTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                } catch (e: Exception) {
+                    LocalDateTime.parse(startTimeString, formatter)
+                }
+                val endDate = try {
+                    ZonedDateTime.parse(endTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                } catch (e: Exception) {
+                    LocalDateTime.parse(endTimeString, formatter)
+                }
                 val differenceMinutes = ChronoUnit.MINUTES.between(startDate, endDate)
                 if (differenceMinutes >= numberOfPoints) {
                     "${differenceMinutes / numberOfPoints}m"

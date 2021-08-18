@@ -4,15 +4,9 @@ import com.loxbear.logsight.charts.elasticsearch.LineChartData
 import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
 import com.loxbear.logsight.charts.elasticsearch.SystemOverviewData
 
-import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Repository
-import org.springframework.web.client.RestTemplate
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.security.core.Authentication
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import utils.UtilsService.Companion.readFileAsString
