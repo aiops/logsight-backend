@@ -8,33 +8,42 @@ import com.loxbear.logsight.services.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.util.logging.Logger
 
 @RestController
-@RequestMapping("/api/uploadFile")
+@RequestMapping("/api/application/{appID}/uploadFile")
 class LogFileController(
     val logService: LogService,
     val applicationService: ApplicationService,
     val userService: UserService
 ) {
 
-    @PostMapping("/json_file")
-    fun uploadFileJson(
-        authentication: Authentication,
-        @RequestParam("appID") appID: String,
-        @RequestParam("file") file: MultipartFile,
-    ): ResponseEntity<ApplicationResponse> {
-        return uploadFile(authentication, appID, file, LogFileType.LOSIGHT_JSON)
+    val log: Logger = Logger.getLogger(LogFileController::class.java.toString())
+
+    @GetMapping("/")
+    fun uploaderStatus(@PathVariable appID: Long): ResponseEntity<ApplicationResponse> {
+        return ResponseEntity(
+            ApplicationResponse(
+                description = "Ready to receive log data files for app $appID.",
+                status = HttpStatus.OK),
+            HttpStatus.OK)
     }
 
-    @PostMapping("/syslog_file")
+    @PostMapping("/logsightjson")
+    fun uploadFileJson(
+        authentication: Authentication,
+        @PathVariable appID: String,
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<ApplicationResponse> {
+        return uploadFile(authentication, appID.toLong(), file, LogFileType.LOSIGHT_JSON)
+    }
+
+    @PostMapping("/syslog")
     fun uploadFileSyslog(
         authentication: Authentication,
-        @RequestParam("appID") appID: String,
+        @PathVariable appID: Long,
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<ApplicationResponse> {
         return uploadFile(authentication, appID, file, LogFileType.SYSLOG)
@@ -42,11 +51,10 @@ class LogFileController(
 
     private fun uploadFile(
         authentication: Authentication,
-        appID: String,
+        appID: Long,
         file: MultipartFile,
         type: LogFileType
     ): ResponseEntity<ApplicationResponse>{
-
         logService.processFile(authentication.name, appID, file, type)
 
         return ResponseEntity(

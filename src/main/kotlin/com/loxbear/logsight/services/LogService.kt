@@ -1,10 +1,9 @@
 package com.loxbear.logsight.services
 
 import com.loxbear.logsight.entities.enums.LogFileType
-import com.loxbear.logsight.models.LogMessage
-import com.loxbear.logsight.models.LogMessageException
-import com.loxbear.logsight.repositories.elasticsearch.LogRepository
-import kotlinx.serialization.*
+import com.loxbear.logsight.models.log.*
+import com.loxbear.logsight.repositories.kafka.LogRepository
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -18,67 +17,75 @@ class LogService(
 ) {
 
     fun processFile(
-        authID: String,
-        appID: String,
+        authMail: String,
+        appID: Long,
         file: MultipartFile,
-        type: LogFileType
+        logType: LogFileType
     ) {
         if (file.isEmpty) {
-            throw LogMessageException("Uploaded file is empty.")
+            val msg = "Received log file is empty."
+            log.warning(msg)
+            throw LogMessageException(msg)
         }
-        when(type) {
-            LogFileType.LOSIGHT_JSON -> {
-                val logs = processJsonFile(file)
-                logRepository.sendToKafkaLogsightJSON(authID, appID, logs)
-            }
-            LogFileType.SYSLOG -> {
-                val logs = processSyslogFile(file)
-                logRepository.sendToKafkaSyslog(authID, appID, logs)
-            }
+
+        val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
+        val logs = when (logType) {
+            LogFileType.LOSIGHT_JSON -> processJsonFile(fileContent)
+            LogFileType.SYSLOG -> processSyslogFile(fileContent)
         }
+        logRepository.toKafka(authMail, appID, logType, logs)
     }
 
     private fun processJsonFile(
-        file: MultipartFile
-    ): List<LogMessage> {
-
+        fileContent: String
+    ): List<LogMessageLogsight> {
         val failedToParse = mutableListOf<String>()
-        val logs = mutableListOf<LogMessage>()
+        val logs = mutableListOf<LogMessageLogsight>()
 
-        try {
-            val jsonString = String(file.bytes, Charsets.UTF_8)
-            val jsonLogs = Json.parseToJsonElement(jsonString)
+        val jsonArray = strToJsonArray(fileContent)
+        jsonArray.map {
+            try {
+                Json.decodeFromJsonElement<LogMessageLogsight>(it)
+            } catch (e: SerializationException) {
+                failedToParse.add("Failed to parse log message. Reason: ${e.message}")
+            }
+        }.filterIsInstanceTo(logs)
 
-            jsonLogs
-                .jsonObject["log-messages"]!! //Catch null pointer exception
-                .jsonArray.map {
-                    try {
-                        Json.decodeFromJsonElement<LogMessage>(it)
-                    } catch (e: SerializationException) {
-                        failedToParse.add("Failed to parse log message ${e.message}")
-                    }
-                }
-                .filterIsInstanceTo(logs)
-        } catch (e: SerializationException) {
-            throw LogMessageException("Failed to parse JSON string. Invalid JSON format.", e)
-        } catch (e: NullPointerException) {
-            throw LogMessageException("JSON object requires \"log-messages\" as root key.", e)
-        } catch (e: IllegalArgumentException) {
-            throw LogMessageException("Not able deserialize JSON to LogMessage object.", e)
-        }
-
-        if(failedToParse.size > 0) {
+        if (failedToParse.size > 0) {
             log.warning("Failed to parse ${failedToParse.size} log entries.")
             log.fine(failedToParse.joinToString(separator = "\n"))
         }
         return logs
     }
 
-    private fun processSyslogFile(
-        file: MultipartFile
-    ): List<String>{
+    private fun strToJsonArray(jsonString: String): JsonArray {
+        val jsonLogs = try {
+            Json.parseToJsonElement(jsonString)
+        } catch (e: SerializationException) {
+            log.warning(e.message)
+            throw LogMessageException(e)
+        }
 
-        val syslogString = String(file.bytes, Charsets.UTF_8)
-        return syslogString.lines()
+        val jsonArray = try {
+            jsonLogs
+                .jsonObject["log-messages"]!! //Catch null pointer exception
+                .jsonArray
+        } catch (e: NullPointerException) {
+            val msg = "JSON object requires \"log-messages\" as key."
+            log.warning("$msg $e")
+            throw LogMessageException(msg, e)
+        } catch (e: IllegalArgumentException) {
+            val msg = "JSON element \"log-messages\" must be a json array."
+            log.warning("$msg $e")
+            throw LogMessageException(msg, e)
+        }
+
+        return jsonArray
+    }
+
+    private fun processSyslogFile(
+        fileContent: String
+    ): List<LogMessage> {
+        return fileContent.lines().filter { x -> x.isNotEmpty() }.map { LogMessageBasic(it) }
     }
 }
