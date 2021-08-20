@@ -8,6 +8,7 @@ import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.LogQualityTable
 import com.loxbear.logsight.repositories.elasticsearch.QualityRepository
 import com.loxbear.logsight.services.ApplicationService
+import org.json.JSONArray
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
@@ -19,13 +20,15 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
+import java.math.BigDecimal
+import java.math.MathContext
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 
 @Service
-class QualityService(val repository: QualityRepository, val applicationService: ApplicationService) {
+class LogCompareService(val repository: QualityRepository, val applicationService: ApplicationService) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     val restTemplate = RestTemplateBuilder()
         .build();
@@ -41,19 +44,24 @@ class QualityService(val repository: QualityRepository, val applicationService: 
     ): MutableList<LogQualityTable> {
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         val dataList = mutableListOf<LogQualityTable>()
-        JSONObject(repository.getLogQualityData(applicationsIndexes, startTime, stopTime, user.key))
+        val jsonData = JSONObject(repository.getLogQualityData(applicationsIndexes, startTime, stopTime, user.key))
             .getJSONObject("hits")
             .getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
-                val linguisticPrediction = jsonData.getJSONObject("_source")["prediction"] as Integer
+                val linguisticPrediction = jsonData.getJSONObject("_source")["linguistic_prediction"] as BigDecimal
                 val actualLevel = jsonData.getJSONObject("_source")["actual_level"].toString()
                 var predictedLevel: String = if (jsonData.getJSONObject("_source")["predicted_log_level"].toString() == "0"){
-                    "ERROR"
+                    "ERROR or WARNING"
                 }else{
-                    "INFO"
+                    "INFO or DEBUG"
                 }
-                val hasObject = jsonData.getJSONObject("_source")["obj"] != 0
-                val hasSubject = jsonData.getJSONObject("_source")["subj"] != 0
+                val suggestions = jsonData.getJSONObject("_source").getJSONArray("suggestions")[0] as JSONArray
+                val suggestionData = mutableListOf<String>()
+                for (i in suggestions){
+                    suggestionData.add(i as String)
+                }
+
+                val tags = jsonData.getJSONObject("_source").getJSONArray("suggestions")[1]
                 val appName = jsonData.getJSONObject("_source")["app_name"].toString()
                 val template = jsonData.getJSONObject("_source")["template"].toString()
                 val message = jsonData.getJSONObject("_source")["message"].toString()
@@ -89,9 +97,9 @@ class QualityService(val repository: QualityRepository, val applicationService: 
                         message = message,
                         predictedLevel = predictedLevel,
                         actualLevel = actualLevel,
-                        linguisticPrediction = linguisticPrediction,
-                        hasObject = hasObject,
-                        hasSubject = hasSubject,
+                        linguisticPrediction = linguisticPrediction.round(MathContext(3)),
+                        suggestions = suggestionData,
+                        tags = tags as String,
                         variableHit = variableHit
                     )
                 )

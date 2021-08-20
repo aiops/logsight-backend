@@ -2,6 +2,8 @@ package com.loxbear.logsight.models
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
+import org.json.JSONArray
+import java.math.BigDecimal
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class LogQualityTable(
@@ -13,8 +15,8 @@ data class LogQualityTable(
     val message: String,
     val predictedLevel: String,
     val actualLevel: String,
-    val linguisticPrediction: Integer,
-    val hasSubject: Boolean,
-    val hasObject: Boolean,
+    val linguisticPrediction: BigDecimal,
+    val suggestions: MutableList<String>,
+    val tags: String,
     val variableHit: VariableAnalysisHit
 )
