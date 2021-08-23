@@ -1,6 +1,6 @@
 package com.loxbear.logsight.services
 
-import com.loxbear.logsight.entities.enums.LogFileType
+import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.log.*
 import com.loxbear.logsight.repositories.kafka.LogRepository
 import kotlinx.serialization.SerializationException
@@ -20,7 +20,7 @@ class LogService(
         authMail: String,
         appID: Long,
         file: MultipartFile,
-        logType: LogFileType
+        logType: LogFileTypes
     ) {
         if (file.isEmpty) {
             val msg = "Received log file is empty."
@@ -30,8 +30,8 @@ class LogService(
 
         val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
         val logs = when (logType) {
-            LogFileType.LOSIGHT_JSON -> processJsonFile(fileContent)
-            LogFileType.SYSLOG -> processSyslogFile(fileContent)
+            LogFileTypes.LOSIGHT_JSON -> processJsonFile(fileContent)
+            LogFileTypes.SYSLOG -> processSyslogFile(fileContent)
         }
         logRepository.toKafka(authMail, appID, logType, logs)
     }

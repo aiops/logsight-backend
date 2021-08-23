@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class LogMessageKafka (
     val privateKey: String,
     val appName: String,
-    val logMessage: LogMessage
+    val logMessage: LogMessage,
 )

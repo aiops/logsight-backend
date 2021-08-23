@@ -1,7 +1,9 @@
 package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.entities.PredefinedTime
+import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.*
+import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.PredefinedTimesService
 import com.loxbear.logsight.services.KafkaService
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.*
 class ApplicationController(
     val applicationService: ApplicationService,
     val userService: UserService,
-    val kafkaService: KafkaService,
     val predefinedTimesService: PredefinedTimesService
 ) {
     val restTemplate = RestTemplateBuilder()
@@ -51,10 +52,10 @@ class ApplicationController(
     }
 
     @GetMapping("/user/{key}")
-    fun getApplicationsForUser(@PathVariable key: String): MutableList<Application> {
+    fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
         val user = userService.findByKey(key)
         val applications = applicationService.findAllByUser(user)
-        val returnApplications = mutableListOf<com.loxbear.logsight.models.Application>()
+        val returnApplications = mutableListOf<Application>()
         for (i in applications.indices) {
             returnApplications.add(
                 Application(
@@ -126,5 +127,10 @@ class ApplicationController(
         @PathVariable id: Long
     ) {
         predefinedTimesService.deleteById(id)
+    }
+
+    @GetMapping("/logFileFormats")
+    fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
+        return LogFileTypes.values().map{ LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
 }

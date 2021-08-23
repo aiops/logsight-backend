@@ -1,6 +1,6 @@
 package com.loxbear.logsight.repositories.kafka
 
-import com.loxbear.logsight.entities.enums.LogFileType
+import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.log.LogMessage
 import com.loxbear.logsight.models.log.LogMessageKafka
 import com.loxbear.logsight.services.ApplicationService
@@ -32,7 +32,7 @@ class LogRepository(
     fun toKafka(
         authMail: String,
         appID: Long,
-        logType: LogFileType,
+        logType: LogFileTypes,
         logs: Collection<LogMessage>
     ){
         val privateKey = userService.findByEmail(authMail).key

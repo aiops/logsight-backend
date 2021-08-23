@@ -20,7 +20,8 @@ data class LogMessageBasic (
 
 @Serializable
 data class LogMessageLogsight (
+    override val message: String,
     val timestamp: String? = null,
     val level: String? = null,
-    override val message: String
+    val tag: String? = null,
 ) : LogMessage()
