@@ -56,7 +56,7 @@ class AuthController(val userService: UserService,
     }
 
     @PostMapping("/login")
-    fun login(@RequestBody form: LoginUserForm): Map<String, String> {
+    fun login(@RequestBody form: LoginUserForm): ResponseEntity<String> {
         val authentication: Authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(form.email, form.password))
 
@@ -66,7 +66,7 @@ class AuthController(val userService: UserService,
             .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
             .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
 
-        return mapOf("token" to token)
+        return ResponseEntity("{ \"token\": \"$token\" }", HttpStatus.OK)
     }
 
 

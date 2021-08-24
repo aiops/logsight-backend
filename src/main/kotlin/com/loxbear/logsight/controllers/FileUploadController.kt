@@ -24,13 +24,11 @@ class FileUploadController(
     val log: Logger = Logger.getLogger(FileUploadController::class.java.toString())
 
     @GetMapping("/")
-    fun uploaderStatus(@PathVariable appID: Long): ResponseEntity<ApplicationResponse> {
+    fun uploaderStatus(@PathVariable appID: Long): ResponseEntity<String> {
         return ResponseEntity(
-            ApplicationResponse(
-                description = "Ready to receive log data files for app $appID.",
-                status = HttpStatus.OK
-            ),
-            HttpStatus.OK)
+            "Ready to receive log data files for app $appID.",
+            HttpStatus.OK
+        )
     }
 
     @PostMapping("/{logFileType}")

@@ -21,7 +21,7 @@ class LogMessageController(
         @PathVariable appID: Long,
         @RequestParam logMessage: LogMessageLogsight
     ): ResponseEntity<LogMessageLogsight> {
-        logRepository.toKafka(authentication.name, appID, LogFileTypes.LOSIGHT_JSON, listOf(logMessage))
+        logRepository.toKafka(authentication.name, appID, LogFileTypes.LOGSIGHT_JSON, listOf(logMessage))
 
         return ResponseEntity<LogMessageLogsight>(
             logMessage,

@@ -30,7 +30,7 @@ class LogService(
 
         val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
         val logs = when (logType) {
-            LogFileTypes.LOSIGHT_JSON -> processJsonFile(fileContent)
+            LogFileTypes.LOGSIGHT_JSON -> processJsonFile(fileContent)
             LogFileTypes.SYSLOG -> processSyslogFile(fileContent)
         }
         logRepository.toKafka(authMail, appID, logType, logs)
