@@ -1,7 +1,6 @@
 package com.loxbear.logsight.models
 
-data class LoginUserForm(
+data class UserForm(
     val email: String,
-
-    val password: String,
+    val password: String
 )

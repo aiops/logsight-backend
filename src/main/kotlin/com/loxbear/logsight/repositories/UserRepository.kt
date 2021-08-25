@@ -15,8 +15,6 @@ import java.util.*
 interface UserRepository : JpaRepository<LogsightUser, Long> {
     fun findByEmail(email: String): Optional<LogsightUser>
 
-    fun findByEmailAndPasswordAndActivatedIsTrue(email: String, password: String): Optional<LogsightUser>
-
     fun findByKey(key: String): Optional<LogsightUser>
 
     fun findByStripeCustomerId(key: String): Optional<LogsightUser>
