@@ -88,7 +88,8 @@ class VariableAnalysisController(
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user)
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
+        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user, intervalAggregate)
     }
 
 }

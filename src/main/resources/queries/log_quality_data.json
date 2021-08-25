@@ -1,15 +1,14 @@
 {
-  "aggs": {
-    "listAggregations": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "interval_aggregate",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+  "version": true,
+  "size": 1000,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "desc",
+        "unmapped_type": "boolean"
       }
     }
-  },
-  "size": 0,
+  ],
   "_source": {
     "excludes": []
   },
@@ -44,5 +43,17 @@
       "should": [],
       "must_not": []
     }
+  },
+  "highlight": {
+    "pre_tags": [
+      "@kibana-highlighted-field@"
+    ],
+    "post_tags": [
+      "@/kibana-highlighted-field@"
+    ],
+    "fields": {
+      "*": {}
+    },
+    "fragment_size": 2147483647
   }
 }

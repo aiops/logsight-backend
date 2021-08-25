@@ -27,6 +27,13 @@
     "bool": {
       "must": [
         {
+          "match_phrase": {
+            "tag.keyword": {
+              "query": "tag_label"
+            }
+          }
+        },
+        {
           "range": {
             "@timestamp": {
               "format": "strict_date_optional_time",
@@ -46,3 +53,5 @@
     }
   }
 }
+
+

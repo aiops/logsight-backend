@@ -1,11 +1,12 @@
 {
   "aggs": {
     "listAggregations": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "interval_aggregate",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+      "terms": {
+        "field": "tag.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 500
       }
     }
   },
@@ -25,17 +26,6 @@
   ],
   "query": {
     "bool": {
-      "must": [
-        {
-          "range": {
-            "@timestamp": {
-              "format": "strict_date_optional_time",
-              "gte": "start_time",
-              "lte": "stop_time"
-            }
-          }
-        }
-      ],
       "filter": [
         {
           "match_all": {}

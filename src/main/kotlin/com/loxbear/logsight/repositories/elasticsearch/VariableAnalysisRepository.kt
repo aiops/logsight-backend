@@ -114,12 +114,20 @@ class VariableAnalysisRepository {
         ).body!!
     }
 
-    fun getLogCountLineChart(esIndexUserApp: String, startTime: String, stopTime: String, userKey: String): String? {
+    fun getLogCountLineChart(
+        esIndexUserApp: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String,
+        intervalAggregate: String
+    ): String? {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();
         val jsonString: String = readFileAsString("${resourcesPath}queries/log_count_line_chart.json")
-        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val jsonRequest = jsonString.replace("start_time", startTime)
+            .replace("stop_time", stopTime)
+            .replace("interval_aggregate", intervalAggregate)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
