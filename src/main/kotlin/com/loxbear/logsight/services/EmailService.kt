@@ -5,7 +5,6 @@ import com.loxbear.logsight.entities.LogsightUser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.stereotype.Service
-import java.util.*
 
 
 @Service

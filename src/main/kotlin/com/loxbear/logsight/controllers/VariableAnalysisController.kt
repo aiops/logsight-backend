@@ -5,7 +5,7 @@ import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.models.SpecificTemplateRequest
 import com.loxbear.logsight.models.TopNTemplatesData
 import com.loxbear.logsight.services.ApplicationService
-import com.loxbear.logsight.services.UsersService
+import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.VariableAnalysisService
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -16,7 +16,7 @@ import utils.UtilsService
 @RequestMapping("/api/variable-analysis")
 class VariableAnalysisController(
     val variableAnalysisService: VariableAnalysisService,
-    val usersService: UsersService, val applicationService: ApplicationService
+    val userService: UserService, val applicationService: ApplicationService
 ) {
 
     @GetMapping("/application/{id}")
@@ -27,7 +27,7 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
         authentication: Authentication
     ): List<VariableAnalysisHit> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
@@ -49,7 +49,7 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
         authentication: Authentication
     ): Pair<String, List<LineChart>> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
@@ -72,7 +72,7 @@ class VariableAnalysisController(
         @PathVariable id: Long,
         authentication: Authentication
     ): Map<String, List<TopNTemplatesData>> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         return variableAnalysisService.getTopNTemplates(applicationsIndexes, user)
@@ -85,10 +85,11 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
         authentication: Authentication
     ): List<LineChart> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user)
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
+        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user, intervalAggregate)
     }
 
 }

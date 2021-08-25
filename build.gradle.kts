@@ -4,9 +4,10 @@ plugins {
     id("base")
     id("org.springframework.boot") version "2.4.2"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    kotlin("jvm") version "1.4.21"
-    kotlin("plugin.spring") version "1.4.21"
-    kotlin("plugin.jpa") version "1.4.21"
+    kotlin("jvm") version "1.4.31"
+    kotlin("plugin.spring") version "1.4.31"
+    kotlin("plugin.jpa") version "1.4.31"
+    kotlin("plugin.serialization") version "1.4.31"
 }
 
 group = "com.loxbear"
@@ -36,7 +37,7 @@ dependencies {
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
     implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
 }
 
 tasks.withType<KotlinCompile> {

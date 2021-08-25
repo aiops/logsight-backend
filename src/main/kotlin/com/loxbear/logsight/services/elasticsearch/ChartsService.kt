@@ -4,7 +4,6 @@ import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
 import com.loxbear.logsight.services.ApplicationService
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import utils.UtilsService
 import java.time.ZonedDateTime
@@ -20,11 +19,10 @@ class ChartsService(val repository: ChartsRepository,
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
-                    var tmp = ""
-                    if (it2.key.toString() == "0") {
-                        tmp = "Normal"
+                    val tmp = if (it2.key.toString() == "0") {
+                        "Normal"
                     } else {
-                        tmp = "Anomaly"
+                        "Anomaly"
                     }
                     LineChartSeries(name = tmp, value = it2.docCount)
                 }

@@ -8,6 +8,7 @@ import com.loxbear.logsight.models.LogQualityTable
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.IncidentService
+import com.loxbear.logsight.services.elasticsearch.LogCompareService
 import com.loxbear.logsight.services.elasticsearch.QualityService
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
