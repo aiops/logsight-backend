@@ -6,7 +6,7 @@ import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.charts.elasticsearch.LogQualityOverview
 import com.loxbear.logsight.models.LogQualityTable
 import com.loxbear.logsight.services.ApplicationService
-import com.loxbear.logsight.services.UsersService
+import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.IncidentService
 import com.loxbear.logsight.services.elasticsearch.LogCompareService
 import com.loxbear.logsight.services.elasticsearch.QualityService
@@ -21,7 +21,7 @@ import utils.UtilsService.Companion.getTimeIntervalAggregate
 
 @RestController
 @RequestMapping("/api/quality")
-class QualityController(val qualityService: QualityService, val usersService: UsersService,
+class QualityController(val qualityService: QualityService, val userService: UserService,
                           val applicationService: ApplicationService) {
 
     val restTemplate = RestTemplateBuilder()
@@ -34,7 +34,7 @@ class QualityController(val qualityService: QualityService, val usersService: Us
                                   @RequestParam endTime: String,
                                   @RequestParam(required = false) applicationId: Long?): MutableList<LogQualityTable> {
 
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
         val qualityData = qualityService.getLogQualityData(applicationsIndexes, startTime, endTime, user)
@@ -46,7 +46,7 @@ class QualityController(val qualityService: QualityService, val usersService: Us
                           @RequestParam startTime: String,
                           @RequestParam endTime: String,
                           @RequestParam(required = false) applicationId: Long?): MutableList<LogQualityOverview> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
         val qualityData = qualityService.getLogQualityOverview(applicationsIndexes, startTime, endTime, user)
@@ -59,7 +59,7 @@ class QualityController(val qualityService: QualityService, val usersService: Us
                               @RequestParam startTime: String,
                               @RequestParam endTime: String,
                               @RequestParam(required = false) applicationId: Long?): HttpStatus {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
         return qualityService.computeLogQuality(applicationsIndexes, startTime, endTime, user)

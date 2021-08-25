@@ -8,7 +8,6 @@ import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.PredefinedTimesService
 import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UserService
-import com.loxbear.logsight.services.UsersService
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject

@@ -2,7 +2,7 @@ package com.loxbear.logsight.controllers
 import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.KafkaService
-import com.loxbear.logsight.services.UsersService
+import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.LogCompareService
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.security.core.Authentication
@@ -12,7 +12,7 @@ import utils.UtilsService
 
 @RestController
 @RequestMapping("/api/log_compare")
-class LogCompareController(val logCompareService: LogCompareService, val usersService: UsersService,
+class LogCompareController(val logCompareService: LogCompareService, val userService: UserService,
                         val applicationService: ApplicationService, val kafkaService: KafkaService) {
 
     val restTemplate = RestTemplateBuilder()
@@ -22,7 +22,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
     fun getLogQualityData(authentication: Authentication,
                           @RequestParam(required = true) applicationId: Long?): MutableList<String> {
 
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
         val applicationVersions = logCompareService.getApplicationVersions(applicationsIndexes, user)
@@ -35,7 +35,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
                           @RequestParam baselineTagId: String,
                           @RequestParam compareTagId: String
                           ) {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
 //        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
         if (application != null) {
@@ -51,7 +51,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
         @RequestParam(required = false) applicationId: Long,
         @RequestParam(required = false) tag: String
     ): List<LineChart> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
@@ -64,7 +64,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
                                  @RequestParam endTime: String,
                                  @RequestParam(required = false) applicationId: Long,
                                  @RequestParam(required = false) tag: String): List<LineChart> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
@@ -81,7 +81,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
         @RequestParam compareTagId: String,
         @RequestParam(required = false) applicationId: Long
     ): List<LineChart> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
@@ -104,7 +104,7 @@ class LogCompareController(val logCompareService: LogCompareService, val usersSe
                           @RequestParam baselineTagId: String,
                           @RequestParam compareTagId: String){
 
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
         val data = logCompareService.getLogCompareData(applicationsIndexes, startTime, endTime, user, baselineTagId, compareTagId)
