@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter
 
 
 @Service
-class LogCompareService(val repository: QualityRepository, val applicationService: ApplicationService) {
+class QualityService(val repository: QualityRepository, val applicationService: ApplicationService) {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     val restTemplate = RestTemplateBuilder()
         .build();

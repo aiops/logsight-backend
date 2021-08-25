@@ -6,6 +6,17 @@
         "interval": "interval_aggregate",
         "time_zone": "Europe/Berlin",
         "min_doc_count": 1
+      },
+      "aggs": {
+        "listBuckets": {
+          "terms": {
+            "field": "prediction",
+            "order": {
+              "_count": "desc"
+            },
+            "size": 50
+          }
+        }
       }
     }
   },
@@ -26,6 +37,13 @@
   "query": {
     "bool": {
       "must": [
+        {
+          "match_phrase": {
+            "tag.keyword": {
+              "query": "tag_label"
+            }
+          }
+        },
         {
           "range": {
             "@timestamp": {

@@ -1,0 +1,77 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "terms": {
+        "field": "template.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 500
+      },
+      "aggs": {
+        "tags": {
+          "terms": {
+            "field": "tag.keyword",
+            "order": {
+              "_count": "desc"
+            },
+            "size": 500
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
+  "_source": {
+    "excludes": []
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {},
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "bool": {
+            "should": [
+              {
+                "match_phrase": {
+                  "tag.keyword": "baseline"
+                }
+              },
+              {
+                "match_phrase": {
+                  "tag.keyword": "compare"
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        },
+        {
+          "range": {
+            "@timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
+      "filter": [
+        {
+          "match_all": {}
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

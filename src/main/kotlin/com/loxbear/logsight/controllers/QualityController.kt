@@ -9,6 +9,7 @@ import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UsersService
 import com.loxbear.logsight.services.elasticsearch.IncidentService
 import com.loxbear.logsight.services.elasticsearch.LogCompareService
+import com.loxbear.logsight.services.elasticsearch.QualityService
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
@@ -20,7 +21,7 @@ import utils.UtilsService.Companion.getTimeIntervalAggregate
 
 @RestController
 @RequestMapping("/api/quality")
-class QualityController(val qualityService: LogCompareService, val usersService: UsersService,
+class QualityController(val qualityService: QualityService, val usersService: UsersService,
                           val applicationService: ApplicationService) {
 
     val restTemplate = RestTemplateBuilder()

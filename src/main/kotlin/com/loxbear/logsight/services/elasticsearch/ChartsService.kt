@@ -4,7 +4,6 @@ import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
 import com.loxbear.logsight.services.ApplicationService
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import utils.UtilsService
 import java.time.ZonedDateTime
