@@ -19,11 +19,10 @@ class ChartsService(val repository: ChartsRepository,
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
-                    var tmp = ""
-                    if (it2.key.toString() == "0") {
-                        tmp = "Normal"
+                    val tmp = if (it2.key.toString() == "0") {
+                        "Normal"
                     } else {
-                        tmp = "Anomaly"
+                        "Anomaly"
                     }
                     LineChartSeries(name = tmp, value = it2.docCount)
                 }

@@ -1,10 +1,13 @@
 package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.entities.PredefinedTime
+import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.*
+import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.PredefinedTimesService
 import com.loxbear.logsight.services.KafkaService
+import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.UsersService
 import org.json.JSONArray
 import org.json.JSONException
@@ -14,18 +17,13 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.*
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.postForEntity
-import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.lang.Thread.sleep
 
 
 @RestController
 @RequestMapping("/api/applications")
 class ApplicationController(
     val applicationService: ApplicationService,
-    val usersService: UsersService,
-    val kafkaService: KafkaService,
+    val userService: UserService,
     val predefinedTimesService: PredefinedTimesService
 ) {
     val restTemplate = RestTemplateBuilder()
@@ -36,7 +34,7 @@ class ApplicationController(
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
-        val user = usersService.findByKey(body.key)
+        val user = userService.findByKey(body.key)
         val app = applicationService.createApplication(body.name, user)
         return if (app != null) {
             ResponseEntity(
@@ -58,10 +56,10 @@ class ApplicationController(
     }
 
     @GetMapping("/user/{key}")
-    fun getApplicationsForUser(@PathVariable key: String): MutableList<Application> {
-        val user = usersService.findByKey(key)
+    fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
+        val user = userService.findByKey(key)
         val applications = applicationService.findAllByUser(user)
-        val returnApplications = mutableListOf<com.loxbear.logsight.models.Application>()
+        val returnApplications = mutableListOf<Application>()
         for (i in applications.indices) {
             returnApplications.add(
                 Application(
@@ -86,7 +84,7 @@ class ApplicationController(
         authentication: Authentication?
     ): ResponseEntity<Any> {
         if (authentication == null) {
-            if (key == null || !usersService.existsByKey(key)) {
+            if (key == null || !userService.existsByKey(key)) {
                 return ResponseEntity(
                     ApplicationResponse(
                         description = "User is not authenticated or the user does not exist!",
@@ -114,7 +112,7 @@ class ApplicationController(
 
     @GetMapping("/user/predefined_times")
     fun getPredefinedTimesForUser(authentication: Authentication): List<PredefinedTime> {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         return predefinedTimesService.findAllByUser(user)
     }
 
@@ -123,7 +121,7 @@ class ApplicationController(
         authentication: Authentication,
         @RequestBody request: PredefinedTimeRequest
     ): PredefinedTime {
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         return predefinedTimesService.createPredefinedTimesForUser(user, request)
     }
 
@@ -135,64 +133,8 @@ class ApplicationController(
         predefinedTimesService.deleteById(id)
     }
 
-
-    @PostMapping("/uploadFile")
-    fun uploadFile(authentication: Authentication, @RequestParam("file") file: MultipartFile, @RequestParam("info") info: String): ResponseEntity<ApplicationResponse> {
-        val id = JSONObject(info).getLong("id")
-        if (file.isEmpty) {
-            return ResponseEntity(ApplicationResponse(
-                description = "No file attached.",
-                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
-        }
-        try {
-            val bytes = file.bytes
-            val jsonLogs = fileBytesToJson(bytes)
-            val jsonArrayLogs = jsonLogs.getJSONArray("log-messages")
-            val user = usersService.findByEmail(authentication.name)
-            val app = applicationService.findById(id)
-            val processedLogs = processLogs(jsonArrayLogs, jsonLogs, app, user.key) // verify json, include timestamps, etc.
-            var pageUrl = ""
-            pageUrl = if (appUrl?.contains("logsight.ai") == true){
-                appUrl.toString()
-            } else {
-                "http://localhost:5444"
-            }
-            this.restTemplate.postForEntity<String>(
-                "$pageUrl/api_v1/data", processedLogs).body!!
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return ResponseEntity(ApplicationResponse(
-                description = "Invalid JSON format.",
-                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-            return ResponseEntity(ApplicationResponse(
-                description = "Invalid JSON format.",
-                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
-        }
-        return ResponseEntity(ApplicationResponse(
-            description = "Data uploaded successfully.",
-            status = HttpStatus.OK), HttpStatus.OK)
+    @GetMapping("/logFileFormats")
+    fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
+        return LogFileTypes.values().map{ LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
-
-    private fun processLogs(
-        jsonArrayLogs: JSONArray,
-        jsonLogs: JSONObject, application: com.loxbear.logsight.entities.Application?, userKey: String): Any {
-        for (i in 0 until jsonArrayLogs.length()){
-            jsonLogs.getJSONArray("log-messages").getJSONObject(i).put("private-key", userKey)
-            if (application != null) {
-                jsonLogs.getJSONArray("log-messages").getJSONObject(i).put("app", application.name)
-            }
-        }
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-        return HttpEntity(jsonLogs.toString(), headers)
-    }
-
-    private fun fileBytesToJson(bytes: ByteArray): JSONObject {
-        return JSONObject(String(bytes, Charsets.UTF_8))
-    }
-
-
 }

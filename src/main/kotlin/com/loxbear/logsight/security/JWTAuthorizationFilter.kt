@@ -1,31 +1,19 @@
 package com.loxbear.logsight.security
 
-import java.util.ArrayList
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-
-import javax.servlet.http.HttpServletRequest
-
-import org.springframework.security.core.context.SecurityContextHolder
-
-import javax.servlet.ServletException
-
-import java.io.IOException
-
-import javax.servlet.FilterChain
-
-import javax.servlet.http.HttpServletResponse
-
-import org.springframework.security.authentication.AuthenticationManager
-import com.loxbear.logsight.security.SecurityConstants
 import com.loxbear.logsight.security.SecurityConstants.HEADER_STRING
 import com.loxbear.logsight.security.SecurityConstants.SECRET
 import com.loxbear.logsight.security.SecurityConstants.TOKEN_PREFIX
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
-import kotlin.jvm.Throws
+import java.io.IOException
+import javax.servlet.FilterChain
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 
 class JWTAuthorizationFilter(authManager: AuthenticationManager?) : BasicAuthenticationFilter(authManager) {

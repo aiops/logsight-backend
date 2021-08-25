@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.loxbear.logsight.models.CheckoutPayment
 import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.PaymentService
-import com.loxbear.logsight.services.UsersService
+import com.loxbear.logsight.services.UserService
 import com.stripe.Stripe
 import com.stripe.exception.SignatureVerificationException
 import com.stripe.exception.StripeException
@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest
 @RestController
 @RequestMapping("/api/payments")
 class PaymentController(
-    val usersService: UsersService,
+    val userService: UserService,
     val paymentService: PaymentService,
     val kafkaService: KafkaService
 ) {
@@ -39,7 +39,7 @@ class PaymentController(
     @PostMapping
     fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment, authentication: Authentication): String? {
         init()
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val stripeCustomerID: String
 
         if (user.stripeCustomerId == null){
@@ -112,7 +112,7 @@ class PaymentController(
         }
 
         val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
-        val user = usersService.findByStripeCustomerID(customerId)
+        val user = userService.findByStripeCustomerID(customerId)
 
         when (event?.type) {
 
@@ -156,7 +156,7 @@ class PaymentController(
     @PostMapping("/customer_portal")
     fun customerPortal(authentication: Authentication): String? {
         init()
-        val user = usersService.findByEmail(authentication.name)
+        val user = userService.findByEmail(authentication.name)
         val stripeCustomerID = user.stripeCustomerId
         val domainUrl = "http://localhost:4200"
 
