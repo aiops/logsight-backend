@@ -1,11 +1,24 @@
 {
   "aggs": {
     "listAggregations": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "interval_aggregate",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+      "terms": {
+        "field": "app_name.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 5
+      },
+      "aggs": {
+        "logLevelScore": {
+          "avg": {
+            "field": "log_level_score"
+          }
+        },
+        "linguisticPrediction": {
+          "avg": {
+            "field": "prediction"
+          }
+        }
       }
     }
   },

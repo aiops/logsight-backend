@@ -7,6 +7,7 @@ import com.loxbear.logsight.services.PredefinedTimesService
 import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UsersService
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -147,7 +148,6 @@ class ApplicationController(
             val bytes = file.bytes
             val jsonLogs = fileBytesToJson(bytes)
             val jsonArrayLogs = jsonLogs.getJSONArray("log-messages")
-            println(jsonArrayLogs)
             val user = usersService.findByEmail(authentication.name)
             val app = applicationService.findById(id)
             val processedLogs = processLogs(jsonArrayLogs, jsonLogs, app, user.key) // verify json, include timestamps, etc.
@@ -162,6 +162,14 @@ class ApplicationController(
 
         } catch (e: IOException) {
             e.printStackTrace()
+            return ResponseEntity(ApplicationResponse(
+                description = "Invalid JSON format.",
+                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
+        } catch (e: JSONException) {
+            e.printStackTrace()
+            return ResponseEntity(ApplicationResponse(
+                description = "Invalid JSON format.",
+                status = HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST)
         }
         return ResponseEntity(ApplicationResponse(
             description = "Data uploaded successfully.",

@@ -222,9 +222,10 @@ class VariableAnalysisService(
         applicationsIndexes: String,
         startTime: String,
         stopTime: String,
-        user: LogsightUser
+        user: LogsightUser,
+        intervalAggregate: String
     ): List<LineChart> {
-        val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime, user.key))
+        val resp = JSONObject(repository.getLogCountLineChart(applicationsIndexes, startTime, stopTime, user.key, intervalAggregate))
         val lineChartSeries =
             resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
                 val obj = JSONObject(it.toString())
