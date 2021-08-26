@@ -3,8 +3,9 @@ package com.loxbear.logsight.services
 import com.loxbear.logsight.encoder
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.entities.LogsightUser
-import com.loxbear.logsight.models.UserForm
-import com.loxbear.logsight.models.UserModel
+import com.loxbear.logsight.models.auth.Email
+import com.loxbear.logsight.models.auth.UserActivateForm
+import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.repositories.ApplicationRepository
 import com.loxbear.logsight.repositories.UserRepository
 import org.json.JSONObject
@@ -12,7 +13,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.ResponseEntity
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,21 +41,47 @@ class UserService(
     @Value("\${elasticsearch.url}")
     private val elasticUrl: String? = null
 
+    fun createUser(userForm: UserRegisterForm): LogsightUser? =
+        createUser(LogsightUser(
+            id = 0,  // Will be replaced by auto-generated value
+            email = userForm.email,
+            password = encoder().encode(userForm.password),
+            key = KeyGenerator.generate(),
+        ))
+
     @Transactional
-    fun createUser(user: UserForm): ResponseEntity<LogsightUser>? =
-        userRepository.findByEmail(user.email).map { currentUser ->
-            ResponseEntity.badRequest().body(currentUser)
-        }.orElse(
-            ResponseEntity.ok().body(userRepository.save(
-                LogsightUser(
-                    id = 0,  // Will be replaced by auto-generated value
-                    email = user.email,
-                    password = encoder().encode(KeyGenerator.generate()),
-                    key = KeyGenerator.generate(),
-                    loginID = KeyGenerator.generate()
-                )
-            ))
-        )
+    fun createUser(user: LogsightUser): LogsightUser? {
+        return if (userRepository.findByEmail(user.email).isEmpty) {
+            userRepository.save(user)
+        } else {
+            logger.warn("User with email ${user.email} already exists." )
+            null
+        }
+    }
+
+    fun getUser(userId: Long): LogsightUser? =
+        userRepository.findById(userId).map { user -> user }.orElse(null)
+
+    fun getUser(email: String): LogsightUser? =
+        userRepository.findByEmail(email).map { user -> user }.orElse(null)
+
+    fun activateUser(userActivate: UserActivateForm): LogsightUser? =
+        getUser(userActivate.id)?.let { user ->
+            if(userActivate.key == user.key)
+                updateUser(user.copy(activated = true))
+            else
+                null
+        }
+
+    fun changePassword(userForm: UserRegisterForm): LogsightUser? =
+        getUser(userForm.email)?.let { user -> updateUser(user.copy(password = userForm.password)) }
+
+
+    @Transactional
+    fun updateUser(user: LogsightUser): LogsightUser? = userRepository.save(user)
+
+
+
 
     //createPersonalKibana(user)
     //applicationService.createApplication("compute_sample_app", user)
@@ -66,65 +92,7 @@ class UserService(
     fun findByKey(key: String): LogsightUser =
         userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
 
-    @Transactional
-    fun activateUser(key: String): UserModel {
-        logger.info("Activating user with key [{}]", key)
-        val user = findByKey(key)
-        userRepository.activateUser(key)
-        with(user) {
-            return UserModel(
-                id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
-                availableData = availableData, usedData = usedData
-            )
-        }
-    }
-
-    @Transactional
-    fun updateUserPassword(email: String, password: String): ResponseEntity<LogsightUser> =
-        userRepository.findByEmail(email).map { currentUser ->
-            val updatedTask: LogsightUser =
-                currentUser.copy(
-                    password = password
-                )
-            ResponseEntity.ok().body(userRepository.save(updatedTask))
-        }.orElse(ResponseEntity.notFound().build())
-
-    @Transactional
-    fun createLoginID(user: LogsightUser): String {
-        val loginID = KeyGenerator.generate()
-        userRepository.updateLoginID(loginID, user.key)
-        return loginID
-    }
-
-    fun activateUserLoginLink(loginID: String, key: String): UserModel? {
-        val user = findByKey(key)
-        return if (user.loginID == loginID) {
-            UserModel(
-                id = user.id,
-                email = user.email,
-                activated = user.activated,
-                key = user.key,
-                hasPaid = user.hasPaid,
-                availableData = user.availableData,
-                usedData = user.usedData
-            )
-        } else {
-            null
-        }
-    }
-
     fun findAllByUser(user: LogsightUser): List<Application> = applicationRepository.findAllByUser(user)
-
-    fun getApplicationIndicesForKibana(user: LogsightUser) =
-        findAllByUser(user).joinToString(",") {
-            "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_log_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_count_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_incidents\""
-        }
 
     fun findByEmail(email: String): LogsightUser {
         return userRepository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
@@ -167,13 +135,18 @@ class UserService(
         updateUsedData(json.getString("private_key"), json.getLong("quantity"))
     }
 
-    @Transactional
     fun updateUsedData(key: String, usedData: Long) {
         val user = findByKey(key)
         val usedDataSum = user.usedData + usedData
         userRepository.updateUsedData(key, usedDataSum)
         if (usedData > user.availableData) {
-            emailService.sendAvailableDataExceededEmail(user)
+            emailService.sendEmail(
+                Email(
+                    mailTo = user.email,
+                    subject = "logsight.ai data limit exceeded",
+                    body = "Your data has exceeded"
+                )
+            )
             kafkaService.updatePayment(user.key, false)
         }
     }

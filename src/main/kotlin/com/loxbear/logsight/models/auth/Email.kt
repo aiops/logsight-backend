@@ -1,13 +1,14 @@
-package com.loxbear.logsight.models
+package com.loxbear.logsight.models.auth
 
 import org.springframework.mail.SimpleMailMessage
 
 data class Email(
+    val mailTo: String,
     val mailFrom: String = "logsight.ai",
     val subject: String,
     val body: String
 ) {
-    fun getSimpleMailMessage(mailTo: String): SimpleMailMessage {
+    fun getSimpleMailMessage(): SimpleMailMessage {
         return with(SimpleMailMessage()) {
             setTo(mailTo)
             setFrom(mailFrom)
