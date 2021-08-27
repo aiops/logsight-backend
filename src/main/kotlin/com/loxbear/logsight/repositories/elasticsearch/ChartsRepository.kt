@@ -3,6 +3,7 @@ package com.loxbear.logsight.repositories.elasticsearch
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
 import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
 import com.loxbear.logsight.charts.elasticsearch.SystemOverviewData
+import com.loxbear.logsight.repositories.UserRepository
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Repository
@@ -14,39 +15,32 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Repository
-class ChartsRepository {
-//    val restTemplate = RestTemplateBuilder()
-//    .basicAuthentication("elastic", "elasticsearchpassword")
-//    .build();
-//    val restTemplate = RestTemplate()
+class ChartsRepository(
+    val userRepository: UserRepository,
+) {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String = "localhost:9200"
+    private val elasticsearchUrl: String = ""
 
     @Value("\${resources.path}")
     private val resourcesPath: String = ""
 
-//    fun getLineChartData(): LineChartData {
-//        val jsonRequest: String = readFileAsString("${resourcesPath}queries/first_plot_request.json")
-//        val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-//        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/1234-213_app_name_test_log_ad/_search", request).body!!
-//    }
-
     fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LineChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
+            .basicAuthentication(user.email, user.key)
             .build();
         val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-
         return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelPieChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString: String = readFileAsString("${resourcesPath}queries/log_level_pie_chart_request.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
@@ -55,9 +49,10 @@ class ChartsRepository {
     }
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LineChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString: String = readFileAsString("${resourcesPath}queries/log_level_stacked_line_chart_request.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
@@ -66,9 +61,10 @@ class ChartsRepository {
 
     fun getSystemOverviewHeatmapChartData(esIndexUserAppLogAd: String,
                                           startTime: String, stopTime: String, userKey: String): SystemOverviewData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview_heatmap_request.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)

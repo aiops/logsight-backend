@@ -8,6 +8,7 @@ import com.loxbear.logsight.models.auth.Token
 import com.loxbear.logsight.models.auth.UserLoginForm
 import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.security.SecurityConstants
+import com.loxbear.logsight.services.elasticsearch.ElasticsearchService
 import com.stripe.exception.AuthenticationException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationManager
@@ -22,19 +23,23 @@ class AuthService(
     val userService: UserService,
     val emailService: EmailService,
     val authenticationManager: AuthenticationManager,
+    val elasticsearchService: ElasticsearchService,
 ) {
 
     fun registerUser(userForm: UserRegisterForm): LogsightUser? {
         val password = utils.KeyGenerator.generate()
         return userService.createUser(userForm.copy(password=password))?.let { user ->
-            emailService.sendEmail(
-                Email(
-                    mailTo = user.email,
-                    subject = "Logsight.ai: Activate your account",
-                    body = "Please activate on the following link " +
-                            "$baseUrl/auth/activate/${user.id}/${user.key}/$password"
-                )
-            )?.let { user }
+            if (elasticsearchService.createForLogsightUser(user))
+                emailService.sendEmail(
+                    Email(
+                        mailTo = user.email,
+                        subject = "Logsight.ai: Activate your account",
+                        body = "Please activate on the following link " +
+                                "$baseUrl/auth/activate/${user.id}/${user.key}/$password"
+                    )
+                )?.let { user }
+            else
+                null
         }
     }
 
@@ -67,7 +72,7 @@ class AuthService(
                     body = "You can login via " +
                             "$baseUrl/auth/login/${user.id}/$newPassword"
                 )
-            ).let { user }
+            )?.let { user }
         }
     }
 }

@@ -76,18 +76,12 @@ class UserService(
     fun changePassword(userForm: UserRegisterForm): LogsightUser? =
         getUser(userForm.email)?.let { user -> updateUser(user.copy(password = userForm.password)) }
 
-
     @Transactional
     fun updateUser(user: LogsightUser): LogsightUser? = userRepository.save(user)
 
-
-
-
-    //createPersonalKibana(user)
     //applicationService.createApplication("compute_sample_app", user)
     //applicationService.createApplication("auth_sample_app", user)
     //applicationService.createApplication("auth2_sample_app", user)
-
 
     fun findByKey(key: String): LogsightUser =
         userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
@@ -100,32 +94,6 @@ class UserService(
 
     fun findByStripeCustomerID(id: String): LogsightUser {
         return userRepository.findByStripeCustomerId(id).orElseThrow { Exception("User with StripeID $id not found") }
-    }
-
-    fun createPersonalKibana(user: LogsightUser) {
-        val userKey = user.key
-        var request = UtilsService.createKibanaRequestWithHeaders(
-            "{ \"id\": \"kibana_space_$userKey\", " +
-                    "\"name\": \"Logsight\", " +
-                    "\"description\" : \"This is your Logsight Space\" }"
-        )
-        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
-
-        request = UtilsService.createKibanaRequestWithHeaders(
-            "{ \"metadata\" : { \"version\" : 1 }," +
-                    "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
-                    "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
-                    "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
-        )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
-
-
-        request = UtilsService.createElasticSearchRequestWithHeaders(
-            "{ \"password\" : \"test-test\", " +
-                    "\"roles\" : [\"kibana_role_$userKey\"] }"
-        )
-        restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
-
     }
 
     @Transactional

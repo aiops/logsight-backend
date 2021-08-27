@@ -9,12 +9,11 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.logging.Logger
 
-val log: Logger = Logger.getLogger("LogService")
-
 @Service
 class LogService(
     val logRepository: LogRepository
 ) {
+    val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
     fun processFile(
         authMail: String,

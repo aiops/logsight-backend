@@ -5,7 +5,9 @@ import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.entities.enums.ApplicationAction
 import com.loxbear.logsight.entities.enums.ApplicationStatus
 import com.loxbear.logsight.repositories.ApplicationRepository
+import com.loxbear.logsight.services.elasticsearch.ElasticsearchService
 import org.json.JSONObject
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -19,8 +21,13 @@ import java.util.regex.Pattern
 import javax.transaction.Transactional
 
 @Service
-class ApplicationService(val repository: ApplicationRepository, val kafkaService: KafkaService) {
-    val logger = LoggerFactory.getLogger(ApplicationService::class.java)
+class ApplicationService(
+    val repository: ApplicationRepository,
+    val kafkaService: KafkaService,
+    val elasticsearchService: ElasticsearchService,
+) {
+
+    val logger: Logger = LoggerFactory.getLogger(ApplicationService::class.java)
     val restTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build();
@@ -29,7 +36,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     private val kibanaUrl: String? = null
 
     fun createApplication(name: String, user: LogsightUser): Application? {
-
+        // TODO this should go to frontend
         val p: Pattern = Pattern.compile("[^a-z0-9_]")
         val m: Matcher = p.matcher(name)
         val b: Boolean = m.find()
@@ -46,11 +53,11 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
         val request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }, " +
-                "\"elasticsearch\": { \"cluster\" : [ ], " +
-                "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-                " \"privileges\" : [ \"all\" ]}] }, " +
-                "\"kibana\": [ { \"base\": [], " +
-                "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                    " \"privileges\" : [ \"all\" ]}] }, " +
+                    "\"kibana\": [ { \"base\": [], " +
+                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
         )
         restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
 
@@ -59,7 +66,7 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         )
         restTemplate.postForEntity<String>(
             "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex", requestDefaultIndex).body!!
-
+        kafkaService.applicationChange(application, ApplicationAction.CREATE)
         return application
     }
 

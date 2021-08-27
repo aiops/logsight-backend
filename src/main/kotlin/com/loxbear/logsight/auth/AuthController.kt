@@ -62,10 +62,11 @@ class AuthController(
 
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
-        print("kibana/login")
+        /*print("kibana/login")
         val request = UtilsService.createKibanaRequestWithHeaders(requestBody)
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
-        return response
+        return response*/
+        return ResponseEntity.ok().build()
     }
 
 }

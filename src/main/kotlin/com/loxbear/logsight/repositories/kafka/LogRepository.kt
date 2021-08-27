@@ -15,9 +15,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback
 import org.springframework.kafka.core.KafkaTemplate
 import java.util.logging.Logger
 
-val jsonFormat = Json{}
-const val TOPIC_LOGSTASH = "logsight.logstash"
-
 @Repository
 class LogRepository(
     @Autowired
@@ -29,6 +26,9 @@ class LogRepository(
 
     val log: Logger = Logger.getLogger(LogRepository::class.java.toString())
 
+    val jsonFormat = Json{}
+    val topicLogstash = "logsight.logstash"
+
     fun toKafka(
         authMail: String,
         appID: Long,
@@ -38,7 +38,7 @@ class LogRepository(
         val privateKey = userService.findByEmail(authMail).key
         val appName = applicationService.findById(appID).name
 
-        val topicName = "$TOPIC_LOGSTASH.${logType.toString().toLowerCase()}"
+        val topicName = "$topicLogstash.${logType.toString().toLowerCase()}"
         val messagesKafka = createKafkaMessages(privateKey, appName, logs)
 
         messagesKafka.forEach { sendToKafka(topicName, jsonFormat.encodeToString(it)) }

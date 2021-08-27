@@ -6,14 +6,9 @@ import com.loxbear.logsight.models.*
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.PredefinedTimesService
-import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UserService
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -25,11 +20,6 @@ class ApplicationController(
     val userService: UserService,
     val predefinedTimesService: PredefinedTimesService
 ) {
-    val restTemplate = RestTemplateBuilder()
-        .build();
-
-    @Value("\${app.baseUrl}")
-    private val appUrl: String? = null
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
@@ -47,8 +37,8 @@ class ApplicationController(
             ResponseEntity(
                 ApplicationResponse(
                     description = "Please choose another name. The application already exists or incorrect name. " +
-                        "The name of the application should contain only numbers and lowercase letters. " +
-                        "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST
+                            "The name of the application should contain only numbers and lowercase letters. " +
+                            "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST
                 ), HttpStatus.BAD_REQUEST
             )
         }
@@ -134,6 +124,6 @@ class ApplicationController(
 
     @GetMapping("/logFileFormats")
     fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
-        return LogFileTypes.values().map{ LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
+        return LogFileTypes.values().map { LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
 }

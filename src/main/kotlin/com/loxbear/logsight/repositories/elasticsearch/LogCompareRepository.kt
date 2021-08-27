@@ -1,6 +1,7 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
+import com.loxbear.logsight.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.io.ClassPathResource
@@ -9,7 +10,9 @@ import org.springframework.web.client.postForEntity
 import utils.UtilsService
 
 @Repository
-class LogCompareRepository {
+class LogCompareRepository(
+    val userRepository: UserRepository
+) {
 
     @Value("\${elasticsearch.url}")
     private val elasticsearchUrl: String? = null
@@ -18,9 +21,10 @@ class LogCompareRepository {
     private val resourcesPath: String = ""
 
     fun getApplicationVersions(esIndexUserApp: String, userKey: String): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val path = ClassPathResource("${resourcesPath}queries/application_versions.json").path
         val jsonRequest: String = UtilsService.readFileAsString(path)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
@@ -35,9 +39,10 @@ class LogCompareRepository {
         intervalAggregate: String,
         tag: String
     ): String? {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.password)
+            .build()
         val jsonString: String = UtilsService.readFileAsString("${resourcesPath}queries/compare_bar_plot.json")
         val jsonRequest = jsonString.replace("start_time", startTime)
             .replace("stop_time", stopTime)
@@ -55,9 +60,10 @@ class LogCompareRepository {
         intervalAggregate: String,
         tag: String
     ): LineChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString = UtilsService.readFileAsString("${resourcesPath}queries/log_compare_anomalies_barplot.json")
         val jsonRequest = jsonString.replace("start_time", startTime)
             .replace("stop_time", stopTime)
@@ -77,9 +83,10 @@ class LogCompareRepository {
         baselineTagId: String,
         compareTagId: String
     ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.password)
+            .build()
         val jsonString = UtilsService.readFileAsString("${resourcesPath}queries/log_compare_anomalies_barplot_horizontal.json")
         val jsonRequest = jsonString
             .replace("start_time", startTime)
@@ -98,9 +105,10 @@ class LogCompareRepository {
         baselineTagId: String,
         compareTagId: String
     ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.password)
+            .build()
         val path = ClassPathResource("${resourcesPath}queries/log_compare_data.json").path
         val jsonString: String = UtilsService.readFileAsString(path)
         val jsonRequest = jsonString

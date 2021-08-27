@@ -13,17 +13,21 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @Configuration
 @EnableElasticsearchRepositories(basePackages = ["com.loxbear.logsight.repositories.elasticsearch"])
 @ComponentScan(basePackages = ["com.loxbear.logsight"])
-class ElasticsearchClientConfig : AbstractElasticsearchConfiguration() {
-    // TODO: change to http://localhost:9200
+class ElasticsearchConfig : AbstractElasticsearchConfiguration() {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String? = null
+    private val elasticsearchUrl: String = ""
+    @Value("\${elasticsearch.username}")
+    private val username: String = ""
+    @Value("\${elasticsearch.password}")
+    private val password: String = ""
 
     @Bean
     override fun elasticsearchClient(): RestHighLevelClient {
         val clientConfiguration = ClientConfiguration
             .builder()
             .connectedTo(elasticsearchUrl)
+            .withBasicAuth(username, password)
             .build()
         return RestClients.create(clientConfiguration).rest()
     }
