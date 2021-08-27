@@ -1,6 +1,7 @@
 package com.loxbear.logsight.auth
 
 import com.loxbear.logsight.entities.LogsightUser
+import com.loxbear.logsight.models.auth.Token
 import com.loxbear.logsight.models.auth.UserActivateForm
 import com.loxbear.logsight.models.auth.UserLoginForm
 import com.loxbear.logsight.models.auth.UserRegisterForm
@@ -46,7 +47,7 @@ class AuthController(
         }
 
     @PostMapping("/login")
-    fun login(@RequestBody loginForm: UserLoginForm): ResponseEntity<String>  =
+    fun login(@RequestBody loginForm: UserLoginForm): ResponseEntity<Token>  =
         when(val token = authService.loginUser(loginForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(token)

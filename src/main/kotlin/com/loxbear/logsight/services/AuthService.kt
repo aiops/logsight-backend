@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.auth.Email
+import com.loxbear.logsight.models.auth.Token
 import com.loxbear.logsight.models.auth.UserLoginForm
 import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.security.SecurityConstants
@@ -37,17 +38,19 @@ class AuthService(
         }
     }
 
-    fun loginUser(loginForm: UserLoginForm): String? =
+    fun loginUser(loginForm: UserLoginForm): Token? =
         userService.getUser(loginForm.id)?.let { user ->
             try {
                 with(authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken(user.email, loginForm.password)
                 )) {
                     SecurityContextHolder.getContext().authentication = this
-                    JWT.create()
-                        .withSubject(this.name)
-                        .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-                        .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
+                    Token(
+                        JWT.create()
+                            .withSubject(this.name)
+                            .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                            .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
+                    )
                 }
             } catch(e: AuthenticationException) {
                 null
