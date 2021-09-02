@@ -1,5 +1,6 @@
 package com.loxbear.logsight.services
 
+import com.loxbear.logsight.controllers.FileUploadController
 import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.log.*
 import com.loxbear.logsight.repositories.kafka.LogRepository
@@ -9,12 +10,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.logging.Logger
 
-val log: Logger = Logger.getLogger("LogService")
 
 @Service
 class LogService(
     val logRepository: LogRepository
 ) {
+    val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
     fun processFile(
         authMail: String,
@@ -31,7 +32,8 @@ class LogService(
         val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
         val logs = when (logType) {
             LogFileTypes.LOGSIGHT_JSON -> processJsonFile(fileContent)
-            LogFileTypes.SYSLOG -> processSyslogFile(fileContent)
+            else -> processDefaultFile(fileContent)
+
         }
         logRepository.toKafka(authMail, appID, logType, logs)
     }
@@ -82,7 +84,7 @@ class LogService(
         return jsonArray
     }
 
-    private fun processSyslogFile(
+    private fun processDefaultFile(
         fileContent: String
     ): List<LogMessage> {
         return fileContent.lines().filter { x -> x.isNotEmpty() }.map { LogMessageBasic(it) }
