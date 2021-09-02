@@ -12,48 +12,24 @@
   "_source": {
     "excludes": []
   },
-  "aggs": {
-    "2": {
-      "date_histogram": {
-        "field": "@timestamp",
-        "interval": "3h",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
-      }
-    }
-  },
   "stored_fields": [
     "*"
   ],
   "script_fields": {},
-  "docvalue_fields": [
-    {
-      "field": "@timestamp",
-      "format": "date_time"
-    },
-    {
-      "field": "timestamp_end",
-      "format": "date_time"
-    },
-    {
-      "field": "timestamp_start",
-      "format": "date_time"
-    }
-  ],
   "query": {
     "bool": {
       "must": [
         {
           "match_phrase": {
             "baseline_tag.keyword": {
-              "query": "1.0"
+              "query": "baseline_tag_label"
             }
           }
         },
         {
           "match_phrase": {
             "compare_tag.keyword": {
-              "query": "1.1"
+              "query": "compare_tag_label"
             }
           }
         },
@@ -61,8 +37,8 @@
           "range": {
             "@timestamp": {
               "format": "strict_date_optional_time",
-              "gte": "2021-08-18T10:53:10.987Z",
-              "lte": "2021-08-25T10:53:10.987Z"
+              "gte": "start_time",
+              "lte": "stop_time"
             }
           }
         }

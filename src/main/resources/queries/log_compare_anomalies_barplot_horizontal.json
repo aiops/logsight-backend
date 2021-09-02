@@ -6,7 +6,7 @@
         "order": {
           "_count": "desc"
         },
-        "size": 500
+        "size": 100
       },
       "aggs": {
         "tags": {
@@ -15,7 +15,7 @@
             "order": {
               "_count": "desc"
             },
-            "size": 500
+            "size": 100
           }
         }
       }

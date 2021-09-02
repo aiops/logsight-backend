@@ -108,7 +108,7 @@ class LogCompareRepository {
             .replace("stop_time", stopTime)
             .replace("compare_tag_label", compareTagId)
             .replace("baseline_tag_label", baselineTagId)
-        println("$startTime $stopTime $compareTagId $baselineTagId")
+
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }

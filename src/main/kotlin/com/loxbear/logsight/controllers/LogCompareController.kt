@@ -1,5 +1,6 @@
 package com.loxbear.logsight.controllers
 import com.loxbear.logsight.charts.data.LineChart
+import com.loxbear.logsight.models.LogCompareTable
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UserService
@@ -19,18 +20,18 @@ class LogCompareController(val logCompareService: LogCompareService, val userSer
         .build();
 
     @GetMapping("/load_versions")
-    fun getLogQualityData(authentication: Authentication,
+    fun getVersions(authentication: Authentication,
                           @RequestParam(required = true) applicationId: Long?): MutableList<String> {
 
         val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "log_ad")
         val applicationVersions = logCompareService.getApplicationVersions(applicationsIndexes, user)
         return applicationVersions
     }
 
     @GetMapping("/compute_log_compare")
-    fun getLogQualityData(authentication: Authentication,
+    fun trainLogCompareModel(authentication: Authentication,
                           @RequestParam(required = true) applicationId: Long?,
                           @RequestParam baselineTagId: String,
                           @RequestParam compareTagId: String
@@ -53,7 +54,7 @@ class LogCompareController(val logCompareService: LogCompareService, val userSer
     ): List<LineChart> {
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         return logCompareService.getLogCountBar(applicationsIndexes, startTime, endTime, user, intervalAggregate, tag)
     }
@@ -66,7 +67,7 @@ class LogCompareController(val logCompareService: LogCompareService, val userSer
                                  @RequestParam(required = false) tag: String): List<LineChart> {
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         return logCompareService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user, intervalAggregate, tag)
     }
@@ -83,7 +84,7 @@ class LogCompareController(val logCompareService: LogCompareService, val userSer
     ): List<LineChart> {
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         return logCompareService.getCompareTemplatesHorizontalBar(
             applicationsIndexes,
@@ -97,18 +98,17 @@ class LogCompareController(val logCompareService: LogCompareService, val userSer
     }
 
     @GetMapping("/data")
-    fun getLogQualityData(authentication: Authentication,
+    fun getLogCompareData(authentication: Authentication,
                           @RequestParam startTime: String,
                           @RequestParam endTime: String,
                           @RequestParam(required = false) applicationId: Long?,
                           @RequestParam baselineTagId: String,
-                          @RequestParam compareTagId: String){
+                          @RequestParam compareTagId: String): MutableList<LogCompareTable> {
 
         val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
-        val data = logCompareService.getLogCompareData(applicationsIndexes, startTime, endTime, user, baselineTagId, compareTagId)
-        println(data)
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
+        return logCompareService.getLogCompareData(applicationsIndexes, startTime, endTime, user, baselineTagId, compareTagId)
     }
 
 
