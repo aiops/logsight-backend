@@ -41,7 +41,6 @@ class LogService(
     ): List<LogMessageLogsight> {
         val failedToParse = mutableListOf<String>()
         val logs = mutableListOf<LogMessageLogsight>()
-
         val jsonArray = strToJsonArray(fileContent)
         jsonArray.map {
             try {

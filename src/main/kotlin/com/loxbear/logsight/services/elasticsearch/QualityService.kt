@@ -22,6 +22,8 @@ import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.math.BigDecimal
 import java.math.MathContext
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -120,8 +122,8 @@ class QualityService(val repository: QualityRepository, val applicationService: 
                 val itData = JSONObject(it.toString())
                 dataList.add(LogQualityOverview(key = itData.getString("key"),
                     docCount = itData.getDouble("doc_count"),
-                    linguisticPrediction = itData.getJSONObject("linguisticPrediction").getDouble("value"),
-                    logLevelScore = itData.getJSONObject("logLevelScore").getDouble("value") ))
+                    linguisticPrediction = roundOffDecimal(itData.getJSONObject("linguisticPrediction").getDouble("value")),
+                    logLevelScore = roundOffDecimal(itData.getJSONObject("logLevelScore").getDouble("value")) ))
             }
 
         return dataList
@@ -154,6 +156,12 @@ class QualityService(val repository: QualityRepository, val applicationService: 
 
         }
         return HttpStatus.OK
+    }
+
+    fun roundOffDecimal(number: Double): Double {
+        val df = DecimalFormat("#.##")
+        df.roundingMode = RoundingMode.FLOOR
+        return df.format(number).toDouble()
     }
 
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))

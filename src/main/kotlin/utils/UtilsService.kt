@@ -48,7 +48,7 @@ class UtilsService {
                 if (minutes >= numberOfPoints) {
                     "${minutes / numberOfPoints}m"
                 } else {
-                    "30s"
+                    "10s"
                 }
             } else {
                 val startDate = try {
@@ -65,7 +65,7 @@ class UtilsService {
                 if (differenceMinutes >= numberOfPoints) {
                     "${differenceMinutes / numberOfPoints}m"
                 } else {
-                    "30s"
+                    "10s"
                 }
             }
     }

@@ -106,10 +106,12 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
             application?.let { application -> application.id == it.id } ?: true
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_quality" }
 
-    fun getApplicationIndexesForLogCompare(user: LogsightUser, application: Application?) =
+    fun getApplicationIndexesForLogCompare(user: LogsightUser, application: Application?, index: String) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
-        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_ad" }
+        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
+
+
 
     @KafkaListener(topics = ["container_settings_ack"])
     @Transactional
