@@ -40,7 +40,6 @@ class LogRepository(
 
         val topicName = "$TOPIC_LOGSTASH.${logType.toString().toLowerCase()}"
         val messagesKafka = createKafkaMessages(privateKey, appName, logs)
-        println(messagesKafka.size)
         messagesKafka.forEach { sendToKafka(topicName, jsonFormat.encodeToString(it)) }
     }
 
