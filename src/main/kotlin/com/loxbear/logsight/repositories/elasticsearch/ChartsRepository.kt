@@ -33,7 +33,12 @@ class ChartsRepository {
 //        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/1234-213_app_name_test_log_ad/_search", request).body!!
 //    }
 
-    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LineChartData {
+    fun getAnomaliesBarChartData(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): LineChartData {
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(userKey, "test-test")
             .build();

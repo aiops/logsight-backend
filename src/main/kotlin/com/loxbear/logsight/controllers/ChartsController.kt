@@ -34,6 +34,7 @@ class ChartsController(val chartsService: ChartsService, val userService: UserSe
                                  @RequestParam endTime: String): List<LineChart> {
         val user = userService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
+//        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 4)
         return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
     }
 
