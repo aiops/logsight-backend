@@ -7,7 +7,6 @@ import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 import utils.UtilsService
-import java.lang.NumberFormatException
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -15,7 +14,12 @@ import java.time.format.DateTimeFormatter
 class ChartsService(val repository: ChartsRepository,
                     val applicationService: ApplicationService) {
 
-    fun getAnomaliesBarChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): List<LineChart> {
+    fun getAnomaliesBarChartData(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): List<LineChart> {
 
         return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
             .aggregations.listAggregations.buckets.map {
