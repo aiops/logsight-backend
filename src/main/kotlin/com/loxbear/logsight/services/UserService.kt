@@ -24,7 +24,8 @@ class UserService(
     val applicationRepository: ApplicationRepository,
     val emailService: EmailService,
     val applicationService: ApplicationService,
-    val kafkaService: KafkaService
+    val kafkaService: KafkaService,
+    val predefinedTimesService: PredefinedTimesService
 ) {
 
     val logger = LoggerFactory.getLogger(UserService::class.java)
@@ -49,6 +50,7 @@ class UserService(
             applicationService.createApplication("compute_sample_app", user)
             applicationService.createApplication("auth_sample_app", user)
             applicationService.createApplication("auth2_sample_app", user)
+            predefinedTimesService.createDefaultPredefinedTimesForUser(user)
             user
         }
 

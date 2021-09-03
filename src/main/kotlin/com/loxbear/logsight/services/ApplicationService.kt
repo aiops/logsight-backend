@@ -33,14 +33,14 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
         val p: Pattern = Pattern.compile("[^a-z0-9_]")
         val m: Matcher = p.matcher(name)
         val b: Boolean = m.find()
-        if (b){
+        if (b) {
             return null
         }
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         try {
             repository.save(application)
-        }catch (e: DataIntegrityViolationException){
+        } catch (e: DataIntegrityViolationException) {
             return null
         }
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
@@ -58,7 +58,8 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
             "{ \"value\": null}"
         )
         restTemplate.postForEntity<String>(
-            "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex", requestDefaultIndex).body!!
+            "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex", requestDefaultIndex
+        ).body!!
 
         return application
     }
@@ -104,7 +105,11 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     fun getApplicationIndexesForQuality(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
-        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_quality" }
+        }.joinToString(",") {
+            "${
+                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            }_${it.name}_log_quality"
+        }
 
     fun getApplicationIndexesForLogCompare(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
@@ -126,9 +131,9 @@ class ApplicationService(val repository: ApplicationRepository, val kafkaService
     fun deleteApplication(id: Long): Boolean {
         val application = findById(id)
         logger.info("Deleting application with id [{}]", id)
-        try{
+        try {
             repository.delete(application)
-        }catch (e: java.lang.Exception){
+        } catch (e: java.lang.Exception) {
             return false
         }
         kafkaService.applicationChange(application, ApplicationAction.DELETE)
