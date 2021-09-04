@@ -34,6 +34,15 @@ class ApplicationController(
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
         val user = userService.findByKey(body.key)
+        if (applicationService.findAllByUser(user).size >= 5) {
+            return ResponseEntity(
+                IdResponse(
+                    description = "Maximum 5 applications are allowed", status = HttpStatus.INTERNAL_SERVER_ERROR,
+                    id = null
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
         val app = applicationService.createApplication(body.name, user)
         return if (app != null) {
             ResponseEntity(
@@ -134,6 +143,6 @@ class ApplicationController(
 
     @GetMapping("/logFileFormats")
     fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
-        return LogFileTypes.values().map{ LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
+        return LogFileTypes.values().map { LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
 }
