@@ -1,6 +1,6 @@
 {
   "version": true,
-  "size": 500,
+  "size": 9000,
   "sort": [
     {
       "@timestamp": {
@@ -11,14 +11,6 @@
   ],
   "_source": {
     "excludes": []
-  },
-  "aggs": {
-    "2": {
-      "auto_date_histogram": {
-        "field": "@timestamp",
-        "buckets": 10
-      }
-    }
   },
   "stored_fields": [
     "*"
@@ -49,7 +41,15 @@
         }
       ],
       "should": [],
-      "must_not": []
+      "must_not": [
+        {
+          "match_phrase": {
+            "total_score": {
+              "query": "0"
+            }
+          }
+        }
+      ]
     }
   }
 }

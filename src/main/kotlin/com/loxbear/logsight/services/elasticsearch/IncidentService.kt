@@ -140,6 +140,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                     if (incidentTableData["new_templates"] != null) incidentTableData["new_templates"]!! else listOf<VariableAnalysisHit>() // new log types
                 val semanticAd =
                     if (incidentTableData["semantic_ad"] != null) incidentTableData["semantic_ad"]!! else listOf<VariableAnalysisHit>() //cognitive anomalies
+                println(semanticAd)
                 IncidentTableData(
                     count_ads = acc.countAds + countAds,
                     semantic_count_ads = acc.semanticCountAds + semanticCountAds,
