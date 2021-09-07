@@ -49,7 +49,6 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
         authentication: Authentication
     ): Pair<String, List<LineChart>> {
-        println("Specific template")
         specificTemplate.template = specificTemplate.template.replace("\"","\\\"")
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
