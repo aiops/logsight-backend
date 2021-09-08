@@ -133,12 +133,12 @@ class ApplicationController(
         return predefinedTimesService.createPredefinedTimesForUser(user, request)
     }
 
-    @DeleteMapping("/user/predefined_times/{id}")
+    @PostMapping("/user/predefined_times/delete")
     fun deletePredefinedTimeForUser(
         authentication: Authentication,
-        @PathVariable id: Long
+        @RequestBody body: Map<String, Long>
     ) {
-        predefinedTimesService.deleteById(id)
+        body["id"]?.let { predefinedTimesService.deleteById(it) }
     }
 
     @GetMapping("/logFileFormats")

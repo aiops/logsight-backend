@@ -5,6 +5,7 @@ import com.loxbear.logsight.entities.PredefinedTime
 import com.loxbear.logsight.entities.enums.DateTimeType
 import com.loxbear.logsight.models.PredefinedTimeRequest
 import com.loxbear.logsight.repositories.PredefinedTimesRepository
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service
 class PredefinedTimesService(
     val repository: PredefinedTimesRepository,
 ) {
-    val logger = LoggerFactory.getLogger(PredefinedTimesService::class.java)
+    val logger: Logger = LoggerFactory.getLogger(PredefinedTimesService::class.java)
 
     fun findAllByUser(user: LogsightUser): List<PredefinedTime> = repository.findAllByUser(user)
 
