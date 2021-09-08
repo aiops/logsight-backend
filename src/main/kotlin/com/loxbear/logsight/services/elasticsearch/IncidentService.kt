@@ -32,21 +32,32 @@ class IncidentService(val repository: IncidentRepository, val applicationService
 
         JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime, user.key)).getJSONObject("hits")
             .getJSONArray("hits").forEach {
-            val jsonData = JSONObject(it.toString())
-            dataList.add(
-                TopKIncidentTable(
-                    applicationId = UtilsService.getApplicationIdFromIndex(applications, jsonData["_index"].toString()),
-                    indexName = jsonData["_index"].toString(),
-                    timestamp = jsonData.getJSONObject("_source")["@timestamp"].toString(),
-                    startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
-                    stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),
-                    newTemplates = jsonData.getJSONObject("_source")["new_templates"].toString(),// jsonData.getJSONObject("_source")["first_log"].toString()
-                    semanticAD = jsonData.getJSONObject("_source")["semantic_ad"].toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
-                    countAD = jsonData.getJSONObject("_source")["count_ads"].toString(),
-                    scAnomalies = jsonData.getJSONObject("_source")["semantic_count_ads"].toString(),
-                    totalScore = jsonData.getJSONObject("_source")["total_score"] as Int
-                )
-            )
+                val jsonData = JSONObject(it.toString())
+                var flag = false
+                val semanticData =  jsonData.getJSONObject("_source").getJSONArray("semantic_ad").forEach {
+                    val level = JSONObject(JSONArray(it.toString()).get(0).toString()).getString("actual_level")
+                    if(level != "INFO"){
+                        flag = true
+                    }
+                }
+                if (flag == true){
+                    dataList.add(
+                        TopKIncidentTable(
+                            applicationId = UtilsService.getApplicationIdFromIndex(applications, jsonData["_index"].toString()),
+                            indexName = jsonData["_index"].toString(),
+                            timestamp = jsonData.getJSONObject("_source")["@timestamp"].toString(),
+                            startTimestamp = jsonData.getJSONObject("_source")["timestamp_start"].toString(),
+                            stopTimestamp = jsonData.getJSONObject("_source")["timestamp_end"].toString(),
+                            newTemplates = jsonData.getJSONObject("_source")["new_templates"].toString(),// jsonData.getJSONObject("_source")["first_log"].toString()
+                            semanticAD = jsonData.getJSONObject("_source")["semantic_ad"].toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
+                            countAD = jsonData.getJSONObject("_source")["count_ads"].toString(),
+                            scAnomalies = jsonData.getJSONObject("_source")["semantic_count_ads"].toString(),
+                            totalScore = jsonData.getJSONObject("_source")["total_score"] as Int
+                        )
+                    )
+                }
+
+
         }
         dataList.sortByDescending { it.totalScore }
         return if (dataList.size <= numberOfIncidents) {
