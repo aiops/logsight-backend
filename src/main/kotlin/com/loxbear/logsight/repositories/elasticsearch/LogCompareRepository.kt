@@ -41,7 +41,7 @@ class LogCompareRepository(
     ): String? {
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(user.email, user.password)
+            .basicAuthentication(user.email, user.key)
             .build()
         val jsonString: String = UtilsService.readFileAsString("${resourcesPath}queries/compare_bar_plot.json")
         val jsonRequest = jsonString.replace("start_time", startTime)
@@ -85,7 +85,7 @@ class LogCompareRepository(
     ): String {
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(user.email, user.password)
+            .basicAuthentication(user.email, user.key)
             .build()
         val jsonString = UtilsService.readFileAsString("${resourcesPath}queries/log_compare_anomalies_barplot_horizontal.json")
         val jsonRequest = jsonString
@@ -107,7 +107,7 @@ class LogCompareRepository(
     ): String {
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(user.email, user.password)
+            .basicAuthentication(user.email, user.key)
             .build()
         val path = ClassPathResource("${resourcesPath}queries/log_compare_data.json").path
         val jsonString: String = UtilsService.readFileAsString(path)

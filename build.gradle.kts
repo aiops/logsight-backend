@@ -22,15 +22,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch:2.5.4")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:2.5.4")
     implementation("org.springframework.boot:spring-boot-starter-web:2.5.4")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.11.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.11.3")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot:spring-boot-starter-security:2.5.4")
     runtimeOnly("org.postgresql:postgresql:42.2.23.jre7")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.12.5")
     implementation(group = "org.json", name = "json", version = "20201115")
     implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.6.5")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
@@ -38,6 +37,7 @@ dependencies {
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
     implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    implementation("com.googlecode.json-simple:json-simple:1.1")
 }
 
 tasks.withType<KotlinCompile> {

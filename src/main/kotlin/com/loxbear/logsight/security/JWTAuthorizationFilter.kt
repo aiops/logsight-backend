@@ -23,8 +23,6 @@ class JWTAuthorizationFilter(authManager: AuthenticationManager?) : BasicAuthent
                                   chain: FilterChain) {
         val header = req.getHeader(HEADER_STRING)
         if (header == null || !header.startsWith(TOKEN_PREFIX)) {
-            println(req)
-            println(res)
             chain.doFilter(req, res)
             return
         }
