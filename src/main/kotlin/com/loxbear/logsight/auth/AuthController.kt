@@ -13,8 +13,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.postForEntity
-import utils.UtilsService
 
 
 @RestController
@@ -34,28 +32,28 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(@RequestBody registerForm: UserRegisterForm): ResponseEntity<LogsightUser> =
-        when(val user = authService.registerUser(registerForm)){
+        when (val user = authService.registerUser(registerForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(user)
         }
 
     @PutMapping("/activate")
     fun activateUser(@RequestBody activateForm: UserActivateForm): ResponseEntity<LogsightUser> =
-        when(val user = userService.activateUser(activateForm)) {
+        when (val user = userService.activateUser(activateForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(user)
         }
 
     @PostMapping("/login")
-    fun login(@RequestBody loginForm: UserLoginForm): ResponseEntity<Token>  =
-        when(val token = authService.loginUser(loginForm)) {
+    fun login(@RequestBody loginForm: UserLoginForm): ResponseEntity<Token> =
+        when (val token = authService.loginUser(loginForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(token)
         }
 
     @GetMapping("/login/login-link")
     fun loginLink(@RequestBody email: String): ResponseEntity<LogsightUser> =
-        when(val user = authService.sendLoginLink(email)) {
+        when (val user = authService.sendLoginLink(email)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(user)
         }
