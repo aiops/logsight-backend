@@ -17,9 +17,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.postForEntity
 import utils.KeyGenerator
-import utils.UtilsService
 
 @Service
 class UserService(
@@ -28,7 +26,7 @@ class UserService(
     val emailService: EmailService,
     val applicationService: ApplicationService,
     val kafkaService: KafkaService,
-    val predefinedTimesService: PredefinedTimesService
+    //val predefinedTimesService: PredefinedTimesService
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
@@ -42,29 +40,20 @@ class UserService(
     @Value("\${elasticsearch.url}")
     private val elasticUrl: String? = null
 
-    fun createUser(form: RegisterUserForm): LogsightUser {
-        return with(form) {
-            if (repository.findByEmail(email).isPresent) {
-                throw Exception("User with email $email already exists")
-            }
-            val user =
-                repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
-            createPersonalKibana(user)
-            applicationService.createApplication("compute_sample_app", user)
-            applicationService.createApplication("auth_sample_app", user)
-            applicationService.createApplication("auth2_sample_app", user)
-            predefinedTimesService.createDefaultPredefinedTimesForUser(user)
-            user
-        }
-
-    }
+    fun createUser(userForm: UserRegisterForm): LogsightUser? =
+        createUser(LogsightUser(
+            id = 0,  // Will be replaced by auto-generated value
+            email = userForm.email,
+            password = encoder().encode(userForm.password),
+            key = KeyGenerator.generate(),
+        ))
 
     @Transactional
     fun createUser(user: LogsightUser): LogsightUser? {
         return if (userRepository.findByEmail(user.email).isEmpty) {
             userRepository.save(user)
         } else {
-            logger.warn("User with email ${user.email} already exists." )
+            logger.warn("User with email ${user.email} already exists.")
             null
         }
     }
@@ -77,7 +66,7 @@ class UserService(
 
     fun activateUser(userActivate: UserActivateForm): LogsightUser? =
         getUser(userActivate.id)?.let { user ->
-            if(userActivate.key == user.key)
+            if (userActivate.key == user.key)
                 updateUser(user.copy(activated = true))
             else
                 null
@@ -92,6 +81,8 @@ class UserService(
     //applicationService.createApplication("compute_sample_app", user)
     //applicationService.createApplication("auth_sample_app", user)
     //applicationService.createApplication("auth2_sample_app", user)
+    //predefinedTimesService.createDefaultPredefinedTimesForUser(user)
+
 
     fun findByKey(key: String): LogsightUser =
         userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }

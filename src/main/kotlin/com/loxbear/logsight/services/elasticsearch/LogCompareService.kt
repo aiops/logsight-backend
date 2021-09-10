@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import utils.UtilsService
 import java.lang.ClassCastException
 import java.math.BigDecimal
@@ -31,11 +32,11 @@ import kotlin.math.abs
 class LogCompareService(
     val logCompareRepository: LogCompareRepository,
     val applicationService: ApplicationService,
+
 ) {
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-    val restTemplate = RestTemplateBuilder()
-        .build()
+    val restTemplate: RestTemplate = RestTemplateBuilder().build()
 
     @Value("\${app.baseUrl}")
     private val baseUrl: String? = null
@@ -159,7 +160,7 @@ class LogCompareService(
     ) : MutableList<LogCompareTable> {
         val dataList = mutableListOf<LogCompareTable>()
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val data = JSONObject(repository.getLogCompareData(applicationsIndexes, startTime, stopTime, user.key, baselineTagId, compareTagId))
+        val data = JSONObject(logCompareRepository.getLogCompareData(applicationsIndexes, startTime, stopTime, user.key, baselineTagId, compareTagId))
             .getJSONObject("hits").getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
                 val countPrediction = 1.0//jsonData.getJSONObject("_source").getDouble("prediction")

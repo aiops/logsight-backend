@@ -1,6 +1,5 @@
 package com.loxbear.logsight.security
 
-
 import com.loxbear.logsight.encoder
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
