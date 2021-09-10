@@ -49,6 +49,7 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
         authentication: Authentication
     ): Pair<String, List<LineChart>> {
+        specificTemplate.template = specificTemplate.template.replace("\"","\\\"")
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
@@ -70,12 +71,14 @@ class VariableAnalysisController(
     @GetMapping("/application/{id}/top_n_templates")
     fun getTop5Templates(
         @PathVariable id: Long,
-        authentication: Authentication
+        authentication: Authentication,
+        @RequestParam startTime: String,
+        @RequestParam endTime: String,
     ): Map<String, List<TopNTemplatesData>> {
         val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getTopNTemplates(applicationsIndexes, user)
+        return variableAnalysisService.getTopNTemplates(applicationsIndexes, user, startTime, endTime)
     }
 
     @GetMapping("/application/{id}/log_count_line_chart")

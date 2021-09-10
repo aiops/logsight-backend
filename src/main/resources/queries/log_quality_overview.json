@@ -16,7 +16,7 @@
         },
         "linguisticPrediction": {
           "avg": {
-            "field": "prediction"
+            "field": "linguistic_prediction"
           }
         }
       }

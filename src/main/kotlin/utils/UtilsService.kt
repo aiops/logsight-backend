@@ -16,6 +16,7 @@ class UtilsService {
 
     companion object {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val formatterWithoutSeconds = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
         fun readFileAsString(path: String): String {
             return String(Files.readAllBytes(Paths.get(path)))
         }
@@ -48,24 +49,32 @@ class UtilsService {
                 if (minutes >= numberOfPoints) {
                     "${minutes / numberOfPoints}m"
                 } else {
-                    "30s"
+                    "10s"
                 }
             } else {
                 val startDate = try {
                     ZonedDateTime.parse(startTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 } catch (e: Exception) {
-                    LocalDateTime.parse(startTimeString, formatter)
+                    try { //doesn't look good, but it works
+                        LocalDateTime.parse(startTimeString, formatter)
+                    } catch (e: Exception) {
+                        LocalDateTime.parse(startTimeString, formatterWithoutSeconds)
+                    }
                 }
                 val endDate = try {
                     ZonedDateTime.parse(endTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 } catch (e: Exception) {
-                    LocalDateTime.parse(endTimeString, formatter)
+                    try { //doesn't look good, but it works
+                        LocalDateTime.parse(endTimeString, formatter)
+                    } catch (e: Exception) {
+                        LocalDateTime.parse(endTimeString, formatterWithoutSeconds)
+                    }
                 }
                 val differenceMinutes = ChronoUnit.MINUTES.between(startDate, endDate)
                 if (differenceMinutes >= numberOfPoints) {
                     "${differenceMinutes / numberOfPoints}m"
                 } else {
-                    "30s"
+                    "10s"
                 }
             }
     }

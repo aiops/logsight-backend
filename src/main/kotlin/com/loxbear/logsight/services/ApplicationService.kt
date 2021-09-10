@@ -40,14 +40,14 @@ class ApplicationService(
         val p: Pattern = Pattern.compile("[^a-z0-9_]")
         val m: Matcher = p.matcher(name)
         val b: Boolean = m.find()
-        if (b){
+        if (b) {
             return null
         }
         val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         try {
             repository.save(application)
-        }catch (e: DataIntegrityViolationException){
+        } catch (e: DataIntegrityViolationException) {
             return null
         }
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
@@ -111,12 +111,18 @@ class ApplicationService(
     fun getApplicationIndexesForQuality(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
-        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_quality" }
+        }.joinToString(",") {
+            "${
+                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            }_${it.name}_log_quality"
+        }
 
-    fun getApplicationIndexesForLogCompare(user: LogsightUser, application: Application?) =
+    fun getApplicationIndexesForLogCompare(user: LogsightUser, application: Application?, index: String) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
-        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_ad" }
+        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
+
+
 
     @KafkaListener(topics = ["container_settings_ack"])
     @Transactional
@@ -133,9 +139,9 @@ class ApplicationService(
     fun deleteApplication(id: Long): Boolean {
         val application = findById(id)
         logger.info("Deleting application with id [{}]", id)
-        try{
+        try {
             repository.delete(application)
-        }catch (e: java.lang.Exception){
+        } catch (e: java.lang.Exception) {
             return false
         }
         kafkaService.applicationChange(application, ApplicationAction.DELETE)

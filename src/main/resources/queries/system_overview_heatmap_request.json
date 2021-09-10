@@ -1,11 +1,9 @@
 {
   "aggs": {
     "listAggregations": {
-      "date_histogram": {
+      "auto_date_histogram": {
         "field": "@timestamp",
-        "interval": "1m",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+        "buckets": 13
       },
       "aggs": {
         "listBuckets": {
@@ -18,7 +16,7 @@
           },
           "aggs": {
             "1": {
-              "avg": {
+              "sum": {
                 "field": "total_score"
               }
             }

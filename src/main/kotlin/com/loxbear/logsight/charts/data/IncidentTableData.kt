@@ -22,7 +22,7 @@ class IncidentTableData(
     val newTemplates: List<VariableAnalysisHit>
         get() = new_templates
 
-    val semanticAd: List<VariableAnalysisHit>
+    var semanticAd: List<VariableAnalysisHit> = listOf()
         get() = semantic_ad
 }
 

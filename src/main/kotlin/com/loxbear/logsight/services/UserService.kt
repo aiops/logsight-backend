@@ -27,7 +27,8 @@ class UserService(
     val applicationRepository: ApplicationRepository,
     val emailService: EmailService,
     val applicationService: ApplicationService,
-    val kafkaService: KafkaService
+    val kafkaService: KafkaService,
+    val predefinedTimesService: PredefinedTimesService
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
@@ -41,13 +42,22 @@ class UserService(
     @Value("\${elasticsearch.url}")
     private val elasticUrl: String? = null
 
-    fun createUser(userForm: UserRegisterForm): LogsightUser? =
-        createUser(LogsightUser(
-            id = 0,  // Will be replaced by auto-generated value
-            email = userForm.email,
-            password = encoder().encode(userForm.password),
-            key = KeyGenerator.generate(),
-        ))
+    fun createUser(form: RegisterUserForm): LogsightUser {
+        return with(form) {
+            if (repository.findByEmail(email).isPresent) {
+                throw Exception("User with email $email already exists")
+            }
+            val user =
+                repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
+            createPersonalKibana(user)
+            applicationService.createApplication("compute_sample_app", user)
+            applicationService.createApplication("auth_sample_app", user)
+            applicationService.createApplication("auth2_sample_app", user)
+            predefinedTimesService.createDefaultPredefinedTimesForUser(user)
+            user
+        }
+
+    }
 
     @Transactional
     fun createUser(user: LogsightUser): LogsightUser? {

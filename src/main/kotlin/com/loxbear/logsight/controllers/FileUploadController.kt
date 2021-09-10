@@ -2,7 +2,6 @@ package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.ApplicationResponse
-import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.LogService
 import com.loxbear.logsight.services.UserService

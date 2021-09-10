@@ -123,7 +123,7 @@ class VariableAnalysisService(
                     null
                 }
             }
-            "LineChart" to listOf(LineChart(name = template, series = lineChartSeries))
+            "LineChart" to listOf(LineChart(name = "value", series = lineChartSeries))
         } else {
             "GroupedVertical" to getSpecificTemplateDifferentParams(
                 applicationsIndexes,
@@ -174,7 +174,7 @@ class VariableAnalysisService(
         return true
     }
 
-    fun getTopNTemplates(applicationsIndexes: String, user: LogsightUser): Map<String, List<TopNTemplatesData>> {
+    fun getTopNTemplates(applicationsIndexes: String, user: LogsightUser, startTime: String, endTime: String): Map<String, List<TopNTemplatesData>> {
         val top5TemplatesNow = repository.getTopNTemplates(
             applicationsIndexes,
             "now-1h",

@@ -3,16 +3,23 @@
     "listAggregations": {
       "auto_date_histogram": {
         "field": "@timestamp",
-        "buckets": 5
+        "buckets": 15
       },
       "aggs": {
         "listBuckets": {
           "terms": {
-            "field": "prediction",
+            "field": "_index",
             "order": {
-              "_count": "desc"
+              "_key": "desc"
             },
-            "size": 50
+            "size": 500
+          },
+          "aggs": {
+            "1": {
+              "avg": {
+                "field": "ratio_score"
+              }
+            }
           }
         }
       }
@@ -30,11 +37,37 @@
     {
       "field": "@timestamp",
       "format": "date_time"
+    },
+    {
+      "field": "new_templates.@timestamp",
+      "format": "date_time"
+    },
+    {
+      "field": "timestamp_end",
+      "format": "date_time"
+    },
+    {
+      "field": "timestamp_start",
+      "format": "date_time"
     }
   ],
   "query": {
     "bool": {
       "must": [
+        {
+          "match_phrase": {
+            "baseline_tag.keyword": {
+              "query": "baseline_tag_label"
+            }
+          }
+        },
+        {
+          "match_phrase": {
+            "compare_tag.keyword": {
+              "query": "compare_tag_label"
+            }
+          }
+        },
         {
           "range": {
             "@timestamp": {

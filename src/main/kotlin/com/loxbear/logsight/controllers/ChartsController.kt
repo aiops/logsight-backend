@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import utils.UtilsService
 
 
 @RestController
@@ -33,6 +34,7 @@ class ChartsController(val chartsService: ChartsService, val userService: UserSe
                                  @RequestParam endTime: String): List<LineChart> {
         val user = userService.findByEmail(authentication.name)
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
+//        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 4)
         return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
     }
 
@@ -49,10 +51,52 @@ class ChartsController(val chartsService: ChartsService, val userService: UserSe
     fun getSystemOverViewHeatmapData(authentication: Authentication,
                                      @RequestParam startTime: String,
                                      @RequestParam endTime: String,
+                                     @RequestParam(required = false) compareTagId: String?,
+                                     @RequestParam(required = false) baselineTagId: String?,
                                      @RequestParam(required = false) applicationId: Long?): SystemOverviewHeatmapChart {
         val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, endTime, user)
+        return chartsService.getSystemOverviewHeatmapChart(
+            applicationsIndexes,
+            startTime,
+            endTime,
+            user,
+            compareTagId,
+            baselineTagId,
+            null
+        )
+    }
+
+    @GetMapping("/log_compare_heatmap")
+    fun getLogCompareOverViewHeatmapData(authentication: Authentication,
+                                     @RequestParam startTime: String,
+                                     @RequestParam endTime: String,
+                                     @RequestParam compareTagId: String?,
+                                     @RequestParam baselineTagId: String?,
+                                     @RequestParam applicationId: Long?): SystemOverviewHeatmapChart {
+        val user = userService.findByEmail(authentication.name)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        var applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        if (compareTagId != null && baselineTagId != null){
+            applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
+        }
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
+        return chartsService.getSystemOverviewHeatmapChart(applicationsIndexes, startTime, endTime, user, compareTagId, baselineTagId, intervalAggregate)
+    }
+
+    @GetMapping("/log_comp_new_templates_bar")
+    fun getNewTemplatesBarChartData(authentication: Authentication,
+                                 @RequestParam startTime: String,
+                                 @RequestParam endTime: String,
+                                @RequestParam applicationId: Long?,
+                                    @RequestParam compareTagId: String?,
+                                    @RequestParam baselineTagId: String?): MutableList<LineChart> {
+        val user = userService.findByEmail(authentication.name)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
+        val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
+        return chartsService.getNewTemplatesBarChartData(applicationsIndexes, startTime, endTime, user.key,
+            baselineTagId, compareTagId, intervalAggregate)
     }
 }

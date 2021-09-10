@@ -4,6 +4,18 @@
       "auto_date_histogram": {
         "field": "@timestamp",
         "buckets": 5
+      },
+      "aggs": {
+        "new_anomalies": {
+          "avg": {
+            "field": "number_of_new_anomalies"
+          }
+        },
+        "new_normal": {
+          "avg": {
+            "field": "number_of_new_normal"
+          }
+        }
       }
     }
   },
@@ -19,6 +31,18 @@
     {
       "field": "@timestamp",
       "format": "date_time"
+    },
+    {
+      "field": "new_templates.@timestamp",
+      "format": "date_time"
+    },
+    {
+      "field": "timestamp_end",
+      "format": "date_time"
+    },
+    {
+      "field": "timestamp_start",
+      "format": "date_time"
     }
   ],
   "query": {
@@ -26,8 +50,15 @@
       "must": [
         {
           "match_phrase": {
-            "tag.keyword": {
-              "query": "tag_label"
+            "baseline_tag.keyword": {
+              "query": "baseline_tag_label"
+            }
+          }
+        },
+        {
+          "match_phrase": {
+            "compare_tag.keyword": {
+              "query": "compare_tag_label"
             }
           }
         },
@@ -51,5 +82,3 @@
     }
   }
 }
-
-
