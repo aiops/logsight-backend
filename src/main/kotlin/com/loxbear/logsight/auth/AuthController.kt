@@ -1,99 +1,75 @@
 package com.loxbear.logsight.auth
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import com.loxbear.logsight.entities.LogsightUser
-import com.loxbear.logsight.models.LoginUserForm
-import com.loxbear.logsight.models.RegisterUserForm
-import com.loxbear.logsight.models.UserModel
+import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.repositories.UserRepository
-import com.loxbear.logsight.security.SecurityConstants
-import com.loxbear.logsight.services.EmailService
+import com.loxbear.logsight.services.AuthService
 import com.loxbear.logsight.services.UserService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.postForEntity
-import utils.UtilsService
-import java.lang.RuntimeException
-import java.util.*
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestTemplate
 
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(val userService: UserService,
-                     val authenticationManager: AuthenticationManager,
-                     val emailService: EmailService,
-                     val repository: UserRepository) {
+class AuthController(
+    val userService: UserService,
+    val repository: UserRepository,
+    val authService: AuthService
+) {
 
-    val restTemplate = RestTemplateBuilder()
+    val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
-        .build();
+        .build()
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
 
     @PostMapping("/register")
-    fun register(@RequestBody form: RegisterUserForm): LogsightUser? {
-        return userService.createUser(form)
-    }
+    fun register(@RequestBody registerForm: UserRegisterForm): ResponseEntity<LogsightUser> =
+        when (val user = authService.registerUser(registerForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(user)
+        }
 
-    @PostMapping("/register/demo")
-    fun registerDemo(@RequestBody body: Map<String, String>): ResponseEntity<Any> {
-        val result = userService.registerUser(body["email"]!!)
-        return if (result == null)
-            ResponseEntity(HttpStatus.OK)
-        else ResponseEntity(result, HttpStatus.INTERNAL_SERVER_ERROR)
-    }
+    @PutMapping("/activate")
+    fun activateUser(@RequestBody activateForm: UserActivateForm): ResponseEntity<LogsightUser> =
+        when (val user = userService.activateUser(activateForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(user)
+        }
 
     @PostMapping("/login")
-    fun login(@RequestBody form: LoginUserForm): ResponseEntity<String> {
-        val authentication: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(form.email, form.password))
+    fun login(@RequestBody loginForm: UserLoginFormMail): ResponseEntity<Token> =
+        when (val token = authService.loginUserMail(loginForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(token)
+        }
 
-        SecurityContextHolder.getContext().authentication = authentication
-        val token: String = JWT.create()
-            .withSubject(authentication.name)
-            .withExpiresAt(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-            .sign(Algorithm.HMAC512(SecurityConstants.SECRET.toByteArray()))
-
-        return ResponseEntity("{ \"token\": \"$token\" }", HttpStatus.OK)
-    }
-
+    @PostMapping("/login_id")
+    fun login(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
+        when (val token = authService.loginUserId(loginForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(token)
+        }
 
     @PostMapping("/login/login-link")
-    fun loginLink(@RequestBody form: LoginUserForm): ResponseEntity<String> {
-        val user = repository.findByEmail(form.email).orElseThrow{
-            RuntimeException("User not found!")
+    fun loginLink(@RequestBody loginLinkForm: UserLoginLinkForm): ResponseEntity<LogsightUser> {
+        return when (val user = authService.sendLoginLink(loginLinkForm.email)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(user)
         }
-        val newLoginID = userService.createLoginID(user)
-        emailService.sendLoginEmail(user, newLoginID)
-        return ResponseEntity(HttpStatus.OK)
-
     }
 
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
+        /*print("kibana/login")
         val request = UtilsService.createKibanaRequestWithHeaders(requestBody)
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
-        return response
+        return response*/
+        return ResponseEntity.ok().build()
     }
 
-
-    @PostMapping("/activate/login-link")
-    fun loginLinkUser(@RequestBody body: Map<String, String>): UserModel?{
-        return userService.activateUserLoginLink(body["loginID"]!!, body["key"]!!)
-    }
-
-    @PostMapping("/activate")
-    fun activateUser(@RequestBody body: Map<String, String>): UserModel = userService.activateUser(body["key"]!!)
 }

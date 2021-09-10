@@ -1,19 +1,12 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.entities.PredefinedTime
 import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.*
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
-import com.loxbear.logsight.services.PredefinedTimesService
-import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UserService
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -23,13 +16,7 @@ import org.springframework.web.bind.annotation.*
 class ApplicationController(
     val applicationService: ApplicationService,
     val userService: UserService,
-    val predefinedTimesService: PredefinedTimesService
 ) {
-    val restTemplate = RestTemplateBuilder()
-        .build();
-
-    @Value("\${app.baseUrl}")
-    private val appUrl: String? = null
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
@@ -56,12 +43,28 @@ class ApplicationController(
             ResponseEntity(
                 ApplicationResponse(
                     description = "Please choose another name. The application already exists or incorrect name. " +
-                        "The name of the application should contain only numbers and lowercase letters. " +
-                        "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST
+                            "The name of the application should contain only numbers and lowercase letters. " +
+                            "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST
                 ), HttpStatus.BAD_REQUEST
             )
         }
     }
+
+    @PostMapping("/create/demo_apps")
+    fun createDemoApplications(
+        authentication: Authentication
+    ): ResponseEntity<Any> = userService.findByEmail(authentication.name).let { userOpt ->
+        userOpt.ifPresent { user ->
+            applicationService.createApplication("compute_sample_app", user)
+            applicationService.createApplication("auth_sample_app", user)
+            applicationService.createApplication("auth2_sample_app", user)
+        }
+        if (userOpt.isPresent)
+            ResponseEntity(HttpStatus.OK)
+        else
+            ResponseEntity(HttpStatus.BAD_REQUEST)
+    }
+
 
     @GetMapping("/user/{key}")
     fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
@@ -116,29 +119,6 @@ class ApplicationController(
                 ), HttpStatus.BAD_REQUEST
             )
         }
-    }
-
-    @GetMapping("/user/predefined_times")
-    fun getPredefinedTimesForUser(authentication: Authentication): List<PredefinedTime> {
-        val user = userService.findByEmail(authentication.name)
-        return predefinedTimesService.findAllByUser(user)
-    }
-
-    @PostMapping("/user/predefined_times")
-    fun createPredefinedTimeForUser(
-        authentication: Authentication,
-        @RequestBody request: PredefinedTimeRequest
-    ): PredefinedTime {
-        val user = userService.findByEmail(authentication.name)
-        return predefinedTimesService.createPredefinedTimesForUser(user, request)
-    }
-
-    @PostMapping("/user/predefined_times/delete")
-    fun deletePredefinedTimeForUser(
-        authentication: Authentication,
-        @RequestBody body: Map<String, Long>
-    ) {
-        body["id"]?.let { predefinedTimesService.deleteById(it) }
     }
 
     @GetMapping("/logFileFormats")

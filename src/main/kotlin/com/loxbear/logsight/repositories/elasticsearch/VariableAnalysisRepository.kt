@@ -2,6 +2,7 @@ package com.loxbear.logsight.repositories.elasticsearch
 
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
 import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
+import com.loxbear.logsight.repositories.UserRepository
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -15,7 +16,9 @@ import utils.UtilsService
 import utils.UtilsService.Companion.readFileAsString
 
 @Repository
-class VariableAnalysisRepository {
+class VariableAnalysisRepository(
+    val userRepository: UserRepository,
+) {
 //    val restTemplate = RestTemplateBuilder()
 //        .basicAuthentication("elastic", "elasticsearchpassword")
 //        .build();
@@ -34,9 +37,10 @@ class VariableAnalysisRepository {
         search: String?,
         userKey: String
     ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
 
         val jsonString = if (search != null) {
             readFileAsString("${resourcesPath}queries/variable_analysis_search.json")
@@ -60,9 +64,10 @@ class VariableAnalysisRepository {
         paramValue: String,
         userKey: String
     ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString = readFileAsString("${resourcesPath}queries/variable_analysis_specific_template.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             .replace("interval_aggregate", intervalAggregate)
@@ -80,9 +85,10 @@ class VariableAnalysisRepository {
         paramValue: String,
         userKey: String
     ): LineChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString =
             readFileAsString("${resourcesPath}queries/variable_analysis_specific_template_grouped_stacked.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
@@ -101,9 +107,10 @@ class VariableAnalysisRepository {
         size: Int,
         userKey: String
     ): LogLevelPieChartData {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString = readFileAsString("${resourcesPath}queries/top_5_templates.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             .replace("template_size", size.toString())
@@ -121,9 +128,10 @@ class VariableAnalysisRepository {
         userKey: String,
         intervalAggregate: String
     ): String? {
+        val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
-            .build();
+            .basicAuthentication(user.email, user.key)
+            .build()
         val jsonString: String = readFileAsString("${resourcesPath}queries/log_count_line_chart.json")
         val jsonRequest = jsonString.replace("start_time", startTime)
             .replace("stop_time", stopTime)

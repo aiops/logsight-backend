@@ -30,6 +30,8 @@ kafka:
 
 elasticsearch:
   url: localhost:9200
+  username: elastic
+  password: elasticsearchpassword
 
 kibana:
   url: localhost:5601

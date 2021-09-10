@@ -27,8 +27,7 @@ class JWTAuthenticationFilter(private val authenticationManager2: Authentication
         res: HttpServletResponse
     ): Authentication {
         return try {
-            val creds: LogsightUser = ObjectMapper()
-                .readValue(req.inputStream, LogsightUser::class.java)
+            val creds: LogsightUser = ObjectMapper().readValue(req.inputStream, LogsightUser::class.java)
             authenticationManager2.authenticate(
                 UsernamePasswordAuthenticationToken(
                     creds.email,

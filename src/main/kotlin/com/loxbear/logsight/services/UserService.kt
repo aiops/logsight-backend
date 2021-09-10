@@ -3,35 +3,37 @@ package com.loxbear.logsight.services
 import com.loxbear.logsight.encoder
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.entities.LogsightUser
-import com.loxbear.logsight.models.RegisterUserForm
-import com.loxbear.logsight.models.UserModel
+import com.loxbear.logsight.models.auth.Email
+import com.loxbear.logsight.models.auth.UserActivateForm
+import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.repositories.ApplicationRepository
 import com.loxbear.logsight.repositories.UserRepository
 import org.json.JSONObject
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.postForEntity
+import org.springframework.web.client.RestTemplate
 import utils.KeyGenerator
-import utils.UtilsService
+import java.util.*
 
 @Service
 class UserService(
-    val repository: UserRepository,
+    val userRepository: UserRepository,
     val applicationRepository: ApplicationRepository,
     val emailService: EmailService,
     val applicationService: ApplicationService,
     val kafkaService: KafkaService,
-    val predefinedTimesService: PredefinedTimesService
+    //val predefinedTimesService: PredefinedTimesService
 ) {
 
-    val logger = LoggerFactory.getLogger(UserService::class.java)
-    val restTemplate = RestTemplateBuilder()
+    val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
+    val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
-        .build();
+        .build()
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
@@ -39,132 +41,55 @@ class UserService(
     @Value("\${elasticsearch.url}")
     private val elasticUrl: String? = null
 
-    fun createUser(form: RegisterUserForm): LogsightUser {
-        return with(form) {
-            if (repository.findByEmail(email).isPresent) {
-                throw Exception("User with email $email already exists")
-            }
-            val user =
-                repository.save(LogsightUser(id = 0, email = email, password = password, key = KeyGenerator.generate()))
-            createPersonalKibana(user)
-            applicationService.createApplication("compute_sample_app", user)
-            applicationService.createApplication("auth_sample_app", user)
-            applicationService.createApplication("auth2_sample_app", user)
-            predefinedTimesService.createDefaultPredefinedTimesForUser(user)
-            user
-        }
-
-    }
+    fun createUser(userForm: UserRegisterForm): LogsightUser? =
+        createUser(LogsightUser(
+            id = 0,  // Will be replaced by auto-generated value
+            email = userForm.email,
+            password = encoder().encode(userForm.password),
+            key = KeyGenerator.generate(),
+        ))
 
     @Transactional
-    fun registerUser(email: String): String? {
-        return if (repository.findByEmail(email).isPresent) {
-            return "User with email $email already exists"
+    fun createUser(user: LogsightUser): LogsightUser? {
+        return if (userRepository.findByEmail(user.email).isEmpty) {
+            userRepository.save(user)
         } else {
-            val user = createUser(form = RegisterUserForm(email, encoder().encode("demo"), encoder().encode("demo")))
-            emailService.sendActivationEmail(user)
+            logger.warn("User with email ${user.email} already exists.")
             null
         }
     }
 
+    fun findById(userId: Long): Optional<LogsightUser> = userRepository.findById(userId)
+
+    fun activateUser(userActivate: UserActivateForm): LogsightUser? =
+        findById(userActivate.id).map { user ->
+            if (userActivate.key == user.key && !user.activated)
+                updateUser(user.copy(activated = true))
+            else
+                null
+        }.orElse(null)
+
+    fun changePassword(userForm: UserRegisterForm): LogsightUser? {
+        return findByEmail(userForm.email).map { user ->
+            updateUser(user.copy(password = encoder().encode(userForm.password)))
+        }.orElse(null)
+    }
+
+
+    @Transactional
+    fun updateUser(user: LogsightUser): LogsightUser? = userRepository.save(user)
+
     fun findByKey(key: String): LogsightUser =
-        repository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
-
-    @Transactional
-    fun activateUser(key: String): UserModel {
-        logger.info("Activating user with key [{}]", key)
-        val user = findByKey(key)
-        repository.activateUser(key)
-        with(user) {
-            return UserModel(
-                id = id, email = email, activated = activated, key = key, hasPaid = hasPaid,
-                availableData = availableData, usedData = usedData
-            )
-        }
-    }
-
-    @Transactional
-    fun createLoginID(user: LogsightUser): String {
-        val loginID = KeyGenerator.generate()
-        repository.updateLoginID(loginID, user.key)
-        return loginID
-    }
-
-    fun activateUserLoginLink(loginID: String, key: String): UserModel? {
-        val user = findByKey(key)
-
-        if (user.loginID == loginID) {
-//            val request = UtilsService.createKibanaRequestWithHeaders(
-//                "{ \"metadata\" : { \"version\" : 1 }, " +
-//                    "\"elasticsearch\": { \"cluster\" : [ ], " +
-//                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-//                    " \"privileges\" : [ \"all\" ]}] }, " +
-//                    "\"kibana\": [ { \"base\": [], " +
-//                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
-//            )
-//            restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
-
-            with(user) {
-                return UserModel(
-                    id = user.id,
-                    email = user.email,
-                    activated = user.activated,
-                    key = user.key,
-                    hasPaid = user.hasPaid,
-                    availableData = user.availableData,
-                    usedData = user.usedData
-                )
-            }
-        } else {
-            return null
-        }
-    }
+        userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
 
     fun findAllByUser(user: LogsightUser): List<Application> = applicationRepository.findAllByUser(user)
 
-    fun getApplicationIndicesForKibana(user: LogsightUser) =
-        findAllByUser(user).joinToString(",") {
-            "\"${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_parsing\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_log_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_count_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_incidents\""
-        }
-
-    fun findByEmail(email: String): LogsightUser {
-        return repository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
+    fun findByEmail(email: String): Optional<LogsightUser> {
+        return userRepository.findByEmail(email)
     }
 
     fun findByStripeCustomerID(id: String): LogsightUser {
-        return repository.findByStripeCustomerId(id).orElseThrow { Exception("User with StripeID $id not found") }
-    }
-
-    fun createPersonalKibana(user: LogsightUser) {
-        val userKey = user.key
-        var request = UtilsService.createKibanaRequestWithHeaders(
-            "{ \"id\": \"kibana_space_$userKey\", " +
-                "\"name\": \"Logsight\", " +
-                "\"description\" : \"This is your Logsight Space\" }"
-        )
-        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
-
-        request = UtilsService.createKibanaRequestWithHeaders(
-            "{ \"metadata\" : { \"version\" : 1 }," +
-                "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
-                "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
-                "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
-        )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
-
-
-        request = UtilsService.createElasticSearchRequestWithHeaders(
-            "{ \"password\" : \"test-test\", " +
-                "\"roles\" : [\"kibana_role_$userKey\"] }"
-        )
-        restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
-
+        return userRepository.findByStripeCustomerId(id).orElseThrow { Exception("User with StripeID $id not found") }
     }
 
     @Transactional
@@ -174,16 +99,21 @@ class UserService(
         updateUsedData(json.getString("private_key"), json.getLong("quantity"))
     }
 
-    @Transactional
     fun updateUsedData(key: String, usedData: Long) {
         val user = findByKey(key)
         val usedDataSum = user.usedData + usedData
-        repository.updateUsedData(key, usedDataSum)
+        userRepository.updateUsedData(key, usedDataSum)
         if (usedData > user.availableData) {
-            emailService.sendAvailableDataExceededEmail(user)
+            emailService.sendEmail(
+                Email(
+                    mailTo = user.email,
+                    sub = "logsight.ai data limit exceeded",
+                    body = "Your data has exceeded"
+                )
+            )
             kafkaService.updatePayment(user.key, false)
         }
     }
 
-    fun existsByKey(key: String) = repository.existsByKey(key)
+    fun existsByKey(key: String) = userRepository.existsByKey(key)
 }

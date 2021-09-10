@@ -161,14 +161,11 @@ class VariableAnalysisService(
 
     private fun checkAllParamsNumbers(specificTemplateData: List<VariableAnalysisSpecificTemplate>): Boolean {
         specificTemplateData.forEach {
-            try {
+            return try {
                 val parsed = UtilsService.getLeadingNumber(it.param)
-                return if (it.param.length - parsed.length < 3) {
-                    val d: Double = parsed.toDouble()
-                    true
-                } else false
+                it.param.length - parsed.length < 3
             } catch (nfe: NumberFormatException) {
-                return false
+                false
             }
         }
         return true

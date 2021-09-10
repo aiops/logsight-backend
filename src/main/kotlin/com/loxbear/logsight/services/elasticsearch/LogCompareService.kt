@@ -1,4 +1,5 @@
 package com.loxbear.logsight.services.elasticsearch
+
 import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.elasticsearch.*
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import utils.UtilsService
 import java.lang.ClassCastException
 import java.math.BigDecimal
@@ -27,10 +29,14 @@ import kotlin.math.abs
 
 
 @Service
-class LogCompareService(val repository: LogCompareRepository, val applicationService: ApplicationService) {
+class LogCompareService(
+    val logCompareRepository: LogCompareRepository,
+    val applicationService: ApplicationService,
+
+) {
+
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-    val restTemplate = RestTemplateBuilder()
-        .build();
+    val restTemplate: RestTemplate = RestTemplateBuilder().build()
 
     @Value("\${app.baseUrl}")
     private val baseUrl: String? = null
@@ -40,12 +46,12 @@ class LogCompareService(val repository: LogCompareRepository, val applicationSer
         user: LogsightUser
     ): MutableList<String> {
         val dataList = mutableListOf<String>()
-        JSONObject(repository.getApplicationVersions(applicationsIndexes, user.key))
+        JSONObject(logCompareRepository.getApplicationVersions(applicationsIndexes, user.key))
             .getJSONObject("aggregations")
             .getJSONObject("listAggregations")
             .getJSONArray("buckets").forEach {
-            dataList.add(JSONObject(it.toString()).getString("key"))
-        }
+                dataList.add(JSONObject(it.toString()).getString("key"))
+            }
         return dataList
     }
 
@@ -57,7 +63,16 @@ class LogCompareService(val repository: LogCompareRepository, val applicationSer
         intervalAggregate: String,
         tag: String
     ): List<LineChart> {
-        val resp = JSONObject(repository.getLogCountBar(applicationsIndexes, startTime, stopTime, user.key, intervalAggregate, tag))
+        val resp = JSONObject(
+            logCompareRepository.getLogCountBar(
+                applicationsIndexes,
+                startTime,
+                stopTime,
+                user.key,
+                intervalAggregate,
+                tag
+            )
+        )
         val lineChartSeries =
             resp.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").map {
                 val obj = JSONObject(it.toString())
@@ -69,14 +84,23 @@ class LogCompareService(val repository: LogCompareRepository, val applicationSer
         return listOf(LineChart("Log Count", lineChartSeries))
     }
 
-    fun getAnomaliesBarChartData(applicationsIndexes: String,
-                                 startTime: String,
-                                 stopTime: String,
-                                 user: LogsightUser,
-                                 intervalAggregate: String,
-                                 tag: String): List<LineChart> {
+    fun getAnomaliesBarChartData(
+        applicationsIndexes: String,
+        startTime: String,
+        stopTime: String,
+        user: LogsightUser,
+        intervalAggregate: String,
+        tag: String
+    ): List<LineChart> {
 
-        return repository.getAnomaliesBarChartData(applicationsIndexes, startTime, stopTime, user.key, intervalAggregate, tag)
+        return logCompareRepository.getAnomaliesBarChartData(
+            applicationsIndexes,
+            startTime,
+            stopTime,
+            user.key,
+            intervalAggregate,
+            tag
+        )
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -101,7 +125,17 @@ class LogCompareService(val repository: LogCompareRepository, val applicationSer
         baselineTagId: String,
         compareTagId: String
     ): List<LineChart> {
-        val data = JSONObject(repository.getCompareTemplatesHorizontalBar(applicationsIndexes, startTime, stopTime, user.key, intervalAggregate, baselineTagId, compareTagId))
+        val data = JSONObject(
+            logCompareRepository.getCompareTemplatesHorizontalBar(
+                applicationsIndexes,
+                startTime,
+                stopTime,
+                user.key,
+                intervalAggregate,
+                baselineTagId,
+                compareTagId
+            )
+        )
             .getJSONObject("aggregations")
             .getJSONObject("listAggregations")
             .getJSONArray("buckets").map {
@@ -123,10 +157,10 @@ class LogCompareService(val repository: LogCompareRepository, val applicationSer
         user: LogsightUser,
         baselineTagId: String,
         compareTagId: String
-    ): MutableList<LogCompareTable> {
+    ) : MutableList<LogCompareTable> {
         val dataList = mutableListOf<LogCompareTable>()
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val data = JSONObject(repository.getLogCompareData(applicationsIndexes, startTime, stopTime, user.key, baselineTagId, compareTagId))
+        val data = JSONObject(logCompareRepository.getLogCompareData(applicationsIndexes, startTime, stopTime, user.key, baselineTagId, compareTagId))
             .getJSONObject("hits").getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
                 val countPrediction = 1.0//jsonData.getJSONObject("_source").getDouble("prediction")

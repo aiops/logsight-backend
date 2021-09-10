@@ -1,6 +1,5 @@
 package com.loxbear.logsight.security
 
-
 import com.loxbear.logsight.encoder
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
@@ -24,6 +23,11 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+            .antMatchers(HttpMethod.PUT, "/api/auth/activate").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+            .antMatchers(HttpMethod.GET, "/api/auth/login/login-link").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/put/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()

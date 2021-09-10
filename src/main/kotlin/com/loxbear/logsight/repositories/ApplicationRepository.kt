@@ -7,10 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 interface ApplicationRepository : JpaRepository<Application, Long> {
     fun findAllByUser(user: LogsightUser): List<Application>
+
+    fun findByName(name: String): Optional<Application>
 
     @Modifying
     @Query("""update Application a set a.status = :status where a.id = :applicationId""")
