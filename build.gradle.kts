@@ -40,7 +40,7 @@ dependencies {
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
     implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
-    implementation("com.googlecode.json-simple:json-simple:1.1.1")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 }
 
 tasks.withType<KotlinCompile> {
