@@ -75,7 +75,7 @@ class ChartsService(val repository: ChartsRepository,
         val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
         repository.getSystemOverviewHeatmapChartData(esIndexUserAppLogAd,
             startTime,
-            stopTime, user.key, compareTagId, baselineTagId, intervalAggregate).aggregations.listAggregations.buckets.forEach {
+            stopTime, user, compareTagId, baselineTagId, intervalAggregate).aggregations.listAggregations.buckets.forEach {
             val listPoints = mutableListOf<HeatMapLogLevelPoint>()
             for (i in it.listBuckets.buckets) {
                 var name = ""
@@ -102,13 +102,13 @@ class ChartsService(val repository: ChartsRepository,
         es_index_user_app: String,
         startTime: String,
         stopTime: String,
-        userKey: String,
+        user: LogsightUser,
         baselineTagId: String?,
         compareTagId: String?,
         intervalAggregate: String
     ): MutableList<LineChart> {
         val dataList = mutableListOf<LineChart>()
-       JSONObject(repository.getNewTemplatesBarChartData(es_index_user_app, startTime, stopTime, userKey, baselineTagId, compareTagId, intervalAggregate))
+       JSONObject(repository.getNewTemplatesBarChartData(es_index_user_app, startTime, stopTime, user, baselineTagId, compareTagId, intervalAggregate))
            .getJSONObject("aggregations")
            .getJSONObject("listAggregations")
            .getJSONArray("buckets").forEach {

@@ -120,7 +120,7 @@ class ChartsController(
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         return chartsService.getNewTemplatesBarChartData(
-            applicationsIndexes, startTime, endTime, user.key,
+            applicationsIndexes, startTime, endTime, user,
             baselineTagId, compareTagId, intervalAggregate
         )
     }

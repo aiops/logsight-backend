@@ -3,6 +3,7 @@ package com.loxbear.logsight.repositories.elasticsearch
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
 import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
 import com.loxbear.logsight.charts.elasticsearch.SystemOverviewData
+import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -48,13 +49,13 @@ class ChartsRepository(
         es_index_user_app: String,
         startTime: String,
         stopTime: String,
-        userKey: String,
+        user: LogsightUser,
         baselineTagId: String?,
         compareTagId: String?,
         intervalAggregate: String
     ): String {
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
+            .basicAuthentication(user.email, user.key)
             .build()
         val jsonString = readFileAsString("${resourcesPath}queries/new_templates_compare_bar.json")
         val jsonRequest = jsonString
@@ -111,13 +112,13 @@ class ChartsRepository(
         esIndexUserAppLogAd: String,
         startTime: String,
         stopTime: String,
-        userKey: String,
+        user: LogsightUser,
         compareTagId: String?,
         baselineTagId: String?,
         intervalAggregate: String?
     ): SystemOverviewData {
         val restTemplate = RestTemplateBuilder()
-            .basicAuthentication(userKey, "test-test")
+            .basicAuthentication(user.email, user.key)
             .build()
         if (compareTagId == null && baselineTagId == null) {
             val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview_heatmap_request.json")

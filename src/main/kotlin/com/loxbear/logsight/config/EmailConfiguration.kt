@@ -22,5 +22,4 @@ class EmailConfiguration(val emailProperties: EmailProperties) {
             mailSender.javaMailProperties = javaMailProperties
             mailSender
         }
-
 }
