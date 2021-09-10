@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
 import utils.KeyGenerator
+import java.util.*
 
 @Service
 class UserService(
@@ -58,39 +59,33 @@ class UserService(
         }
     }
 
-    fun getUser(userId: Long): LogsightUser? =
-        userRepository.findById(userId).map { user -> user }.orElse(null)
-
-    fun getUser(email: String): LogsightUser? =
-        userRepository.findByEmail(email).map { user -> user }.orElse(null)
+    fun findById(userId: Long): Optional<LogsightUser> = userRepository.findById(userId)
 
     fun activateUser(userActivate: UserActivateForm): LogsightUser? =
-        getUser(userActivate.id)?.let { user ->
-            if (userActivate.key == user.key)
+        findById(userActivate.id).map { user ->
+            if (userActivate.key == user.key && !user.activated)
                 updateUser(user.copy(activated = true))
             else
                 null
-        }
+        }.orElse(null)
 
-    fun changePassword(userForm: UserRegisterForm): LogsightUser? =
-        getUser(userForm.email)?.let { user -> updateUser(user.copy(password = userForm.password)) }
+    fun changePassword(userForm: UserRegisterForm): LogsightUser? {
+        return findByEmail(userForm.email).map { user ->
+            updateUser(user.copy(password = encoder().encode(userForm.password)))
+        }.orElse(null)
+    }
+
 
     @Transactional
     fun updateUser(user: LogsightUser): LogsightUser? = userRepository.save(user)
-
-    //applicationService.createApplication("compute_sample_app", user)
-    //applicationService.createApplication("auth_sample_app", user)
-    //applicationService.createApplication("auth2_sample_app", user)
-    //predefinedTimesService.createDefaultPredefinedTimesForUser(user)
-
 
     fun findByKey(key: String): LogsightUser =
         userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
 
     fun findAllByUser(user: LogsightUser): List<Application> = applicationRepository.findAllByUser(user)
 
-    fun findByEmail(email: String): LogsightUser {
-        return userRepository.findByEmail(email).orElseThrow { Exception("User with email $email not found") }
+    fun findByEmail(email: String): Optional<LogsightUser> {
+        return userRepository.findByEmail(email)
     }
 
     fun findByStripeCustomerID(id: String): LogsightUser {
@@ -112,7 +107,7 @@ class UserService(
             emailService.sendEmail(
                 Email(
                     mailTo = user.email,
-                    subject = "logsight.ai data limit exceeded",
+                    sub = "logsight.ai data limit exceeded",
                     body = "Your data has exceeded"
                 )
             )

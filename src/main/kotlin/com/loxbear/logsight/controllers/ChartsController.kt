@@ -28,33 +28,30 @@ class ChartsController(
         authentication: Authentication,
         @RequestParam startTime: String,
         @RequestParam endTime: String
-    ): LogLevelPieChart {
-        val user = userService.findByEmail(authentication.name)
+    ): LogLevelPieChart? = userService.findByEmail(authentication.name).map { user ->
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
-    }
+        chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
+    }.orElse(null)
 
     @GetMapping("/dashboard_bar_anomalies")
     fun getAnomaliesBarChartData(
         authentication: Authentication,
         @RequestParam startTime: String,
         @RequestParam endTime: String
-    ): List<LineChart> {
-        val user = userService.findByEmail(authentication.name)
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
-    }
+    ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
+            val applicationsIndexes = applicationService.getApplicationIndexes(user)
+            chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
+    }.orElse(listOf())
 
     @GetMapping("/log_level_stacked_line_chart")
     fun getLogLevelStackedLineData(
         authentication: Authentication,
         @RequestParam startTime: String,
         @RequestParam endTime: String
-    ): LogLevelStackedLineChart {
-        val user = userService.findByEmail(authentication.name)
+    ): LogLevelStackedLineChart? = userService.findByEmail(authentication.name).map { user ->
         val applicationsIndexes = applicationService.getApplicationIndexes(user)
-        return chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, endTime, user.key)
-    }
+        chartsService.getLogLevelStackedLineChartData(applicationsIndexes, startTime, endTime, user.key)
+    }.orElse(null)
 
     @GetMapping("/system_overview_heatmap")
     fun getSystemOverViewHeatmapData(
@@ -64,11 +61,10 @@ class ChartsController(
         @RequestParam(required = false) compareTagId: String?,
         @RequestParam(required = false) baselineTagId: String?,
         @RequestParam(required = false) applicationId: Long?
-    ): SystemOverviewHeatmapChart {
-        val user = userService.findByEmail(authentication.name)
+    ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
-        return chartsService.getSystemOverviewHeatmapChart(
+        chartsService.getSystemOverviewHeatmapChart(
             applicationsIndexes,
             startTime,
             endTime,
@@ -77,7 +73,7 @@ class ChartsController(
             baselineTagId,
             null
         )
-    }
+    }.orElse(null)
 
     @GetMapping("/log_compare_heatmap")
     fun getLogCompareOverViewHeatmapData(
@@ -87,15 +83,14 @@ class ChartsController(
         @RequestParam compareTagId: String?,
         @RequestParam baselineTagId: String?,
         @RequestParam applicationId: Long?
-    ): SystemOverviewHeatmapChart {
-        val user = userService.findByEmail(authentication.name)
+    ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         var applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
         if (compareTagId != null && baselineTagId != null) {
             applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
         }
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
-        return chartsService.getSystemOverviewHeatmapChart(
+        chartsService.getSystemOverviewHeatmapChart(
             applicationsIndexes,
             startTime,
             endTime,
@@ -104,7 +99,7 @@ class ChartsController(
             baselineTagId,
             intervalAggregate
         )
-    }
+    }.orElse(null)
 
     @GetMapping("/log_comp_new_templates_bar")
     fun getNewTemplatesBarChartData(
@@ -114,14 +109,13 @@ class ChartsController(
         @RequestParam applicationId: Long?,
         @RequestParam compareTagId: String?,
         @RequestParam baselineTagId: String?
-    ): MutableList<LineChart> {
-        val user = userService.findByEmail(authentication.name)
+    ): MutableList<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
-        return chartsService.getNewTemplatesBarChartData(
+        chartsService.getNewTemplatesBarChartData(
             applicationsIndexes, startTime, endTime, user,
             baselineTagId, compareTagId, intervalAggregate
         )
-    }
+    }.orElse(mutableListOf())
 }

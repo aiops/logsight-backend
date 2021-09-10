@@ -21,7 +21,7 @@ CREATE TABLE applications (
     UNIQUE (user_id, name)
 );
 
-create table predefined_times(
+create table time_selection(
     id                BIGSERIAL PRIMARY KEY,
     name text not null,
     start_time    text not null,

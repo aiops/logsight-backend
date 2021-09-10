@@ -34,14 +34,13 @@ class LogRepository(
         appID: Long,
         logType: LogFileTypes,
         logs: Collection<LogMessage>
-    ){
-        val privateKey = userService.findByEmail(authMail).key
+    ) = userService.findByEmail(authMail).map { user ->
         val appName = applicationService.findById(appID).name
 
         val topicName = "$topicLogstash.${logType.toString().toLowerCase()}"
-        val messagesKafka = createKafkaMessages(privateKey, appName, logs)
+        val messagesKafka = createKafkaMessages(user.key, appName, logs)
         messagesKafka.forEach { sendToKafka(topicName, jsonFormat.encodeToString(it)) }
-    }
+    }.orElseThrow()
 
     private fun createKafkaMessages (
         privateKey: String,

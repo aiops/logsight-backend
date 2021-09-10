@@ -26,12 +26,11 @@ class VariableAnalysisController(
         @RequestParam startTime: String,
         @RequestParam endTime: String,
         authentication: Authentication
-    ): List<VariableAnalysisHit> {
-        val user = userService.findByEmail(authentication.name)
+    ): List<VariableAnalysisHit> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
-        return variableAnalysisService.getTemplates(
+        variableAnalysisService.getTemplates(
             applicationsIndexes,
             startTime,
             endTime,
@@ -39,7 +38,7 @@ class VariableAnalysisController(
             search,
             user
         )
-    }
+    }.orElse(listOf())
 
     @PostMapping("/application/{id}/specific_template")
     fun getSpecificTemplate(
@@ -48,14 +47,13 @@ class VariableAnalysisController(
         @RequestParam startTime: String,
         @RequestParam endTime: String,
         authentication: Authentication
-    ): Pair<String, List<LineChart>> {
+    ): Pair<String, List<LineChart>> = userService.findByEmail(authentication.name).map { user ->
         specificTemplate.template = specificTemplate.template.replace("\"","\\\"")
-        val user = userService.findByEmail(authentication.name)
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
         with(specificTemplate) {
-            return variableAnalysisService.getSpecificTemplateGrouped(
+            variableAnalysisService.getSpecificTemplateGrouped(
                 applicationsIndexes,
                 startTime,
                 endTime,
@@ -66,7 +64,7 @@ class VariableAnalysisController(
                 user
             )
         }
-    }
+    }.orElse(null)
 
     @GetMapping("/application/{id}/top_n_templates")
     fun getTop5Templates(
@@ -74,12 +72,11 @@ class VariableAnalysisController(
         authentication: Authentication,
         @RequestParam startTime: String,
         @RequestParam endTime: String,
-    ): Map<String, List<TopNTemplatesData>> {
-        val user = userService.findByEmail(authentication.name)
+    ): Map<String, List<TopNTemplatesData>> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
-        return variableAnalysisService.getTopNTemplates(applicationsIndexes, user, startTime, endTime)
-    }
+        variableAnalysisService.getTopNTemplates(applicationsIndexes, user, startTime, endTime)
+    }.orElse(emptyMap())
 
     @GetMapping("/application/{id}/log_count_line_chart")
     fun getLogCountLineChart(
@@ -87,12 +84,11 @@ class VariableAnalysisController(
         @RequestParam startTime: String,
         @RequestParam endTime: String,
         authentication: Authentication
-    ): List<LineChart> {
-        val user = userService.findByEmail(authentication.name)
+    ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
         val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
-        return variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user, intervalAggregate)
-    }
+        variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user, intervalAggregate)
+    }.orElse(listOf())
 
 }

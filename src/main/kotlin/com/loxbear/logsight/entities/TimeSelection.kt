@@ -4,8 +4,8 @@ import com.loxbear.logsight.entities.enums.DateTimeType
 import javax.persistence.*
 
 @Entity
-@Table(name = "predefined_times")
-data class PredefinedTime(
+@Table(name = "time_selection")
+data class TimeSelection(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,

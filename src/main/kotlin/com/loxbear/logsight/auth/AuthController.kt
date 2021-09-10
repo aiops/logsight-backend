@@ -1,10 +1,7 @@
 package com.loxbear.logsight.auth
 
 import com.loxbear.logsight.entities.LogsightUser
-import com.loxbear.logsight.models.auth.Token
-import com.loxbear.logsight.models.auth.UserActivateForm
-import com.loxbear.logsight.models.auth.UserLoginForm
-import com.loxbear.logsight.models.auth.UserRegisterForm
+import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.services.AuthService
 import com.loxbear.logsight.services.UserService
@@ -45,18 +42,26 @@ class AuthController(
         }
 
     @PostMapping("/login")
-    fun login(@RequestBody loginForm: UserLoginForm): ResponseEntity<Token> =
-        when (val token = authService.loginUser(loginForm)) {
+    fun login(@RequestBody loginForm: UserLoginFormMail): ResponseEntity<Token> =
+        when (val token = authService.loginUserMail(loginForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(token)
         }
 
-    @GetMapping("/login/login-link")
-    fun loginLink(@RequestBody email: String): ResponseEntity<LogsightUser> =
-        when (val user = authService.sendLoginLink(email)) {
+    @PostMapping("/login_id")
+    fun login(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
+        when (val token = authService.loginUserId(loginForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(token)
+        }
+
+    @PostMapping("/login/login-link")
+    fun loginLink(@RequestBody loginLinkForm: UserLoginLinkForm): ResponseEntity<LogsightUser> {
+        return when (val user = authService.sendLoginLink(loginLinkForm.email)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(user)
         }
+    }
 
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {

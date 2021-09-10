@@ -39,62 +39,63 @@ class PaymentController(
     @PostMapping
     fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment, authentication: Authentication): String? {
         init()
-        val user = userService.findByEmail(authentication.name)
-        val stripeCustomerID: String
-
-        if (user.stripeCustomerId == null){
-            println("Creating user!")
-            println(user.stripeCustomerId)
-            val customerParams = CustomerCreateParams
-                .builder()
-                .setEmail(payment.email)
-                .build()
-            val customer = Customer.create(customerParams)
-            stripeCustomerID = customer.id
-            paymentService.createCustomerId(user, customer.id)
-        }else{
-            println("User exists:")
-            println(user.stripeCustomerId)
-            stripeCustomerID = user.stripeCustomerId
-        }
-        if (payment.subscription){
-            val params: SessionCreateParams = SessionCreateParams.builder()
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setCustomer(stripeCustomerID)
-                .setMode(SessionCreateParams.Mode.SUBSCRIPTION).setSuccessUrl(payment.successUrl)
-                .setCancelUrl(
-                    payment.cancelUrl
-                )
-                .addLineItem(
-                    SessionCreateParams.LineItem.builder().setQuantity(payment.quantity)
-                        .setPrice(payment.priceID)
+        val userOpt = userService.findByEmail(authentication.name)
+        var stripeCustomerID: String
+        return userOpt.map { user ->
+            if (user.stripeCustomerId == null) {
+                println("Creating user!")
+                println(user.stripeCustomerId)
+                val customerParams = CustomerCreateParams
+                    .builder()
+                    .setEmail(payment.email)
+                    .build()
+                val customer = Customer.create(customerParams)
+                stripeCustomerID = customer.id
+                paymentService.createCustomerId(user, customer.id)
+            } else {
+                println("User exists:")
+                println(user.stripeCustomerId)
+                stripeCustomerID = user.stripeCustomerId
+            }
+            if (payment.subscription) {
+                val params: SessionCreateParams = SessionCreateParams.builder()
+                    .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                    .setCustomer(stripeCustomerID)
+                    .setMode(SessionCreateParams.Mode.SUBSCRIPTION).setSuccessUrl(payment.successUrl)
+                    .setCancelUrl(
+                        payment.cancelUrl
+                    )
+                    .addLineItem(
+                        SessionCreateParams.LineItem.builder().setQuantity(payment.quantity)
+                            .setPrice(payment.priceID)
+                            .build()
+                    )
+                    .build()
+                val session: Session = Session.create(params)
+                val responseData: MutableMap<String, String> = HashMap()
+                responseData["id"] = session.id
+                gson.toJson(responseData)
+            } else {
+                val params: SessionCreateParams =
+                    SessionCreateParams.builder() // We will use the credit card payment method
+                        .setCustomer(stripeCustomerID)
+                        .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                        .setMode(SessionCreateParams.Mode.PAYMENT).setSuccessUrl(payment.successUrl)
+                        .setCancelUrl(
+                            payment.cancelUrl
+                        )
+                        .addLineItem(
+                            SessionCreateParams.LineItem.builder().setQuantity(payment.quantity)
+                                .setPrice(payment.priceID)
+                                .build()
+                        )
                         .build()
-                )
-                .build()
-            val session: Session = Session.create(params)
-            val responseData: MutableMap<String, String> = HashMap()
-            responseData["id"] = session.id
-            return gson.toJson(responseData)
-        }else{
-            val params: SessionCreateParams = SessionCreateParams.builder() // We will use the credit card payment method
-                .setCustomer(stripeCustomerID)
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setMode(SessionCreateParams.Mode.PAYMENT).setSuccessUrl(payment.successUrl)
-                .setCancelUrl(
-                    payment.cancelUrl
-                )
-                .addLineItem(
-                    SessionCreateParams.LineItem.builder().setQuantity(payment.quantity)
-                        .setPrice(payment.priceID)
-                        .build()
-                )
-                .build()
-            val session: Session = Session.create(params)
-            val responseData: MutableMap<String, String> = HashMap()
-            responseData["id"] = session.id
-            return gson.toJson(responseData)
-        }
-
+                val session: Session = Session.create(params)
+                val responseData: MutableMap<String, String> = HashMap()
+                responseData["id"] = session.id
+                gson.toJson(responseData)
+            }
+        }.orElse(null)
     }
 
 
@@ -156,17 +157,19 @@ class PaymentController(
     @PostMapping("/customer_portal")
     fun customerPortal(authentication: Authentication): String? {
         init()
-        val user = userService.findByEmail(authentication.name)
-        val stripeCustomerID = user.stripeCustomerId
-        val domainUrl = "http://localhost:4200"
+        val userOpt = userService.findByEmail(authentication.name)
+        return userOpt.map { user ->
+            val stripeCustomerID = user.stripeCustomerId
+            val domainUrl = "http://localhost:4200"
 
-        val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
-            .setReturnUrl(domainUrl)
-            .setCustomer(stripeCustomerID)
-            .build()
-        val portalsession = com.stripe.model.billingportal.Session.create(params)
-        val responseData: MutableMap<String, Any> = HashMap()
-        responseData["url"] = portalsession.url
-        return gson.toJson(responseData)
+            val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
+                .setReturnUrl(domainUrl)
+                .setCustomer(stripeCustomerID)
+                .build()
+            val portalsession = com.stripe.model.billingportal.Session.create(params)
+            val responseData: MutableMap<String, Any> = HashMap()
+            responseData["url"] = portalsession.url
+            gson.toJson(responseData)
+        }.orElse(null)
     }
 }

@@ -36,7 +36,6 @@ class JWTAuthenticationFilter(private val authenticationManager2: Authentication
                 )
             )
         } catch (e: IOException) {
-            print("Dasdasdsdf")
             throw RuntimeException(e)
         }
     }
