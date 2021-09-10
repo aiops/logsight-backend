@@ -5,14 +5,14 @@ import org.springframework.mail.SimpleMailMessage
 data class Email(
     val mailTo: String,
     val mailFrom: String = "logsight.ai",
-    val subject: String,
+    val sub: String = "Message from logsight.ai",
     val body: String
 ) {
     fun getSimpleMailMessage(): SimpleMailMessage {
         return with(SimpleMailMessage()) {
             setTo(mailTo)
             setFrom(mailFrom)
-            subject?.let { setSubject(it) }
+            setSubject(sub)
             setText(body)
             this
         }
