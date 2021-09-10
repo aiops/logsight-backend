@@ -123,7 +123,7 @@ class VariableAnalysisService(
                     null
                 }
             }
-            "LineChart" to listOf(LineChart(name = template, series = lineChartSeries))
+            "LineChart" to listOf(LineChart(name = "value", series = lineChartSeries))
         } else {
             "GroupedVertical" to getSpecificTemplateDifferentParams(
                 applicationsIndexes,
