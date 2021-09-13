@@ -38,7 +38,9 @@ class KafkaService(val kafkaTemplate: KafkaTemplate<String, String>) {
 
     //private_key + '_application_stats'
     //quantity
-    //proverka ako e nadminato
-    //mail da se prati mail do userot
+    //check if the quantity is over the limit
+    //send email to the user that the limit is reached
+    //hasPaid = false
+    //update used data in the database
     // na profilot da pokazhuva momentalna sostojba
 }
