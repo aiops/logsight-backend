@@ -40,24 +40,26 @@ class PaymentController(
     fun paymentWithCheckoutPage(@RequestBody payment: CheckoutPayment, authentication: Authentication): String? {
         init()
         val userOpt = userService.findByEmail(authentication.name)
+        logger.info("Received new subscription request from user [{}] with payment details [{}]", userOpt, payment)
         var stripeCustomerID: String
         return userOpt.map { user ->
             if (user.stripeCustomerId == null) {
-                println("Creating user!")
-                println(user.stripeCustomerId)
+                logger.info("User does not exist, therefore, creating user with ID [{}]", user.stripeCustomerId)
                 val customerParams = CustomerCreateParams
                     .builder()
                     .setEmail(payment.email)
                     .build()
+                logger.info("Creating stripe customer params")
                 val customer = Customer.create(customerParams)
                 stripeCustomerID = customer.id
+                logger.info("Stripe customer is created with stripeCustomerID= [{}]", stripeCustomerID)
                 paymentService.createCustomerId(user, customer.id)
             } else {
-                println("User exists:")
-                println(user.stripeCustomerId)
                 stripeCustomerID = user.stripeCustomerId
+                logger.info("The customer already exists with stripeCustomerID= [{}]", stripeCustomerID)
             }
             if (payment.subscription) {
+                logger.info("The payment will be in subscription mode")
                 val params: SessionCreateParams = SessionCreateParams.builder()
                     .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                     .setCustomer(stripeCustomerID)
@@ -71,11 +73,14 @@ class PaymentController(
                             .build()
                     )
                     .build()
+                logger.info("Creating stripe subscription session!")
                 val session: Session = Session.create(params)
                 val responseData: MutableMap<String, String> = HashMap()
                 responseData["id"] = session.id
+                logger.info("Subscription session successfully created with sessionID = [{}]", session.id)
                 gson.toJson(responseData)
             } else {
+                logger.info("The payment will be in OTP mode!")
                 val params: SessionCreateParams =
                     SessionCreateParams.builder() // We will use the credit card payment method
                         .setCustomer(stripeCustomerID)
@@ -90,9 +95,11 @@ class PaymentController(
                                 .build()
                         )
                         .build()
+                logger.info("Creating stripe OTP session!")
                 val session: Session = Session.create(params)
                 val responseData: MutableMap<String, String> = HashMap()
                 responseData["id"] = session.id
+                logger.info("OTP Session successfully created with sessionID = [{}]", session.id)
                 gson.toJson(responseData)
             }
         }.orElse(null)
@@ -102,7 +109,7 @@ class PaymentController(
     @PostMapping("/webhook")
     fun webhook(request: HttpServletRequest, @RequestBody json: String): String? {
         init()
-        logger.info("Webhook [{}]", json)
+        logger.info("Webhook from stripe is received with the following details: [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
         val endpointSecret = "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
 
@@ -129,16 +136,16 @@ class PaymentController(
                 logger.info(event.dataObjectDeserializer.rawJson.toString())
                 logger.info(event.dataObjectDeserializer.rawJson)
                 val data = JSONObject(event.dataObjectDeserializer.rawJson).getJSONObject("lines").getJSONArray("data")[0]
-                logger.info("data obtained")
+                logger.info("Payment data obtained from stripe webhook")
                 val quantity = JSONObject(data.toString()).getLong("quantity")
-                logger.info("quantity obtained")
+                logger.info("Quantity is successfully obtained from the stripe webhook")
                 logger.info(quantity.toString())
                 val availableData = quantity*1000000000 + user.availableData - user.usedData
-                logger.info(availableData.toString())
+                logger.info("The previously availableData of the user [{}] was [{}] B, now it is updated to [{}] B", user.availableData.toString(), availableData.toString())
                 paymentService.paymentSuccessful(user, customerId, availableData)
-                logger.info("Updated database")
+                logger.info("The database was updated with the newest details for the available data for the user with ID: [{}]", user.id)
                 kafkaService.updatePayment(user.key, true)
-                logger.info("Updated payment kafka")
+                logger.info("Updated payment in kafka")
             }
             "invoice.payment_failed" -> {
                 logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)
@@ -152,8 +159,6 @@ class PaymentController(
         return ""
     }
 
-
-    //not working completely for now, costumer ID should be added here
     @PostMapping("/customer_portal")
     fun customerPortal(authentication: Authentication): String? {
         init()
