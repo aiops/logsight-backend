@@ -28,10 +28,10 @@ kafka:
   groupId: 1
 
 elasticsearch:
-  url: elasticsearch-demo:9200
+  url: elasticsearch:9200
 
 kibana:
-  url: kibana-demo:5601/demo
+  url: kibana:5601
 
 resources:
   path: /
