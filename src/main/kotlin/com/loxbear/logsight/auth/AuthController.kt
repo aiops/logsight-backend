@@ -34,7 +34,7 @@ class AuthController(
             else -> ResponseEntity.ok().body(user)
         }
 
-    @PutMapping("/activate")
+    @PostMapping("/activate")
     fun activateUser(@RequestBody activateForm: UserActivateForm): ResponseEntity<LogsightUser> =
         when (val user = userService.activateUser(activateForm)) {
             null -> ResponseEntity.badRequest().build()
