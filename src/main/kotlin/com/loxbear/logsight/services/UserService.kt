@@ -17,6 +17,8 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
+import org.thymeleaf.TemplateEngine
+import org.thymeleaf.context.Context
 import utils.KeyGenerator
 import java.util.*
 
@@ -27,8 +29,12 @@ class UserService(
     val emailService: EmailService,
     val applicationService: ApplicationService,
     val kafkaService: KafkaService,
+    val paymentService: PaymentService,
+    val templateEngine: TemplateEngine
     //val predefinedTimesService: PredefinedTimesService
 ) {
+    val exceededMailSubject = "Logsight.ai Limit exceeded"
+    val nearlyExceededMailSubject = "Logsight.ai Limit at 80%"
 
     val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
     val restTemplate: RestTemplate = RestTemplateBuilder()
@@ -93,11 +99,54 @@ class UserService(
     }
 
     @Transactional
-    @KafkaListener(topics = ["application_stats"])
-    fun applicationStatsChange(message: String) {
-        val json = JSONObject(message)
-        updateUsedData(json.getString("private_key"), json.getLong("quantity"))
+    @KafkaListener(topics= ["application_stats"], groupId = "")
+    fun consume(message:String) :Unit {
+        val privateKey = JSONObject(message).getString("private_key")
+        val usedDataNow = JSONObject(message).getLong("quantity")
+        logger.info("Received application user stats update message: [{}]", message)
+        val user = this.findByKey(privateKey)
+        val usedDataPrevious = user.usedData
+        val availableData = user.availableData
+        if ((usedDataPrevious + usedDataNow) > availableData){
+            paymentService.updateHasPaid(user, false)
+            emailService.sendMimeEmail(
+                Email(
+                    mailTo = user.email,
+                    sub = exceededMailSubject,
+                    body = getExceededLimitsMailBody(
+                        "exceededLimits",
+                        exceededMailSubject)
+                )
+            )
+        }
+
+        if ((usedDataPrevious + usedDataNow) > 0.8*availableData){
+            emailService.sendMimeEmail(
+                Email(
+                    mailTo = user.email,
+                    sub = nearlyExceededMailSubject,
+                    body = getExceededLimitsMailBody(
+                        "nearlyExceededLimits",
+                        nearlyExceededMailSubject)
+                )
+            )
+        }
+
+        userRepository.updateUsedData(user.key, usedDataPrevious + usedDataNow)
+
     }
+
+
+    private fun getExceededLimitsMailBody(
+        template: String,
+        title: String,
+    ): String = templateEngine.process(
+        template,
+        with(Context()) {
+            setVariable("title", title)
+            this
+        }
+    )
 
     fun updateUsedData(key: String, usedData: Long) {
         val user = findByKey(key)

@@ -123,7 +123,6 @@ class PaymentController(
         val user = userService.findByStripeCustomerID(customerId)
 
         when (event?.type) {
-
 //            "customer.created" -> {
 //                //add the customer id to the user table
 //            }
