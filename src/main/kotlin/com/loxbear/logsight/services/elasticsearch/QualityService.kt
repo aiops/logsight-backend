@@ -149,7 +149,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
 
             try {
                 restTemplate.postForEntity<String>(
-                    "https://demo.logsight.ai/api_v1/results", HttpEntity(json.toString(), headers)).body!!
+                    "http://data-input-rest-api:5444/api_v1/results", HttpEntity(json.toString(), headers)).body!!
             }catch (e: HttpClientErrorException){
                 return HttpStatus.BAD_REQUEST
             }
