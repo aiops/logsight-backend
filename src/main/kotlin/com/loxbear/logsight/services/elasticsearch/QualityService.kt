@@ -138,7 +138,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
         for (i in applicationsIndexes.split(',')){
             val request = "{\n" +
                     "  \"private-key\": \"${user.key}\",\n" +
-                    "  \"app\": \"${i.split("_").subList(1,i.split("_").size - 1).joinToString("_")}\",\n" +
+                    "  \"app\": \"${i.split("_").subList(1,i.split("_").size - 2).joinToString("_")}\",\n" +
                     "  \"start-time\": \"$startTime\",\n" +
                     "  \"end-time\": \"$stopTime\",\n" +
                     "  \"anomaly-type\": \"log_quality\"\n" +
