@@ -23,6 +23,7 @@ email:
 
 app:
   baseUrl: http://localhost:4200
+  qualityUrl: http://localhost:5444/
 
 kafka:
   bootstrapAddress: localhost:9093 # localhost:9093

@@ -22,6 +22,7 @@ email:
 
 app:
   baseUrl: https://logsight.ai/
+  qualityUrl: http://data-input-rest-api:5444/
 
 kafka:
   bootstrapAddress: kafka:9092 # localhost:9093

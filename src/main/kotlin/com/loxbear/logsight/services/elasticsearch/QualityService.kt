@@ -38,6 +38,9 @@ class QualityService(val repository: QualityRepository, val applicationService: 
     @Value("\${app.baseUrl}")
     private val baseUrl: String? = null
 
+    @Value("\${app.qualityUrl}")
+    private val qualityUrl: String? = null
+
     fun getLogQualityData(
         applicationsIndexes: String,
         startTime: String,
@@ -149,7 +152,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
 
             try {
                 restTemplate.postForEntity<String>(
-                    "http://data-input-rest-api:5444/api_v1/results", HttpEntity(json.toString(), headers)).body!!
+                    "$qualityUrl/api_v1/results", HttpEntity(json.toString(), headers)).body!!
             }catch (e: HttpClientErrorException){
                 return HttpStatus.BAD_REQUEST
             }
