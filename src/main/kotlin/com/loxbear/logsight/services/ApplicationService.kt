@@ -34,6 +34,7 @@ class ApplicationService(
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
 
+    @Transactional
     fun createApplication(name: String, user: LogsightUser): Application? {
         if(repository.findByName(name).isPresent) {
             return null

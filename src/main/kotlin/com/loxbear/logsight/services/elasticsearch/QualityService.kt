@@ -38,6 +38,9 @@ class QualityService(val repository: QualityRepository, val applicationService: 
     @Value("\${app.baseUrl}")
     private val baseUrl: String? = null
 
+    @Value("\${app.qualityUrl}")
+    private val qualityUrl: String? = null
+
     fun getLogQualityData(
         applicationsIndexes: String,
         startTime: String,
@@ -138,7 +141,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
         for (i in applicationsIndexes.split(',')){
             val request = "{\n" +
                     "  \"private-key\": \"${user.key}\",\n" +
-                    "  \"app\": \"${i.split("_")[1]}\",\n" +
+                    "  \"app\": \"${i.split("_").subList(1,i.split("_").size - 2).joinToString("_")}\",\n" +
                     "  \"start-time\": \"$startTime\",\n" +
                     "  \"end-time\": \"$stopTime\",\n" +
                     "  \"anomaly-type\": \"log_quality\"\n" +
@@ -149,7 +152,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
 
             try {
                 restTemplate.postForEntity<String>(
-                    "http://localhost:5444/api_v1/results", HttpEntity(json.toString(), headers)).body!!
+                    "$qualityUrl/api_v1/results", HttpEntity(json.toString(), headers)).body!!
             }catch (e: HttpClientErrorException){
                 return HttpStatus.BAD_REQUEST
             }
