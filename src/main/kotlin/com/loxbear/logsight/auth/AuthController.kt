@@ -5,11 +5,14 @@ import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.services.AuthService
 import com.loxbear.logsight.services.UserService
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForEntity
+import utils.UtilsService
 
 
 @RestController
@@ -65,11 +68,11 @@ class AuthController(
 
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
-        /*print("kibana/login")
-        val request = UtilsService.createKibanaRequestWithHeaders(requestBody)
+        val user = userService.findByKey(JSONObject(requestBody).getString("key"))
+        val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
+        val request = UtilsService.createKibanaRequestWithHeaders(requestB)
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
-        return response*/
-        return ResponseEntity.ok().build()
+        return response
     }
 
 }
