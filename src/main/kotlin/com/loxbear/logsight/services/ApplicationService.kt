@@ -36,44 +36,47 @@ class ApplicationService(
 
     @Transactional
     fun createApplication(name: String, user: LogsightUser): Application? {
-        if(repository.findByName(name).isPresent) {
-            return null
-        } else {
-            // TODO this should go to frontend
-            val p: Pattern = Pattern.compile("[^a-z0-9_]")
-            val m: Matcher = p.matcher(name)
-            val b: Boolean = m.find()
-            if (b) {
+        val applications = this.findAllByUser(user)
+        applications.forEach {
+            if (it.name == name){
                 return null
             }
-            val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
-            logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
-            try {
-                repository.save(application)
-            } catch (e: DataIntegrityViolationException) {
-                return null
-            }
-            kafkaService.applicationChange(application, ApplicationAction.CREATE)
-            val request = UtilsService.createKibanaRequestWithHeaders(
-                "{ \"metadata\" : { \"version\" : 1 }, " +
-                        "\"elasticsearch\": { \"cluster\" : [ ], " +
-                        "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-                        " \"privileges\" : [ \"all\" ]}] }, " +
-                        "\"kibana\": [ { \"base\": [], " +
-                        "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
-            )
-            restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
-
-            val requestDefaultIndex = UtilsService.createKibanaRequestWithHeaders(
-                "{ \"value\": null}"
-            )
-            restTemplate.postForEntity<String>(
-                "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex",
-                requestDefaultIndex
-            ).body!!
-            kafkaService.applicationChange(application, ApplicationAction.CREATE)
-            return application
         }
+
+        // TODO this should go to frontend
+        val p: Pattern = Pattern.compile("[^a-z0-9_]")
+        val m: Matcher = p.matcher(name)
+        val b: Boolean = m.find()
+        if (b) {
+            return null
+        }
+        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
+        logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
+        try {
+            repository.save(application)
+        } catch (e: DataIntegrityViolationException) {
+            return null
+        }
+        kafkaService.applicationChange(application, ApplicationAction.CREATE)
+        val request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"metadata\" : { \"version\" : 1 }, " +
+                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                    " \"privileges\" : [ \"all\" ]}] }, " +
+                    "\"kibana\": [ { \"base\": [], " +
+                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+        )
+        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+
+        val requestDefaultIndex = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"value\": null}"
+        )
+        restTemplate.postForEntity<String>(
+            "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex",
+            requestDefaultIndex
+        ).body!!
+        kafkaService.applicationChange(application, ApplicationAction.CREATE)
+        return application
     }
 
     fun findAllByUser(user: LogsightUser): List<Application> = repository.findAllByUser(user)

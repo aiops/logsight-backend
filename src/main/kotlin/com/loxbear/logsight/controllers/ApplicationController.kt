@@ -55,6 +55,7 @@ class ApplicationController(
         authentication: Authentication
     ): ResponseEntity<Any> = userService.findByEmail(authentication.name).let { userOpt ->
         userOpt.ifPresent { user ->
+            println("Creating apps")
             applicationService.createApplication("compute_sample_app", user)
             applicationService.createApplication("auth_sample_app", user)
             applicationService.createApplication("auth2_sample_app", user)
@@ -70,6 +71,7 @@ class ApplicationController(
     fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
         val user = userService.findByKey(key)
         val applications = applicationService.findAllByUser(user)
+        println(applications)
         val returnApplications = mutableListOf<Application>()
         for (i in applications.indices) {
             returnApplications.add(
