@@ -119,6 +119,7 @@ class PaymentController(
             return ""
         }
 
+        logger.info("Event was successfully constructed [{}]", event)
         val customerId = JSONObject(event.dataObjectDeserializer.rawJson).getString("customer")
         val user = userService.findByStripeCustomerID(customerId)
 
@@ -164,7 +165,7 @@ class PaymentController(
         val userOpt = userService.findByEmail(authentication.name)
         return userOpt.map { user ->
             val stripeCustomerID = user.stripeCustomerId
-            val domainUrl = "http://localhost:4200"
+            val domainUrl = "https://demo.logsight.ai/"
 
             val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
                 .setReturnUrl(domainUrl)
