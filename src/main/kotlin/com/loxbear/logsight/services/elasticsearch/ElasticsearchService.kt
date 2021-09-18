@@ -16,6 +16,7 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.RestClients
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.io.IOException
@@ -30,9 +31,17 @@ class ElasticsearchService(
     val userRepository: UserRepository,
 ) {
 
-    fun createForLogsightUser(user: LogsightUser): Boolean =
-        PutUserRequest.withPassword(
-            User(user.email, Collections.singletonList("superuser")),
+    val restTemplate: RestTemplate = RestTemplateBuilder()
+        .basicAuthentication("elastic", "elasticsearchpassword")
+        .build()
+
+    @Value("\${kibana.url}")
+    private val kibanaUrl: String? = null
+
+
+    fun createForLogsightUser(user: LogsightUser): Boolean {
+        val esUserBool = PutUserRequest.withPassword(
+            User(user.email, Collections.singletonList(user.key + "_" + user.email)),
             user.key.toCharArray(),
             true,
             RefreshPolicy.NONE
@@ -43,6 +52,26 @@ class ElasticsearchService(
                 false
             }
         }
+
+        val userKey = user.key
+        var request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"id\": \"kibana_space_$userKey\", " +
+                    "\"name\": \"Logsight\", " +
+                    "\"description\" : \"This is your Logsight Space\" }"
+        )
+        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
+
+        request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"metadata\" : { \"version\" : 1 }," +
+                    "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
+                    "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                    "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
+        )
+        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/${user.key + "_" + user.email}", request)
+
+        return esUserBool
+    }
+
 
     fun updatePassword(user: LogsightUser): Boolean =
         ChangePasswordRequest(

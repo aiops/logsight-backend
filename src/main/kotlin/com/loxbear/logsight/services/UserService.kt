@@ -17,9 +17,11 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForEntity
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
 import utils.KeyGenerator
+import utils.UtilsService
 import java.util.*
 
 @Service
@@ -54,6 +56,32 @@ class UserService(
             password = encoder().encode(userForm.password),
             key = KeyGenerator.generate(),
         ))
+
+    fun createPersonalKibana(user: LogsightUser) {
+        val userKey = user.key
+        var request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"id\": \"kibana_space_$userKey\", " +
+                    "\"name\": \"Logsight\", " +
+                    "\"description\" : \"This is your Logsight Space\" }"
+        )
+        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
+
+        request = UtilsService.createKibanaRequestWithHeaders(
+            "{ \"metadata\" : { \"version\" : 1 }," +
+                    "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " +
+                    "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
+                    "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
+        )
+        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
+
+
+        request = UtilsService.createElasticSearchRequestWithHeaders(
+            "{ \"password\" : \"${user.key}\", " +
+                    "\"roles\" : [\"${user.key + "_" + user.email}\"] }"
+        )
+        restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
+
+    }
 
     @Transactional
     fun createUser(user: LogsightUser): LogsightUser? {

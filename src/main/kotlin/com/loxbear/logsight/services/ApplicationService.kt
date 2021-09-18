@@ -66,7 +66,7 @@ class ApplicationService(
                     "\"kibana\": [ { \"base\": [], " +
                     "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
         )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_${user.key}", request)
+        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/${user.key + "_" + user.email}", request)
 
         val requestDefaultIndex = UtilsService.createKibanaRequestWithHeaders(
             "{ \"value\": null}"

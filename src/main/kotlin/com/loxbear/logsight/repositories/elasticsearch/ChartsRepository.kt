@@ -124,10 +124,13 @@ class ChartsRepository(
             val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview_heatmap_request.json")
             val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-            return restTemplate.postForEntity<SystemOverviewData>(
+
+            val returnData = restTemplate.postForEntity<SystemOverviewData>(
                 "http://$elasticsearchUrl/$esIndexUserAppLogAd/_search",
                 request
             ).body!!
+            println(returnData)
+            return returnData
         } else {
             val jsonString: String = readFileAsString("${resourcesPath}queries/heatmap_log_compare.json")
             val jsonRequest = jsonString
