@@ -21,7 +21,8 @@ class KafkaService(val kafkaTemplate: KafkaTemplate<String, String>) {
 
     fun updatePayment(userKey: String, hasPaid: Boolean) {
         val message = JSONObject().put("is_active", if (hasPaid) 1 else 0)
-        kafkaTemplate.send("${userKey}_subscription", message.toString())
+            .put("private-key", userKey)
+        kafkaTemplate.send("subscription", message.toString())
     }
 
     fun trainModels(user: LogsightUser, application: Application, baselineTagId: String, compareTagId: String) {
