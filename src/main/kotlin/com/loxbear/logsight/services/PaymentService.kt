@@ -21,6 +21,7 @@ class PaymentService(val userRepository: UserRepository) {
     @Transactional
     fun updateHasPaid(user: LogsightUser, hasPaid: Boolean) {
         userRepository.updateHasPaid(hasPaid, user.id)
+        userRepository.updateAvailableData(0, user.id)
     }
 
     @Transactional
