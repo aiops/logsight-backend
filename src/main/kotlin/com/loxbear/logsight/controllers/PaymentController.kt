@@ -140,7 +140,7 @@ class PaymentController(
                 val quantity = JSONObject(data.toString()).getLong("quantity")
                 logger.info("Quantity is successfully obtained from the stripe webhook")
                 logger.info(quantity.toString())
-                val availableData = quantity*1000000000 + user.availableData - user.usedData
+                val availableData = quantity*1000000000 + user.availableData
                 logger.info("The previously availableData of the user [{}] was [{}] B, now it is updated to [{}] B", user.availableData.toString(), availableData.toString())
                 paymentService.paymentSuccessful(user, customerId, availableData)
                 logger.info("The database was updated with the newest details for the available data for the user with ID: [{}]", user.id)
