@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
+import java.lang.IllegalArgumentException
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -139,13 +140,20 @@ class QualityService(val repository: QualityRepository, val applicationService: 
         user: LogsightUser
     ): HttpStatus {
         for (i in applicationsIndexes.split(',')){
-            val request = "{\n" +
-                    "  \"private-key\": \"${user.key}\",\n" +
-                    "  \"app\": \"${i.split("_").subList(1,i.split("_").size - 2).joinToString("_")}\",\n" +
-                    "  \"start-time\": \"$startTime\",\n" +
-                    "  \"end-time\": \"$stopTime\",\n" +
-                    "  \"anomaly-type\": \"log_quality\"\n" +
-                    "}"
+            var request = ""
+            try {
+                request = "{\n" +
+                        "  \"private-key\": \"${user.key}\",\n" +
+                        "  \"email\": \"${user.email}\",\n" +
+                        "  \"app\": \"${i.split("_").subList(1,i.split("_").size - 2).joinToString("_")}\",\n" +
+                        "  \"start-time\": \"$startTime\",\n" +
+                        "  \"end-time\": \"$stopTime\",\n" +
+                        "  \"anomaly-type\": \"log_quality\"\n" +
+                        "}"
+            }catch (e: IllegalArgumentException){
+                return HttpStatus.BAD_REQUEST
+            }
+
             val headers = HttpHeaders()
             headers.contentType = MediaType.APPLICATION_JSON
             val json = JSONObject(request)
