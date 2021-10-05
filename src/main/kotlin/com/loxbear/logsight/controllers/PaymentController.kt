@@ -63,6 +63,7 @@ class PaymentController(
                 val params: SessionCreateParams = SessionCreateParams.builder()
                     .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                     .setCustomer(stripeCustomerID)
+                    .setCustomerEmail(user.email)
                     .setMode(SessionCreateParams.Mode.SUBSCRIPTION).setSuccessUrl(payment.successUrl)
                     .setCancelUrl(
                         payment.cancelUrl
@@ -84,6 +85,7 @@ class PaymentController(
                 val params: SessionCreateParams =
                     SessionCreateParams.builder() // We will use the credit card payment method
                         .setCustomer(stripeCustomerID)
+                        .setCustomerEmail(user.email)
                         .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                         .setMode(SessionCreateParams.Mode.PAYMENT).setSuccessUrl(payment.successUrl)
                         .setCancelUrl(
