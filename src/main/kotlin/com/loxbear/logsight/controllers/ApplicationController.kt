@@ -26,11 +26,11 @@ class ApplicationController(
                 ApplicationResponse(
                     type = "Error",
                     title = "Application limit is reached, please contact support!",
-                    status = HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                    status = HttpStatus.BAD_REQUEST.toString(),
                     detail = "Maximum 5 applications are allowed",
                     instance = "api/applications/create"
                 ),
-                HttpStatus.INTERNAL_SERVER_ERROR
+                HttpStatus.BAD_REQUEST
             )
         }
         val app = applicationService.createApplication(body.name, user)
