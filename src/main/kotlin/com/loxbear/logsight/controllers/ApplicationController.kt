@@ -98,7 +98,7 @@ class ApplicationController(
 
     @PostMapping("/{id}")
     fun deleteApplication(
-        @PathVariable id: String,
+        @PathVariable id: Long,
         @RequestParam(required = false) key: String?,
         authentication: Authentication?
     ): ResponseEntity<Any> {

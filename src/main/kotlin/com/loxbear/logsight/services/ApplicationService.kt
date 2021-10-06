@@ -144,11 +144,9 @@ class ApplicationService(
     fun findById(id: Long): Application =
         repository.findById(id).orElseThrow { Exception("Application with id [$id] not found") }
 
-    fun findByName(name: String): Application =
-        repository.findByName(name).orElseThrow { Exception("Application with name [$name] not found") }
 
-    fun deleteApplication(id: String): Boolean {
-        val application = findByName(id)
+    fun deleteApplication(id: Long): Boolean {
+        val application = findById(id)
         logger.info("Deleting application with id [{}]", id)
         try {
             repository.delete(application)
