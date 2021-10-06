@@ -50,8 +50,11 @@ class FileUploadController(
 
         return ResponseEntity(
             ApplicationResponse(
-                description = "Data uploaded successfully.",
-                status = HttpStatus.OK), HttpStatus.OK
+                type="",
+                title="",
+                instance="",
+                detail = "Data uploaded successfully.",
+                status = HttpStatus.OK.toString()), HttpStatus.OK
         )
     }
 }

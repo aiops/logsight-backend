@@ -23,9 +23,12 @@ class ApplicationController(
         val user = userService.findByKey(body.key)
         if (applicationService.findAllByUser(user).size >= 5) {
             return ResponseEntity(
-                IdResponse(
-                    description = "Maximum 5 applications are allowed", status = HttpStatus.INTERNAL_SERVER_ERROR,
-                    id = null
+                ApplicationResponse(
+                    type = "Error",
+                    title = "Application limit is reached, please contact support!",
+                    status = HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                    detail = "Maximum 5 applications are allowed",
+                    instance = "api/applications/create"
                 ),
                 HttpStatus.INTERNAL_SERVER_ERROR
             )
@@ -42,9 +45,13 @@ class ApplicationController(
         } else {
             ResponseEntity(
                 ApplicationResponse(
-                    description = "Please choose another name. The application already exists or incorrect name. " +
+                    type = "Error",
+                    title = "Application already exists.",
+                    status = HttpStatus.BAD_REQUEST.toString(),
+                    detail =  "Please choose another name. The application already exists or incorrect name. " +
                             "The name of the application should contain only numbers and lowercase letters. " +
-                            "Special signs are not allowed(except underscore)!", status = HttpStatus.BAD_REQUEST
+                            "Special signs are not allowed(except underscore)!",
+                    instance = "api/applications/create"
                 ), HttpStatus.BAD_REQUEST
             )
         }
@@ -71,7 +78,6 @@ class ApplicationController(
     fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
         val user = userService.findByKey(key)
         val applications = applicationService.findAllByUser(user)
-        println(applications)
         val returnApplications = mutableListOf<Application>()
         for (i in applications.indices) {
             returnApplications.add(
@@ -92,7 +98,7 @@ class ApplicationController(
 
     @PostMapping("/{id}")
     fun deleteApplication(
-        @PathVariable id: Long,
+        @PathVariable id: String,
         @RequestParam(required = false) key: String?,
         authentication: Authentication?
     ): ResponseEntity<Any> {
@@ -100,25 +106,37 @@ class ApplicationController(
             if (key == null || !userService.existsByKey(key)) {
                 return ResponseEntity(
                     ApplicationResponse(
-                        description = "User is not authenticated or the user does not exist!",
-                        status = HttpStatus.BAD_REQUEST
-                    ), HttpStatus.BAD_REQUEST
+                        type = "Error",
+                        title = "User does not exist or not authenticated",
+                        status = HttpStatus.BAD_REQUEST.toString(),
+                        detail =  "User is not authenticated or the user does not exist!",
+                        instance = "api/applications/delete"
+                    )
+                   , HttpStatus.BAD_REQUEST
                 )
             }
         }
         return if (applicationService.deleteApplication(id)) {
             ResponseEntity(
                 ApplicationResponse(
-                    description = "Application deleted successfully.",
-                    status = HttpStatus.OK
-                ), HttpStatus.OK
+                    type = "",
+                    title = "",
+                    status = HttpStatus.OK.toString(),
+                    detail =  "Application deleted successfully.",
+                    instance = "api/applications/delete"
+                )
+                , HttpStatus.OK
             )
         } else {
             ResponseEntity(
                 ApplicationResponse(
-                    description = "Application with the provided id does not exist!",
-                    status = HttpStatus.BAD_REQUEST
-                ), HttpStatus.BAD_REQUEST
+                    type = "Error",
+                    title = "Application does not exist.",
+                    status = HttpStatus.NOT_FOUND.toString(),
+                    detail =  "Application with the provided ID does not exists.",
+                    instance = "api/applications/delete"
+                )
+                , HttpStatus.NOT_FOUND
             )
         }
     }
