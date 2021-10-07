@@ -54,7 +54,7 @@ class FileUploadController(
                 title="",
                 instance="",
                 detail = "Data uploaded successfully.",
-                status = HttpStatus.OK.toString()), HttpStatus.OK
+                status = HttpStatus.OK.value()), HttpStatus.OK
         )
     }
 }
