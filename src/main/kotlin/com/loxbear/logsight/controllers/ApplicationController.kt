@@ -26,7 +26,7 @@ class ApplicationController(
                 ApplicationResponse(
                     type = "Error",
                     title = "Application limit is reached, please contact support!",
-                    status = HttpStatus.BAD_REQUEST.toString(),
+                    status = HttpStatus.BAD_REQUEST.value().toString(),
                     detail = "Maximum 5 applications are allowed",
                     instance = "api/applications/create"
                 ),
@@ -46,8 +46,8 @@ class ApplicationController(
             ResponseEntity(
                 ApplicationResponse(
                     type = "Error",
-                    title = "Application already exists.",
-                    status = HttpStatus.BAD_REQUEST.toString(),
+                    title = "Application name already exists or invalid.",
+                    status = HttpStatus.BAD_REQUEST.value().toString(),
                     detail =  "Please choose another name. The application already exists or incorrect name. " +
                             "The name of the application should contain only numbers and lowercase letters. " +
                             "Special signs are not allowed(except underscore)!",
@@ -108,7 +108,7 @@ class ApplicationController(
                     ApplicationResponse(
                         type = "Error",
                         title = "User does not exist or not authenticated",
-                        status = HttpStatus.BAD_REQUEST.toString(),
+                        status = HttpStatus.BAD_REQUEST.value().toString(),
                         detail =  "User is not authenticated or the user does not exist!",
                         instance = "api/applications/delete"
                     )
@@ -121,7 +121,7 @@ class ApplicationController(
                 ApplicationResponse(
                     type = "",
                     title = "",
-                    status = HttpStatus.OK.toString(),
+                    status = HttpStatus.OK.value().toString(),
                     detail =  "Application deleted successfully.",
                     instance = "api/applications/delete"
                 )
