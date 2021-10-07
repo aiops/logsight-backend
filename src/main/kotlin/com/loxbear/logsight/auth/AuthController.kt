@@ -60,6 +60,15 @@ class AuthController(
 
     @PostMapping("/login/login-link")
     fun loginLink(@RequestBody loginLinkForm: UserLoginLinkForm): ResponseEntity<LogsightUser> {
+        var isActivated = false
+        userService.findByEmail(loginLinkForm.email).map {
+                user -> if(user.activated){
+                isActivated = true
+        }
+        }
+        if (!isActivated) {
+            return ResponseEntity.badRequest().build()
+        }
         return when (val user = authService.sendLoginLink(loginLinkForm.email)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(user)

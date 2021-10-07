@@ -146,14 +146,15 @@ class ApplicationService(
 
 
     fun deleteApplication(id: Long): Boolean {
-        val application = findById(id)
         logger.info("Deleting application with id [{}]", id)
         try {
+            val application = findById(id)
             repository.delete(application)
-        } catch (e: java.lang.Exception) {
+            kafkaService.applicationChange(application, ApplicationAction.DELETE)
+        } catch (e: java.lang.Exception){
             return false
         }
-        kafkaService.applicationChange(application, ApplicationAction.DELETE)
+
         return true
     }
 }
