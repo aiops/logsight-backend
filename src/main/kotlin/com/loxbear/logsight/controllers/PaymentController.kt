@@ -146,7 +146,7 @@ class PaymentController(
                 logger.info("The database was updated with the newest details for the available data for the user with ID: [{}]", user.id)
                 kafkaService.updatePayment(user.key, true)
                 logger.info("Updated payment in kafka")
-                paymentService.updateLimitApproaching(user, false)
+//                paymentService.updateLimitApproaching(user, false)
             }
             "invoice.payment_failed" -> {
                 logger.info("Received [invoice.payment_failed] for user [{}] with stripeCustomerId [{}]", user, customerId)

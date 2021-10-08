@@ -149,7 +149,7 @@ class UserService(
         }
 
         if ((usedDataPrevious + usedDataNow) > 0.8*availableData){
-            if (!user.limitApproaching){
+//            if (!user.limitApproaching){
                 emailService.sendMimeEmail(
                     Email(
                         mailTo = user.email,
@@ -159,8 +159,8 @@ class UserService(
                             nearlyExceededMailSubject)
                     )
                 )
-                paymentService.updateLimitApproaching(user, true)
-            }
+//                paymentService.updateLimitApproaching(user, true)
+//            }
 
         }
 
