@@ -24,10 +24,10 @@ class PaymentService(val userRepository: UserRepository) {
         userRepository.updateAvailableData(0, user.id)
     }
 
-    @Transactional
-    fun updateLimitApproaching(user: LogsightUser, limitApproaching: Boolean) {
-        userRepository.updateLimitApproaching(limitApproaching, user.id)
-    }
+//    @Transactional
+//    fun updateLimitApproaching(user: LogsightUser, limitApproaching: Boolean) {
+//        userRepository.updateLimitApproaching(limitApproaching, user.id)
+//    }
 
 
 
