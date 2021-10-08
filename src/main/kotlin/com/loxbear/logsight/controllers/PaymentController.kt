@@ -141,6 +141,7 @@ class PaymentController(
                 logger.info("Quantity is successfully obtained from the stripe webhook")
                 logger.info(quantity.toString())
                 var availableData = 0L
+                paymentService.resetAvailableAndUsedData(user)
                 if (!user.hasPaid){
                     availableData = quantity*1000000000
                 }else{
