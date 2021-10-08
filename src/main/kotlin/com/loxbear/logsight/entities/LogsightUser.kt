@@ -37,7 +37,7 @@ data class LogsightUser(
     @Column(name = "used_data")
     val usedData: Long = 0L,
 
-    @Column(name = "approaching_limit")
+    @Column(name = "approaching_limit", nullable = false)
     val limitApproaching: Boolean = false,
 
     @Column(name = "available_data")
