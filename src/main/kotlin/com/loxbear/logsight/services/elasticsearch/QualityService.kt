@@ -56,11 +56,7 @@ class QualityService(val repository: QualityRepository, val applicationService: 
                 val jsonData = JSONObject(it.toString())
                 val linguisticPrediction = jsonData.getJSONObject("_source")["linguistic_prediction"] as BigDecimal
                 val actualLevel = jsonData.getJSONObject("_source")["actual_level"].toString()
-                var predictedLevel: String = if (jsonData.getJSONObject("_source")["predicted_log_level"].toString() == "0"){
-                    "ERROR or WARNING"
-                }else{
-                    "INFO or DEBUG"
-                }
+                var predictedLevel: String = jsonData.getJSONObject("_source")["predicted_level"].toString()
                 val suggestions = jsonData.getJSONObject("_source").getJSONArray("suggestions")[0] as JSONArray
                 val suggestionData = mutableListOf<String>()
                 for (i in suggestions){
