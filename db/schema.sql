@@ -10,7 +10,7 @@ CREATE TABLE users (
     stripe_customer_id TEXT,
     has_paid           boolean not null default false,
     used_data          bigint  not null default 0,
-    available_data     bigint  not null default 1000000000
+    available_data     bigint  not null default 10000000L
 );
 
 CREATE TABLE applications (

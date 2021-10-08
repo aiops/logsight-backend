@@ -38,7 +38,7 @@ data class LogsightUser(
     val usedData: Long = 0L,
 
     @Column(name = "available_data")
-    val availableData: Long = 1000000000L
+    val availableData: Long = 10000000L
 ) {
     override fun toString(): String {
         return "LogsightUser(id=$id, email=$email, availableData=$availableData, usedData=$usedData)"
