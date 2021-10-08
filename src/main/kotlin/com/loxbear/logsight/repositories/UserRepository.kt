@@ -40,11 +40,11 @@ interface UserRepository : JpaRepository<LogsightUser, Long> {
     )
     fun updateAvailableData(availableData: Long, id: Long)
 
-//    @Modifying
-//    @Query(
-//        """update LogsightUser u set u.limitApproaching = :limitApproaching where u.id = :id"""
-//    )
-//    fun updateLimitApproaching(limitApproaching: Boolean, id: Long)
+    @Modifying
+    @Query(
+        """update LogsightUser u set u.approachingLimit = :approachingLimit where u.id = :id"""
+    )
+    fun updateLimitApproaching(approachingLimit: Boolean, id: Long)
 
 
     @Modifying

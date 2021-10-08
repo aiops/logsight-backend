@@ -137,6 +137,7 @@ class UserService(
         val availableData = user.availableData
         if ((usedDataPrevious + usedDataNow) > availableData){
             paymentService.updateHasPaid(user, false)
+            kafkaService.updatePayment(user.key, false)
             emailService.sendMimeEmail(
                 Email(
                     mailTo = user.email,
@@ -149,7 +150,8 @@ class UserService(
         }
 
         if ((usedDataPrevious + usedDataNow) > 0.8*availableData){
-//            if (!user.limitApproaching){
+            if (!user.approachingLimit){
+                paymentService.updateLimitApproaching(user, true)
                 emailService.sendMimeEmail(
                     Email(
                         mailTo = user.email,
@@ -159,8 +161,8 @@ class UserService(
                             nearlyExceededMailSubject)
                     )
                 )
-//                paymentService.updateLimitApproaching(user, true)
-//            }
+
+            }
 
         }
 

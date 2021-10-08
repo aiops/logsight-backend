@@ -21,13 +21,19 @@ class PaymentService(val userRepository: UserRepository) {
     @Transactional
     fun updateHasPaid(user: LogsightUser, hasPaid: Boolean) {
         userRepository.updateHasPaid(hasPaid, user.id)
-        userRepository.updateAvailableData(0, user.id)
     }
 
-//    @Transactional
-//    fun updateLimitApproaching(user: LogsightUser, limitApproaching: Boolean) {
-//        userRepository.updateLimitApproaching(limitApproaching, user.id)
-//    }
+    @Transactional
+    fun resetAvailableAndUsedData(user: LogsightUser) {
+        userRepository.updateAvailableData(0, user.id)
+        userRepository.updateUsedData(user.key, 0)
+    }
+
+
+    @Transactional
+    fun updateLimitApproaching(user: LogsightUser, approachingLimit: Boolean) {
+        userRepository.updateLimitApproaching(approachingLimit, user.id)
+    }
 
 
 
