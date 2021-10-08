@@ -25,6 +25,13 @@ class PaymentService(val userRepository: UserRepository) {
     }
 
     @Transactional
+    fun updateLimitApproaching(user: LogsightUser, limitApproaching: Boolean) {
+        userRepository.updateLimitApproaching(limitApproaching, user.id)
+    }
+
+
+
+    @Transactional
     fun createCustomerId(user: LogsightUser, customerId: String?) {
         userRepository.createCustomerId(customerId, user.id)
     }

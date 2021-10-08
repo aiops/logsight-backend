@@ -149,15 +149,19 @@ class UserService(
         }
 
         if ((usedDataPrevious + usedDataNow) > 0.8*availableData){
-            emailService.sendMimeEmail(
-                Email(
-                    mailTo = user.email,
-                    sub = nearlyExceededMailSubject,
-                    body = getExceededLimitsMailBody(
-                        "nearlyExceededLimits",
-                        nearlyExceededMailSubject)
+            if (!user.limitApproaching){
+                emailService.sendMimeEmail(
+                    Email(
+                        mailTo = user.email,
+                        sub = nearlyExceededMailSubject,
+                        body = getExceededLimitsMailBody(
+                            "nearlyExceededLimits",
+                            nearlyExceededMailSubject)
+                    )
                 )
-            )
+                paymentService.updateLimitApproaching(user, true)
+            }
+
         }
 
         userRepository.updateUsedData(user.key, usedDataPrevious + usedDataNow)
