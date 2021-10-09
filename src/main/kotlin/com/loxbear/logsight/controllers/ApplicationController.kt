@@ -90,7 +90,21 @@ class ApplicationController(
 
 
     @GetMapping("/user/{key}")
-    fun getApplicationsForUser(@PathVariable key: String): Collection<Application> {
+    fun getApplicationsForUser(@PathVariable key: String): Any {
+        try {
+            val user = userService.findByKey(key)
+        }catch (e: Exception){
+            return ResponseEntity(
+                ApplicationResponse(
+                    type = "Error",
+                    title = "private-key is not valid",
+                    status = HttpStatus.BAD_REQUEST.value(),
+                    detail = "Please check your private key. Seems that is invalid.",
+                    instance = "api/applications/create"
+                ),
+                HttpStatus.BAD_REQUEST
+            )
+        }
         val user = userService.findByKey(key)
         val applications = applicationService.findAllByUser(user)
         val returnApplications = mutableListOf<Application>()
