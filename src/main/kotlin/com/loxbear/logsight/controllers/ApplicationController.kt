@@ -27,11 +27,11 @@ class ApplicationController(
                 ApplicationResponse(
                     type = "Error",
                     title = "private-key is not valid",
-                    status = HttpStatus.BAD_REQUEST.value(),
+                    status = HttpStatus.UNAUTHORIZED.value(),
                     detail = "Please check your private key. Seems that is invalid.",
                     instance = "api/applications/create"
                 ),
-                HttpStatus.BAD_REQUEST
+                HttpStatus.UNAUTHORIZED
             )
         }
         val user = userService.findByKey(body.key)
