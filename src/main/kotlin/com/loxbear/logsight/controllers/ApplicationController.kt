@@ -20,7 +20,22 @@ class ApplicationController(
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
+        try {
+            val user = userService.findByKey(body.key)
+        }catch (e: Exception){
+            return ResponseEntity(
+                ApplicationResponse(
+                    type = "Error",
+                    title = "private-key is not valid",
+                    status = HttpStatus.BAD_REQUEST.value(),
+                    detail = "Please check your private key. Seems that is invalid.",
+                    instance = "api/applications/create"
+                ),
+                HttpStatus.BAD_REQUEST
+            )
+        }
         val user = userService.findByKey(body.key)
+
         if (applicationService.findAllByUser(user).size >= 5) {
             return ResponseEntity(
                 ApplicationResponse(
