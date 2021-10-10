@@ -15,6 +15,7 @@ import com.stripe.param.CustomerCreateParams
 import com.stripe.param.checkout.SessionCreateParams
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
@@ -30,9 +31,16 @@ class PaymentController(
     val logger = LoggerFactory.getLogger(PaymentController::class.java)
     private val gson = Gson()
 
+    @Value("\${app.baseUrl}")
+    private val baseUrl: String? = null
+
+    @Value("\${stripe.whSec}")
+    private val stripeWhSec: String? = null
+
+    @Value("\${stripe.sk}")
+    private val stripeSKey: String? = null
     fun init() {
-        Stripe.apiKey =
-            "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
+        Stripe.apiKey =stripeSKey
     }
 
     @Throws(StripeException::class)
@@ -111,7 +119,7 @@ class PaymentController(
         init()
         logger.info("Webhook from stripe is received with the following details: [{}]", json)
         val sigHeader: String = request.getHeader("Stripe-Signature")
-        val endpointSecret = "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
+        val endpointSecret = stripeWhSec
 
         val event = try {
             Webhook.constructEvent(json, sigHeader, endpointSecret)
@@ -172,7 +180,7 @@ class PaymentController(
         val userOpt = userService.findByEmail(authentication.name)
         return userOpt.map { user ->
             val stripeCustomerID = user.stripeCustomerId
-            val domainUrl = "https://demo.logsight.ai/"
+            val domainUrl = baseUrl
 
             val params = com.stripe.param.billingportal.SessionCreateParams.Builder()
                 .setReturnUrl(domainUrl)
