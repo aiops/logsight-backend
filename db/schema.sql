@@ -11,7 +11,7 @@ CREATE TABLE users (
     has_paid           boolean not null default false,
     approaching_limit  boolean not null default false,
     used_data          bigint  not null default 0,
-    available_data     bigint  not null default 3000000
+    available_data     bigint  not null default 1000000000
 );
 
 CREATE TABLE applications (
