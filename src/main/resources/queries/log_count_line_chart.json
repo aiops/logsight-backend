@@ -1,11 +1,9 @@
 {
   "aggs": {
     "listAggregations": {
-      "date_histogram": {
+      "auto_date_histogram": {
         "field": "@timestamp",
-        "interval": "5m",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+        "buckets": 20
       }
     }
   },

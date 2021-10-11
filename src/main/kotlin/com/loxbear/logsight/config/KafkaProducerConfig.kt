@@ -10,7 +10,10 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 
 @Configuration
-class KafkaProducerConfig(@Value(value = "\${kafka.bootstrapAddress}") val bootstrapAddress: String) {
+class KafkaProducerConfig(
+    @Value(value = "\${kafka.bootstrapAddress}") val bootstrapAddress: String
+) {
+
     @Bean
     fun producerFactory(): ProducerFactory<String, String> {
         val configProps: MutableMap<String, Any> = HashMap()

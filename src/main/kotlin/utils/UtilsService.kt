@@ -4,11 +4,19 @@ import org.json.JSONObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 class UtilsService {
+
     companion object {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val formatterWithoutSeconds = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
         fun readFileAsString(path: String): String {
             return String(Files.readAllBytes(Paths.get(path)))
         }
@@ -35,5 +43,39 @@ class UtilsService {
             return applications[index.split("_").subList(1, index.split("_").size - 1).joinToString("_")] ?: -1L
         }
 
+        fun getTimeIntervalAggregate(startTimeString: String, endTimeString: String, numberOfPoints: Int = 5): String =
+            if (startTimeString.contains("now")) {
+                val minutes = startTimeString.replace("[^0-9]".toRegex(), "").toInt()
+                if (minutes >= numberOfPoints) {
+                    "${minutes / numberOfPoints}m"
+                } else {
+                    "10s"
+                }
+            } else {
+                val startDate = try {
+                    ZonedDateTime.parse(startTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                } catch (e: Exception) {
+                    try { //doesn't look good, but it works
+                        LocalDateTime.parse(startTimeString, formatter)
+                    } catch (e: Exception) {
+                        LocalDateTime.parse(startTimeString, formatterWithoutSeconds)
+                    }
+                }
+                val endDate = try {
+                    ZonedDateTime.parse(endTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                } catch (e: Exception) {
+                    try { //doesn't look good, but it works
+                        LocalDateTime.parse(endTimeString, formatter)
+                    } catch (e: Exception) {
+                        LocalDateTime.parse(endTimeString, formatterWithoutSeconds)
+                    }
+                }
+                val differenceMinutes = ChronoUnit.MINUTES.between(startDate, endDate)
+                if (differenceMinutes >= numberOfPoints) {
+                    "${differenceMinutes / numberOfPoints}m"
+                } else {
+                    "10s"
+                }
+            }
     }
 }

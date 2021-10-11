@@ -9,6 +9,12 @@ spring:
     username: logsight
     password: logsight
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
 email:
   host: smtp.gmail.com
   port: 587
@@ -17,6 +23,12 @@ email:
 
 app:
   baseUrl: http://localhost:4200
+  qualityUrl: http://localhost:5444/
+
+stripe:
+  sk: "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
+  whSec: "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
+
 
 kafka:
   bootstrapAddress: localhost:9093 # localhost:9093
@@ -24,6 +36,8 @@ kafka:
 
 elasticsearch:
   url: localhost:9200
+  username: elastic
+  password: elasticsearchpassword
 
 kibana:
   url: localhost:5601

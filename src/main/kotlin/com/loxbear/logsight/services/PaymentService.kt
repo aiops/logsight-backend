@@ -3,6 +3,7 @@ package com.loxbear.logsight.services
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.UserRepository
 import org.slf4j.LoggerFactory
+import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import java.math.BigInteger
 import javax.transaction.Transactional
@@ -23,8 +24,23 @@ class PaymentService(val userRepository: UserRepository) {
     }
 
     @Transactional
+    fun resetAvailableAndUsedData(user: LogsightUser) {
+        userRepository.updateAvailableData(0, user.id)
+        userRepository.updateUsedData(user.key, 0)
+    }
+
+
+    @Transactional
+    fun updateLimitApproaching(user: LogsightUser, approachingLimit: Boolean) {
+        userRepository.updateLimitApproaching(approachingLimit, user.id)
+    }
+
+
+
+    @Transactional
     fun createCustomerId(user: LogsightUser, customerId: String?) {
         userRepository.createCustomerId(customerId, user.id)
     }
+
 
 }

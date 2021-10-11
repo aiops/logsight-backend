@@ -14,11 +14,9 @@
   },
   "aggs": {
     "2": {
-      "date_histogram": {
+      "auto_date_histogram": {
         "field": "@timestamp",
-        "interval": "30s",
-        "time_zone": "Europe/Berlin",
-        "min_doc_count": 1
+        "buckets": 10
       }
     }
   },

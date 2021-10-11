@@ -1,12 +1,16 @@
 package com.loxbear.logsight.config
 
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.JavaMailSenderImpl
 
 @Configuration
-class EmailConfiguration(val emailProperties: EmailProperties) {
+class EmailConfiguration(
+    val emailProperties: EmailProperties,
+) {
 
+    @Bean
     fun getEmailSender(): JavaMailSender =
         with(emailProperties) {
             val mailSender = JavaMailSenderImpl()
@@ -22,5 +26,4 @@ class EmailConfiguration(val emailProperties: EmailProperties) {
             mailSender.javaMailProperties = javaMailProperties
             mailSender
         }
-
 }
