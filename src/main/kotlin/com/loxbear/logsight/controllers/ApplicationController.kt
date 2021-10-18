@@ -5,10 +5,14 @@ import com.loxbear.logsight.models.*
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.postForEntity
+import utils.UtilsService
 
 
 @RestController
@@ -174,4 +178,12 @@ class ApplicationController(
     fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
         return LogFileTypes.values().map { LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
+
+    @GetMapping("/update_kibana_patterns")
+    fun updateKibanaPatterns(authentication: Authentication) {
+        userService.findByEmail(authentication.name).map { user ->
+            applicationService.updateKibanaPatterns(user)
+        }
+    }
+
 }

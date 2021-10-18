@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.http.HttpMethod
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.util.regex.Matcher
@@ -75,6 +77,7 @@ class ApplicationService(
             "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex",
             requestDefaultIndex
         ).body!!
+
         kafkaService.applicationChange(application, ApplicationAction.CREATE)
         return application
     }
@@ -149,12 +152,51 @@ class ApplicationService(
         logger.info("Deleting application with id [{}]", id)
         try {
             val application = findById(id)
-            repository.delete(application)
             kafkaService.applicationChange(application, ApplicationAction.DELETE)
+            for (i in getApplicationIndicesForKibana(application.user).split(",")) {
+                if (i.isNotEmpty() && i.contains(application.name)) {
+
+                    val indexPattern = i.replace("\\s|\"".toRegex(), "")
+                    val request = UtilsService.createKibanaRequestWithHeaders(
+                        "{}"
+                    )
+                    restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${application.user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
+                }
+            }
+            repository.delete(application)
         } catch (e: java.lang.Exception){
             return false
         }
 
         return true
+    }
+
+    fun updateKibanaPatterns(user: LogsightUser) {
+        for (i in getApplicationIndicesForKibana(user).split(",")) {
+            val indexPattern = i.replace("\\s|\"".toRegex(), "")
+            if (i.isNotEmpty()){
+                try {
+                    val request = UtilsService.createKibanaRequestWithHeaders(
+                        "{}"
+                    )
+                    restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
+
+                }catch (e: Exception){
+                }
+
+                val requestCreateIndexPattern = UtilsService.createKibanaRequestWithHeaders(
+                    "{\"attributes\": { \"title\": \"$indexPattern\"} }"
+                )
+                restTemplate.postForEntity<String>(
+                    "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern",
+                    requestCreateIndexPattern
+                ).body!!
+                // replace indices in the export dashboard file
+                // import existing dashboard from file
+                //curl -X POST "localhost:5601/kibana/api/saved_objects/_import" -H "kbn-xsrf: true" --form file=@export.ndjson -H 'kbn-xsrf: true' --user elastic:elasticsearchpassword
+
+
+            }
+        }
     }
 }
