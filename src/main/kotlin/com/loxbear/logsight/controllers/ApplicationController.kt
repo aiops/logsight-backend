@@ -81,7 +81,6 @@ class ApplicationController(
         authentication: Authentication
     ): ResponseEntity<Any> = userService.findByEmail(authentication.name).let { userOpt ->
         userOpt.ifPresent { user ->
-            println("Creating apps")
             applicationService.createApplication("compute_sample_app", user)
             applicationService.createApplication("auth_sample_app", user)
             applicationService.createApplication("auth2_sample_app", user)
@@ -175,7 +174,7 @@ class ApplicationController(
     }
 
     @GetMapping("/logFileFormats")
-    fun getLogFileFormats(authentication: Authentication): Collection<LogFileType> {
+    fun getLogFileFormats(): Collection<LogFileType> {
         return LogFileTypes.values().map { LogFileType(it.toString().toLowerCase(), it.frontEndDescriptor) }
     }
 

@@ -5,22 +5,26 @@ import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.entities.enums.ApplicationAction
 import com.loxbear.logsight.entities.enums.ApplicationStatus
 import com.loxbear.logsight.repositories.ApplicationRepository
+import kong.unirest.HttpResponse
+import kong.unirest.Unirest
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.http.HttpMethod
+import org.springframework.http.*
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.exchange
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
+import java.io.File
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import javax.transaction.Transactional
+
 
 @Service
 class ApplicationService(
@@ -35,6 +39,10 @@ class ApplicationService(
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
+
+    @Value("\${resources.path}")
+    private val resourcesPath: String = ""
+
 
     @Transactional
     fun createApplication(name: String, user: LogsightUser): Application? {
@@ -78,7 +86,7 @@ class ApplicationService(
             requestDefaultIndex
         ).body!!
 
-        kafkaService.applicationChange(application, ApplicationAction.CREATE)
+//        kafkaService.applicationChange(application, ApplicationAction.CREATE)
         return application
     }
 
@@ -160,7 +168,11 @@ class ApplicationService(
                     val request = UtilsService.createKibanaRequestWithHeaders(
                         "{}"
                     )
-                    restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${application.user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
+                    try {
+                        restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${application.user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
+                    }catch (e: Exception){
+
+                    }
                 }
             }
             repository.delete(application)
@@ -172,9 +184,14 @@ class ApplicationService(
     }
 
     fun updateKibanaPatterns(user: LogsightUser) {
+        var indexPattern = ""
+        var indexPatternAd = ""
         for (i in getApplicationIndicesForKibana(user).split(",")) {
-            val indexPattern = i.replace("\\s|\"".toRegex(), "")
-            if (i.isNotEmpty()){
+            indexPattern = i.replace("\\s|\"".toRegex(), "")
+            if (i.isNotEmpty() && (i.contains("incidents") || i.contains("log_ad"))){
+                if (i.contains("log_ad")){
+                    indexPatternAd = i.replace("\\s|\"".toRegex(), "")
+                }
                 try {
                     val request = UtilsService.createKibanaRequestWithHeaders(
                         "{}"
@@ -185,18 +202,38 @@ class ApplicationService(
                 }
 
                 val requestCreateIndexPattern = UtilsService.createKibanaRequestWithHeaders(
-                    "{\"attributes\": { \"title\": \"$indexPattern\"} }"
+                    "{\"attributes\": { \"title\": \"$indexPattern\", \"timeFieldName\": \"@timestamp\"} }"
                 )
                 restTemplate.postForEntity<String>(
                     "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern",
                     requestCreateIndexPattern
                 ).body!!
-                // replace indices in the export dashboard file
-                // import existing dashboard from file
-                //curl -X POST "localhost:5601/kibana/api/saved_objects/_import" -H "kbn-xsrf: true" --form file=@export.ndjson -H 'kbn-xsrf: true' --user elastic:elasticsearchpassword
+//                if (indexPattern.contains("log_ad")) {
+//
+//                }
+
+
+
+                //curl -X POST "localhost:5601/kibana/api/saved_objects/_import" --form file=@export.ndjson -H 'kbn-xsrf: true' --user elastic:elasticsearchpassword
 
 
             }
         }
+
+        val jsonString = UtilsService.readFileAsString("${resourcesPath}dashboards/export.ndjson")
+        val jsonRequest = jsonString
+            .replace("index_pattern_replace_log_ad", "$indexPatternAd")
+            .replace("index_pattern_replace_incidents", "${indexPatternAd.split("_").subList(0,indexPatternAd.split("_").size-2).joinToString("_") + "_incidents"}")
+        File("file.ndjson").bufferedWriter().use { out ->
+            out.write(jsonRequest)
+        }
+
+        val response: HttpResponse<String> =
+            Unirest.post("http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/_import")
+                .header("kbn-xsrf", "true")
+                .basicAuth("elastic", "elasticsearchpassword")
+                .field("file", File("file.ndjson"))
+                .asString()
+
     }
 }
