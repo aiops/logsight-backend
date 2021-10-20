@@ -98,7 +98,7 @@ class AuthService(
             null
         }
 
-    private fun getRegisterMailBody(
+    fun getRegisterMailBody(
         template: String,
         title: String,
         url: URL
