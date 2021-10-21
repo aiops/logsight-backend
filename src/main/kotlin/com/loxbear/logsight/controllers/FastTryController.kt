@@ -64,7 +64,7 @@ class FastTryController(
                 userService.changePassword(registerForm)
                 id = user.id
                 key = user.key
-                kibanaPersonalUrl = "$baseUrl/kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+                kibanaPersonalUrl = "${baseUrl}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
                 for (i in applicationService.findAllByUser(user)){
                     if (i.name.contains("logsight_fast_try_app")){
                         applicationService.deleteApplication(i.id)
@@ -76,7 +76,7 @@ class FastTryController(
             userService.createUser(registerForm)?.let { user ->
                 id = user.id
                 key = user.key
-                kibanaPersonalUrl = "$baseUrl/kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+                kibanaPersonalUrl = "${baseUrl}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
                 if (elasticsearchService.createForLogsightUser(user)){
                     emailService.sendMimeEmail(
                         Email(
