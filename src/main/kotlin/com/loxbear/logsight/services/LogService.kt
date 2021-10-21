@@ -20,16 +20,15 @@ class LogService(
     fun processFile(
         authMail: String,
         appID: Long,
-        file: MultipartFile,
+        fileContent: String,
         logType: LogFileTypes
     ) {
-        if (file.isEmpty) {
+        if (fileContent.isEmpty()) {
             val msg = "Received log file is empty."
             log.warning(msg)
             throw LogMessageException(msg)
         }
 
-        val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
         val logs = when (logType) {
             LogFileTypes.LOGSIGHT_JSON -> processJsonFile(fileContent)
             else -> processDefaultFile(fileContent)

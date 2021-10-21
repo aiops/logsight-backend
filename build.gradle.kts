@@ -41,6 +41,7 @@ dependencies {
     implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.4")
+    implementation ("com.konghq:unirest-java:3.11.09")
 }
 
 tasks.withType<KotlinCompile> {

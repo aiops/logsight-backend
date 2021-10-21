@@ -129,7 +129,6 @@ class ChartsRepository(
                 "http://$elasticsearchUrl/$esIndexUserAppLogAd/_search",
                 request
             ).body!!
-            println(returnData)
             return returnData
         } else {
             val jsonString: String = readFileAsString("${resourcesPath}queries/heatmap_log_compare.json")
