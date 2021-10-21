@@ -37,16 +37,17 @@ class FileUploadController(
         @PathVariable logFileType: String,
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<ApplicationResponse> {
-        return uploadFile(authentication, appID.toLong(), file, LogFileTypes.valueOf(logFileType.toUpperCase()))
+        val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
+        return uploadFile(authentication, appID.toLong(), fileContent, LogFileTypes.valueOf(logFileType.toUpperCase()))
     }
 
     private fun uploadFile(
         authentication: Authentication,
         appID: Long,
-        file: MultipartFile,
+        fileContent: String,
         type: LogFileTypes
     ): ResponseEntity<ApplicationResponse>{
-        logService.processFile(authentication.name, appID, file, type)
+        logService.processFile(authentication.name, appID, fileContent, type)
 
         return ResponseEntity(
             ApplicationResponse(
