@@ -65,11 +65,11 @@ class FastTryController(
                         applicationService.deleteApplication(i.id)
                     }
                 }
-                Thread.sleep(15000)
+//                Thread.sleep(1000)
                 val application = applicationService.createApplication("logsight_fast_try_app", user= user)
-                Thread.sleep(30000)
+                Thread.sleep(20000)
                 application?.id?.let {uploadFile(user, it.toLong(), file, LogFileTypes.valueOf(logFileType.toUpperCase())) }
-                Thread.sleep(40000)
+                Thread.sleep(35000)
                 applicationService.updateKibanaPatterns(user)
                 emailService.sendMimeEmail(
                     Email(
@@ -107,9 +107,9 @@ class FastTryController(
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
                 Thread.sleep(5000)
                 val application = applicationService.createApplication("logsight_fast_try_app", user= user)
-                Thread.sleep(30000)
+                Thread.sleep(15000)
                 application?.id?.let {uploadFile(user, it.toLong(), file, LogFileTypes.valueOf(logFileType.toUpperCase())) }
-                Thread.sleep(40000)
+                Thread.sleep(35000)
                 applicationService.updateKibanaPatterns(user)
 
                 emailService.sendMimeEmail(
