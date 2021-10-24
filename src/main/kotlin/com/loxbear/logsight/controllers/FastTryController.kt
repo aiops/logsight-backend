@@ -28,6 +28,7 @@ import javax.annotation.PreDestroy
 @RequestMapping("/api/fast_try")
 class FastTryController(
     @Value("\${app.baseUrl}") val baseUrl: String,
+    @Value("\${app.baseUrlTry}") val baseUrlTry: String,
     val logService: LogService,
     val applicationService: ApplicationService,
     val userService: UserService,
@@ -40,7 +41,7 @@ class FastTryController(
     val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build()
-    val log: Logger = Logger.getLogger(LogService::class.java.toString())
+    val logger: Logger = Logger.getLogger(LogService::class.java.toString())
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
@@ -58,25 +59,45 @@ class FastTryController(
         var id = 0L
         var key = ""
         var kibanaPersonalUrl = ""
+        var loginLinkTry = ""
         val user = userService.findByEmail(email)
+        logger.info("Received a quickstart request from ${email}")
         if (!user.isEmpty){
+            logger.info("The user with email $email exists.")
             user.map { user ->
+                if (!user.activated){
+                    logger.info("The user with email $email is still not activated, therefore activating.")
+                    userService.activateUser(UserActivateForm(user.id, user.key))
+                    logger.info("The user with email $email was just activated")
+                }else{
+                    logger.info("The user with email $email is already activated")
+                }
                 userService.changePassword(registerForm)
                 id = user.id
                 key = user.key
-                kibanaPersonalUrl = "${baseUrl}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+//                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+                kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
+                loginLinkTry = "${baseUrlTry}auth/login/${user.id}/$passwd?redirect=''"
+
                 for (i in applicationService.findAllByUser(user)){
                     if (i.name.contains("logsight_fast_try_app")){
+                        logger.info("The user with email $email had previously tried quickstart. Deleting all previous data...")
                         applicationService.deleteApplication(i.id)
+                        logger.info("The user with email $email had previously tried quickstart. Application deleted")
                     }
                 }
-                executor.submit { processRequest(user, fileContent, logFileType, kibanaPersonalUrl, false) }
+                logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
+                executor.submit { processRequest(user, fileContent, logFileType, loginLinkTry, false) }
             }
         }else{
+            logger.info("The user with email $email does not exists. Therefore, creating the user now.")
             userService.createUser(registerForm)?.let { user ->
                 id = user.id
                 key = user.key
-                kibanaPersonalUrl = "${baseUrl}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+//                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+                kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
+                loginLinkTry = "${baseUrlTry}auth/login/${user.id}/$passwd?redirect=''"
+
                 if (elasticsearchService.createForLogsightUser(user)){
                     emailService.sendMimeEmail(
                         Email(
@@ -85,20 +106,21 @@ class FastTryController(
                             body = authService.getRegisterMailBody(
                                 "welcomeEmail",
                                 registerMailSubject,
-                                URL(URL(baseUrl), "auth/login")
+                                URL(URL(baseUrlTry), "auth/login")
                             )
                         )
                     ).let { user }
                 }
+                logger.info("The user with email $email does not exists. Activating the user.")
                 userService.activateUser(UserActivateForm(user.id, user.key))
                 val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
                 val request = UtilsService.createKibanaRequestWithHeaders(requestB)
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
-                println(file.isEmpty)
-                executor.submit { processRequest(user, fileContent, logFileType, kibanaPersonalUrl, true) }
+                logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
+                executor.submit { processRequest(user, fileContent, logFileType, loginLinkTry, true) }
             }
         }
-
+        logger.info("Returning response back to the user with email $email ")
         return FastTryResponse(id, key, passwd, kibanaPersonalUrl)
     }
 
@@ -112,11 +134,17 @@ class FastTryController(
 
     fun processRequest(user: LogsightUser, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
         if (isNew){
+            logger.info("Creating application for ${user.email}")
             val application = applicationService.createApplication("logsight_fast_try_app", user= user)
+            logger.info("Sleeping 30 seconds")
             Thread.sleep(30000)
+            logger.info("Uploading file")
             application?.id?.let {uploadFile(user, it, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase())) }
+            logger.info("Sleeping 40 seconds")
             Thread.sleep(40000)
+            logger.info("Updating kibana patterns")
             applicationService.updateKibanaPatterns(user)
+            logger.info("${user.email}, $kibanaPersonalUrl")
             emailService.sendMimeEmail(
                 Email(
                     mailTo = user.email,
@@ -127,15 +155,21 @@ class FastTryController(
                         URL(URL(kibanaPersonalUrl), "")
                     )
                 )
-            ).let { user }
+            )
+            logger.info("Sending email to the user with email ${user.email}")
         }else{
+            logger.info("Sleeping for 30 seconds for apps to be deleted.")
             Thread.sleep(30000)
             val application = applicationService.createApplication("logsight_fast_try_app", user= user)
             Thread.sleep(30000)
+            logger.info("Uploading file")
             application?.id?.let {uploadFile(user, it, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase())) }
+            logger.info("Sleeping 40 seconds")
             Thread.sleep(40000)
+            logger.info("Updating kibana patterns")
             applicationService.updateKibanaPatterns(user)
-
+            logger.info("Finished updating kibana patterns")
+            logger.info("${user.email}, $kibanaPersonalUrl")
             emailService.sendMimeEmail(
                 Email(
                     mailTo = user.email,
@@ -146,7 +180,7 @@ class FastTryController(
                         URL(URL(kibanaPersonalUrl), "")
                     )
                 )
-            ).let { user }
+            )
         }
     }
 

@@ -24,6 +24,7 @@ email:
 app:
   baseUrl: http://localhost:4200
   qualityUrl: http://localhost:5444/
+  baseUrlTry: http://localhost:4200/
 
 stripe:
   sk: "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
@@ -44,3 +45,8 @@ kibana:
 
 resources:
   path: src/main/resources/
+
+logging.level.org.springframework.web: DEBUG
+logging:
+  level:
+    =DEBUG:

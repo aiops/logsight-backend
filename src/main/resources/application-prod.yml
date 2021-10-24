@@ -22,6 +22,7 @@ email:
 
 app:
   baseUrl: https://logsight.ai/
+  baseUrlTry: https://logsight.ai/
   qualityUrl: http://data-input-rest-api:5444/
 
 #change this for prod
