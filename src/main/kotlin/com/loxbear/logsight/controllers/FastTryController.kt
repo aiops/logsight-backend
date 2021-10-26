@@ -29,6 +29,7 @@ import javax.annotation.PreDestroy
 class FastTryController(
     @Value("\${app.baseUrl}") val baseUrl: String,
     @Value("\${app.baseUrlTry}") val baseUrlTry: String,
+
     val logService: LogService,
     val applicationService: ApplicationService,
     val userService: UserService,
@@ -42,6 +43,7 @@ class FastTryController(
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build()
     val logger: Logger = Logger.getLogger(LogService::class.java.toString())
+
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
@@ -112,6 +114,7 @@ class FastTryController(
 //                        )
 //                    ).let { user }
                 }
+
                 logger.info("The user with email $email does not exists. Activating the user.")
                 userService.activateUser(UserActivateForm(user.id, user.key))
                 val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
