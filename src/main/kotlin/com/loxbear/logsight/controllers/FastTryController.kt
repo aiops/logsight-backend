@@ -54,8 +54,6 @@ class FastTryController(
     ): FastTryResponse {
         val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
         val registerMailSubject = "Welcome onboard!"
-        val passwd = utils.KeyGenerator.generate()
-        val registerForm = UserRegisterForm(email=email, password = passwd)
         var id = 0L
         var key = ""
         var kibanaPersonalUrl = ""
@@ -72,12 +70,12 @@ class FastTryController(
                 }else{
                     logger.info("The user with email $email is already activated")
                 }
-                userService.changePassword(registerForm)
+//                userService.changePassword(registerForm)
                 id = user.id
                 key = user.key
 //                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
                 kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
-                loginLinkTry = "${baseUrlTry}auth/login/${user.id}/$passwd?redirect=''"
+                loginLinkTry = "${baseUrlTry}auth/login?redirect=kibana"
 
                 for (i in applicationService.findAllByUser(user)){
                     if (i.name.contains("logsight_fast_try_app")){
@@ -87,29 +85,32 @@ class FastTryController(
                     }
                 }
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
-                executor.submit { processRequest(user, fileContent, logFileType, loginLinkTry, false) }
+                executor.submit { processRequest(user, user.password, fileContent, logFileType, loginLinkTry, false) }
             }
         }else{
+            val passwd = utils.KeyGenerator.generate()
+            val registerForm = UserRegisterForm(email=email, password = passwd)
             logger.info("The user with email $email does not exists. Therefore, creating the user now.")
             userService.createUser(registerForm)?.let { user ->
                 id = user.id
                 key = user.key
 //                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
                 kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
-                loginLinkTry = "${baseUrlTry}auth/login/${user.id}/$passwd?redirect=''"
+                loginLinkTry = "${baseUrlTry}auth/login?redirect=kibana"
 
                 if (elasticsearchService.createForLogsightUser(user)){
-                    emailService.sendMimeEmail(
-                        Email(
-                            mailTo = user.email,
-                            sub = registerMailSubject,
-                            body = authService.getRegisterMailBody(
-                                "welcomeEmail",
-                                registerMailSubject,
-                                URL(URL(baseUrlTry), "auth/login")
-                            )
-                        )
-                    ).let { user }
+//                    emailService.sendMimeEmail(
+//                        Email(
+//                            mailTo = user.email,
+//                            sub = registerMailSubject,
+//                            body = authService.getRegisterTryBody(
+//                                "welcomeEmail",
+//                                registerMailSubject,
+//                                passwd,
+//                                URL(URL(baseUrlTry), "auth/login")
+//                            )
+//                        )
+//                    ).let { user }
                 }
                 logger.info("The user with email $email does not exists. Activating the user.")
                 userService.activateUser(UserActivateForm(user.id, user.key))
@@ -117,22 +118,22 @@ class FastTryController(
                 val request = UtilsService.createKibanaRequestWithHeaders(requestB)
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
-                executor.submit { processRequest(user, fileContent, logFileType, loginLinkTry, true) }
+                executor.submit { processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true) }
             }
         }
         logger.info("Returning response back to the user with email $email ")
-        return FastTryResponse(id, key, passwd, kibanaPersonalUrl)
+        return FastTryResponse(id, key, kibanaPersonalUrl)
     }
 
 
 
     @PreDestroy
-    fun shutdonw() {
+    fun shutdown() {
         // needed to avoid resource leak
         executor.shutdown()
     }
 
-    fun processRequest(user: LogsightUser, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
+    fun processRequest(user: LogsightUser, password: String, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
         if (isNew){
             logger.info("Creating application for ${user.email}")
             val application = applicationService.createApplication("logsight_fast_try_app", user= user)
@@ -148,10 +149,11 @@ class FastTryController(
             emailService.sendMimeEmail(
                 Email(
                     mailTo = user.email,
-                    sub = "logsight.ai Lite Insights",
-                    body = authService.getRegisterMailBody(
-                        "logsightLiteInsights",
-                        "logsight.ai Lite Insights",
+                    sub = "logsight.ai Quickstart Insights",
+                    body = authService.getRegisterTryBody(
+                        "welcomeEmail",
+                        "logsight.ai Quickstart Insights",
+                        password,
                         URL(URL(kibanaPersonalUrl), "")
                     )
                 )
@@ -173,10 +175,11 @@ class FastTryController(
             emailService.sendMimeEmail(
                 Email(
                     mailTo = user.email,
-                    sub = "logsight.ai Lite Insights",
-                    body = authService.getRegisterMailBody(
+                    sub = "logsight.ai Quickstart Insights",
+                    body = authService.getRegisterTryBody(
                         "logsightLiteInsights",
-                        "logsight.ai Lite Insights",
+                        "logsight.ai Quickstart Insights",
+                        user.password,
                         URL(URL(kibanaPersonalUrl), "")
                     )
                 )

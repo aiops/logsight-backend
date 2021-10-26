@@ -58,6 +58,14 @@ class AuthController(
             else -> ResponseEntity.ok().body(token)
         }
 
+
+    @PostMapping("/login_id_key")
+    fun loginIdKey(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
+        when (val token = authService.loginUserId(loginForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(token)
+        }
+
     @PostMapping("/login/login-link")
     fun loginLink(@RequestBody loginLinkForm: UserLoginLinkForm): ResponseEntity<LogsightUser> {
         var isActivated = false
@@ -82,6 +90,15 @@ class AuthController(
         val request = UtilsService.createKibanaRequestWithHeaders(requestB)
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
         return response
+    }
+
+
+    @PostMapping("/change_password")
+    fun changePassword(@RequestBody changePasswordForm: String): LogsightUser {
+        val user = userService.findByKey(JSONObject(changePasswordForm).getString("key"))
+        val newPassword = JSONObject(changePasswordForm).getString("password")
+        userService.changePassword(UserRegisterForm(user.email, newPassword))
+        return user
     }
 
 }

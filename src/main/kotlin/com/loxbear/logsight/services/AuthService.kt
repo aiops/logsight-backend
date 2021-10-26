@@ -31,8 +31,8 @@ class AuthService(
 
     fun registerUser(userForm: UserRegisterForm): LogsightUser? {
         val registerMailSubject = "Activate your account"
-        val password = utils.KeyGenerator.generate()
-        return userService.createUser(userForm.copy(password = password))?.let { user ->
+//        val password = utils.KeyGenerator.generate()
+        return userService.createUser(userForm)?.let { user ->
             if (elasticsearchService.createForLogsightUser(user))
                 emailService.sendMimeEmail(
                     Email(
@@ -41,7 +41,7 @@ class AuthService(
                         body = getRegisterMailBody(
                             "activationEmail",
                             registerMailSubject,
-                            URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}/$password")
+                            URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}")
                         )
                     )
                 ).let { user }
@@ -107,6 +107,21 @@ class AuthService(
         with(Context()) {
             setVariable("title", title)
             setVariable("url", url.toString())
+            this
+        }
+    )
+
+    fun getRegisterTryBody(
+        template: String,
+        title: String,
+        password: String,
+        url: URL
+    ): String = templateEngine.process(
+        template,
+        with(Context()) {
+            setVariable("title", title)
+            setVariable("url", url.toString())
+            setVariable("password", password)
             this
         }
     )
