@@ -8,6 +8,7 @@ import com.loxbear.logsight.models.auth.UserActivateForm
 import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.repositories.ApplicationRepository
 import com.loxbear.logsight.repositories.UserRepository
+import org.elasticsearch.client.security.ChangePasswordRequest
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

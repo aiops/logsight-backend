@@ -111,6 +111,22 @@ class AuthService(
         }
     )
 
+
+    fun getResetPasswordMailBody(
+        template: String,
+        title: String,
+        password: String,
+        url: URL
+    ): String = templateEngine.process(
+        template,
+        with(Context()) {
+            setVariable("title", title)
+            setVariable("url", url.toString())
+            setVariable("password", password)
+            this
+        }
+    )
+
     fun getRegisterTryBody(
         template: String,
         title: String,
