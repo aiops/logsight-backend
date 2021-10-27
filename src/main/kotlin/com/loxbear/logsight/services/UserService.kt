@@ -8,6 +8,7 @@ import com.loxbear.logsight.models.auth.UserActivateForm
 import com.loxbear.logsight.models.auth.UserRegisterForm
 import com.loxbear.logsight.repositories.ApplicationRepository
 import com.loxbear.logsight.repositories.UserRepository
+import org.elasticsearch.client.security.ChangePasswordRequest
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,6 +24,7 @@ import org.thymeleaf.context.Context
 import utils.KeyGenerator
 import utils.UtilsService
 import java.util.*
+import java.util.concurrent.Executors
 
 @Service
 class UserService(
@@ -32,7 +34,8 @@ class UserService(
     val applicationService: ApplicationService,
     val kafkaService: KafkaService,
     val paymentService: PaymentService,
-    val templateEngine: TemplateEngine
+    val templateEngine: TemplateEngine,
+    val timeSelectionService: TimeSelectionService
     //val predefinedTimesService: PredefinedTimesService
 ) {
     val exceededMailSubject = "Logsight.ai Limit exceeded"
@@ -42,6 +45,8 @@ class UserService(
     val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build()
+
+    private val executor = Executors.newSingleThreadExecutor()
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
@@ -97,11 +102,16 @@ class UserService(
 
     fun activateUser(userActivate: UserActivateForm): LogsightUser? =
         findById(userActivate.id).map { user ->
-            if (userActivate.key == user.key && !user.activated)
-                updateUser(user.copy(activated = true))
-            else
-                null
+            if (userActivate.key == user.key && !user.activated){
+                executor.submit { applicationService.createApplication("compute_sample_app", user)}
+                executor.submit{ applicationService.createApplication("auth_sample_app", user)}
+                executor.submit{ applicationService.createApplication("auth_sample_app2", user)}
+                return@map updateUser(user.copy(activated = true))
+            }else
+                return@map user
         }.orElse(null)
+
+
 
     fun changePassword(userForm: UserRegisterForm): LogsightUser? {
         return findByEmail(userForm.email).map { user ->

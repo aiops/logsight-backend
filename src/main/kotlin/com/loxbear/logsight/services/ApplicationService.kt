@@ -189,7 +189,7 @@ class ApplicationService(
         for (i in getApplicationIndicesForKibana(user).split(",")) {
             indexPattern = i.replace("\\s|\"".toRegex(), "")
             if (i.isNotEmpty() && (i.contains("incidents") || i.contains("log_ad"))){
-                if (i.contains("log_ad")){
+                if (i.contains("log_ad") && i.contains("fast_try_app")){
                     indexPatternAd = i.replace("\\s|\"".toRegex(), "")
                 }
                 try {

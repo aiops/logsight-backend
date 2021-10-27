@@ -63,23 +63,21 @@
 
 </head>
 <body>
-<div class=" center tmid" style="margin-left: 30%; margin-right: 30%">
+<div class=" center tmid">
     <img src="https://i.ibb.co/Wvdbqdf/logol.png" height="80"/>
-<!--        th-src="|cid:springLogo|" -->
+    <!--        th-src="|cid:springLogo|" -->
     <br>
     <br>
     <h1>Welcome to logsight.ai, happy to have you onboard!</h1>
     <br>
+    <p>Your pre-generated password is
+    <p><b th:text="${password}"></b></p>
+        <p>
+        Use it for your first login. You can change it at any time in your profile settings.</p>
+</p>
+    <br>
     <p>
-        Our goal is to increase your software quality, help you get insights, and save development and operation time.
-    </p>
-    <br/>
-    <p>As you have already registered via logsight.ai Lite you can login into the platform directly. Please use the link below and follow its instructuions to login.
-    </p>
-    <br/>
-    <br/>
-    <p>
-        <a class="link" href="#" th:href="${url}">Login</a>
+        <a class="link" href="#" th:href="${url}">View Quickstart Results</a>
     </p>
     <br/>
     <br>
@@ -87,11 +85,11 @@
         Are you interested in more details about logsight.ai? Feel free to <a href="mailto:service@logsight.ai">contact us 24/7.</a>
         <br/>
         <br/>
-        </p>
-        <p class="greeting">
-            logsight.ai Team</em>
-        </p>
-    </div>
+    </p>
+    <p class="greeting">
+        logsight.ai Team</em>
+    </p>
+</div>
 
 </body>
 </html>

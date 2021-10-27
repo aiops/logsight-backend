@@ -1,9 +1,11 @@
 package com.loxbear.logsight.auth
 
+import com.loxbear.logsight.encoder
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.services.AuthService
+import com.loxbear.logsight.services.EmailService
 import com.loxbear.logsight.services.UserService
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
+import java.net.URL
 
 
 @RestController
@@ -20,7 +23,8 @@ import utils.UtilsService
 class AuthController(
     val userService: UserService,
     val repository: UserRepository,
-    val authService: AuthService
+    val authService: AuthService,
+    val emailService: EmailService
 ) {
 
     val restTemplate: RestTemplate = RestTemplateBuilder()
@@ -29,6 +33,9 @@ class AuthController(
 
     @Value("\${kibana.url}")
     private val kibanaUrl: String? = null
+
+    @Value("\${app.baseUrl}")
+    private val baseUrl: String? = null
 
     @PostMapping("/register")
     fun register(@RequestBody registerForm: UserRegisterForm): ResponseEntity<LogsightUser> =
@@ -53,6 +60,14 @@ class AuthController(
 
     @PostMapping("/login_id")
     fun login(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
+        when (val token = authService.loginUserId(loginForm)) {
+            null -> ResponseEntity.badRequest().build()
+            else -> ResponseEntity.ok().body(token)
+        }
+
+
+    @PostMapping("/login_id_key")
+    fun loginIdKey(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
         when (val token = authService.loginUserId(loginForm)) {
             null -> ResponseEntity.badRequest().build()
             else -> ResponseEntity.ok().body(token)
@@ -83,5 +98,45 @@ class AuthController(
         val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
         return response
     }
+
+
+    @PostMapping("/change_password")
+    fun changePassword(@RequestBody changePasswordForm: String): ResponseEntity<LogsightUser> {
+        val user = userService.findByKey(JSONObject(changePasswordForm).getString("key"))
+        val oldPassword = JSONObject(changePasswordForm).getString("oldPassword")
+        val newPassword = JSONObject(changePasswordForm).getString("password")
+        if (encoder().matches(oldPassword,user.password)){
+            userService.changePassword(UserRegisterForm(user.email, newPassword))
+            return ResponseEntity.ok().body(user)
+        }else{
+            return ResponseEntity.badRequest().build()
+        }
+    }
+
+    @PostMapping("/reset_password")
+    fun resetPassword(@RequestBody emailForm: String): ResponseEntity<LogsightUser> {
+        val user = userService.findByEmail(JSONObject(emailForm).getString("email")).get()
+        val newPassword = utils.KeyGenerator.generate()
+
+        if (user != null){
+            userService.changePassword(UserRegisterForm(user.email, newPassword))
+            emailService.sendMimeEmail(
+                Email(
+                    mailTo = user.email,
+                    sub = "Reset password | logsight.ai",
+                    body = authService.getResetPasswordMailBody(
+                        "resetPasswordEmail",
+                        "Reset password | logsight.ai",
+                        newPassword,
+                        URL(URL(baseUrl), "auth/login")
+                    )
+                )
+            )
+            return ResponseEntity.ok().body(user)
+        }else{
+            return ResponseEntity.badRequest().build()
+        }
+    }
+
 
 }
