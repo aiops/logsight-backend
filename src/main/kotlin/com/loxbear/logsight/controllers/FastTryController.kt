@@ -72,6 +72,7 @@ class FastTryController(
                 }else{
                     logger.info("The user with email $email is already activated")
                 }
+
 //                userService.changePassword(registerForm)
                 id = user.id
                 key = user.key
@@ -87,6 +88,7 @@ class FastTryController(
                     }
                 }
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
+
                 executor.submit { processRequest(user, user.password, fileContent, logFileType, loginLinkTry, false) }
             }
         }else{
@@ -98,6 +100,7 @@ class FastTryController(
                 key = user.key
 //                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
                 kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
+
                 loginLinkTry = "${baseUrlTry}auth/login?redirect=kibana"
 
                 if (elasticsearchService.createForLogsightUser(user)){
@@ -113,6 +116,7 @@ class FastTryController(
 //                            )
 //                        )
 //                    ).let { user }
+
                 }
 
                 logger.info("The user with email $email does not exists. Activating the user.")
@@ -121,11 +125,13 @@ class FastTryController(
                 val request = UtilsService.createKibanaRequestWithHeaders(requestB)
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
+
                 executor.submit { processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true) }
             }
         }
         logger.info("Returning response back to the user with email $email ")
         return FastTryResponse(id, key, kibanaPersonalUrl)
+
     }
 
 
