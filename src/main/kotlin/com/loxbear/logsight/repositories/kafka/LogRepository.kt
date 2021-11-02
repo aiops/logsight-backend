@@ -36,9 +36,8 @@ class LogRepository(
         logs: Collection<LogMessage>
     ): Unit = userService.findByEmail(authMail).map { user ->
         val appName = applicationService.findById(appID).name
-        val topicName = "$topicLogstash.${logType.toString().toLowerCase()}"
         val messagesKafka = createKafkaMessages(user.key, appName, logType.toString().toLowerCase(), logs)
-        messagesKafka.forEach { sendToKafka(topicName, jsonFormat.encodeToString(it)) }
+        messagesKafka.forEach { sendToKafka(topicLogstash, jsonFormat.encodeToString(it)) }
     }.orElseThrow()
 
     private fun createKafkaMessages (
