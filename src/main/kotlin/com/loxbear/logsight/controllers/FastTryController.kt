@@ -203,7 +203,7 @@ class FastTryController(
         fileContent: String,
         type: LogFileTypes
     ): ResponseEntity<ApplicationResponse>{
-        logService.processFile(user.email, appID, fileContent, type)
+        logService.processFileContent(user.email, appID, fileContent, type)
 
         return ResponseEntity(
             ApplicationResponse(
