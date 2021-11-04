@@ -33,6 +33,17 @@ class AuthService(
         val registerMailSubject = "Activate your account"
 //        val password = utils.KeyGenerator.generate()
         return userService.createUser(userForm)?.let { user ->
+            emailService.sendMimeEmail(
+                Email(
+                    mailTo = "support@logsight.ai",
+                    sub = registerMailSubject,
+                    body = getResetPasswordMailBody(
+                        "notifyLogsightEmail",
+                        registerMailSubject,
+                        "${user.email}", URL("")
+                    )
+                )
+            )
             if (elasticsearchService.createForLogsightUser(user))
                 emailService.sendMimeEmail(
                     Email(
