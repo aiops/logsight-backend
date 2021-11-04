@@ -103,6 +103,7 @@ class UserService(
     fun activateUser(userActivate: UserActivateForm): LogsightUser? =
         findById(userActivate.id).map { user ->
             if (userActivate.key == user.key && !user.activated){
+                timeSelectionService.createPredefinedTimeSelections(user)
                 executor.submit { applicationService.createApplication("compute_sample_app", user)}
                 executor.submit{ applicationService.createApplication("auth_sample_app", user)}
                 executor.submit{ applicationService.createApplication("auth_sample_app2", user)}

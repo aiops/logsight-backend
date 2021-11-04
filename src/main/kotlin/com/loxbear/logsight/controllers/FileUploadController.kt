@@ -47,7 +47,7 @@ class FileUploadController(
         fileContent: String,
         type: LogFileTypes
     ): ResponseEntity<ApplicationResponse>{
-        logService.processFile(authentication.name, appID, fileContent, type)
+        logService.processFileContent(authentication.name, appID, fileContent, type)
 
         return ResponseEntity(
             ApplicationResponse(
