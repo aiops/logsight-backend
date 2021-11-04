@@ -31,7 +31,7 @@ class FileUploadController(
     }
 
     @PostMapping("/{logFileType}")
-    fun uploadFileJson(
+    fun uploadFile(
         authentication: Authentication,
         @PathVariable appID: String,
         @PathVariable logFileType: String,

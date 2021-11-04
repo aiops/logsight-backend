@@ -40,7 +40,7 @@ class AuthService(
                     body = getResetPasswordMailBody(
                         "notifyLogsightEmail",
                         registerMailSubject,
-                        "${user.email}", URL("")
+                        "${user.email}", URL(baseUrl)
                     )
                 )
             )

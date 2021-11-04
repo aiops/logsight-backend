@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LogMessageKafka (
-    val privateKey: String,
-    val appName: String,
-    val logType: String,
+    val private_key: String,
+    val app_name: String,
+    val log_type: String,
     val message: String
 )

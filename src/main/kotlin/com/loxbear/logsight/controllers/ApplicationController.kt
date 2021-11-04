@@ -24,8 +24,8 @@ class ApplicationController(
 
     @PostMapping("/create")
     fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
-        try {
-            val user = userService.findByKey(body.key)
+        val user = try {
+             userService.findByKey(body.key)
         }catch (e: Exception){
             return ResponseEntity(
                 ApplicationResponse(
@@ -38,7 +38,6 @@ class ApplicationController(
                 HttpStatus.UNAUTHORIZED
             )
         }
-        val user = userService.findByKey(body.key)
 
         if (applicationService.findAllByUser(user).size >= 5) {
             return ResponseEntity(
