@@ -33,31 +33,41 @@ class AuthService(
         val registerMailSubject = "Activate your account"
 //        val password = utils.KeyGenerator.generate()
         return userService.createUser(userForm)?.let { user ->
-            emailService.sendMimeEmail(
-                Email(
-                    mailTo = "support@logsight.ai",
-                    sub = registerMailSubject,
-                    body = getResetPasswordMailBody(
-                        "notifyLogsightEmail",
-                        registerMailSubject,
-                        "${user.email}", URL(baseUrl)
-                    )
-                )
-            )
-            if (elasticsearchService.createForLogsightUser(user))
+            try {
                 emailService.sendMimeEmail(
                     Email(
-                        mailTo = user.email,
+                        mailTo = "support@logsight.ai",
                         sub = registerMailSubject,
-                        body = getRegisterMailBody(
-                            "activationEmail",
+                        body = getResetPasswordMailBody(
+                            "notifyLogsightEmail",
                             registerMailSubject,
-                            URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}")
+                            user.email, URL(baseUrl)
                         )
                     )
-                ).let { user }
-            else
+                )
+            } catch (e: Exception) {
+                log.warning("Sending of the registration notification mail failed for user $user")
+            }
+            if (elasticsearchService.createForLogsightUser(user)) {
+                try {
+                    emailService.sendMimeEmail(
+                        Email(
+                            mailTo = user.email,
+                            sub = registerMailSubject,
+                            body = getRegisterMailBody(
+                                "activationEmail",
+                                registerMailSubject,
+                                URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}")
+                            )
+                        )
+                    ).let { user }
+                } catch (e: Exception) {
+                    log.warning("Sending of the activation mail failed for user $user")
+                    null
+                }
+            } else {
                 null
+            }
         }
     }
 
