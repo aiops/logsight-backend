@@ -13,6 +13,9 @@ data class Application(
     @Column(name = "name")
     val name: String,
 
+    @Column(name = "input_topic_name")
+    val inputTopicName: String,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     val status: ApplicationStatus,

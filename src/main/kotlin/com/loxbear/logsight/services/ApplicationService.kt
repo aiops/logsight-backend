@@ -60,7 +60,7 @@ class ApplicationService(
         if (b) {
             return null
         }
-        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS)
+        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS, inputTopicName = "")
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         try {
             repository.save(application)
@@ -143,13 +143,15 @@ class ApplicationService(
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
 
 
-    @KafkaListener(topics = ["container_settings_ack"])
+    @KafkaListener(topics = ["manager_settings_ack"])
     @Transactional
     fun applicationCreatedListener(message: String) {
         val response = JSONObject(message)
         val applicationId = response.get("application_id").toString().toLong()
         logger.info("Activating application with id [{}]", applicationId)
         repository.updateApplicationStatus(applicationId, ApplicationStatus.ACTIVE)
+        val inputTopicName = response.getJSONObject("input").getJSONObject("data_source").getString("topic")
+        repository.updateTopicName(applicationId, inputTopicName)
     }
 
     fun findById(id: Long): Application =
