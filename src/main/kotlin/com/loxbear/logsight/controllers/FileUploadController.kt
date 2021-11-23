@@ -48,17 +48,17 @@ class FileUploadController(
         fileContent: String,
         type: LogFileTypes
     ): ResponseEntity<ApplicationResponse>{
-        val application = applicationService.findById(appID)
-        if (application.status != ApplicationStatus.ACTIVE){
-            return ResponseEntity(
-                ApplicationResponse(
-                    type="",
-                    title="",
-                    instance="",
-                    detail = "The application is still not created. Please try again in few seconds.",
-                    status = HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND
-            )
-        }
+//        val application = applicationService.findById(appID)
+//        if (application.status != ApplicationStatus.ACTIVE){
+//            return ResponseEntity(
+//                ApplicationResponse(
+//                    type="",
+//                    title="",
+//                    instance="",
+//                    detail = "The application is still not created. Please try again in few seconds.",
+//                    status = HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND
+//            )
+//        }
         logService.processFileContent(authentication.name, appID, fileContent, type)
 
         return ResponseEntity(
