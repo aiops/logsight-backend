@@ -42,6 +42,7 @@ class ChartsService(val repository: ChartsRepository,
         repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
             data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
         }
+
         return LogLevelPieChart(data = data)
     }
 

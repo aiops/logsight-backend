@@ -143,7 +143,7 @@ class ApplicationService(
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
 
 
-    @KafkaListener(topics = ["manager_settings_ack"])
+    @KafkaListener(topics = ["container_settings_ack"])
     @Transactional
     fun applicationCreatedListener(message: String) {
         val response = JSONObject(message)
