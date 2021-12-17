@@ -14,6 +14,7 @@ interface ApplicationRepository : JpaRepository<Application, Long> {
     fun findAllByUser(user: LogsightUser): List<Application>
 
     fun findByName(name: String): Optional<Application>
+    fun findByUserAndName(user: LogsightUser, applicationName: String): Optional<Application>
 
     @Modifying
     @Query("""update Application a set a.status = :status where a.id = :applicationId""")

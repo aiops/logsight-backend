@@ -42,6 +42,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.4")
     implementation ("com.konghq:unirest-java:3.11.09")
+    implementation("io.springfox:springfox-swagger2:2.9.2")
+    implementation("io.springfox:springfox-bean-validators:2.9.2")
+    implementation("io.springfox:springfox-swagger-ui:2.9.2")
 }
 
 tasks.withType<KotlinCompile> {

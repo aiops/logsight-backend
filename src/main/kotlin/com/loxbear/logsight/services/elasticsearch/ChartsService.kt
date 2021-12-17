@@ -21,7 +21,7 @@ class ChartsService(val repository: ChartsRepository,
         userKey: String
     ): List<LineChart> {
 
-        return repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
+        val data =  repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -34,17 +34,48 @@ class ChartsService(val repository: ChartsRepository,
                 }
                 LineChart(name, series)
             }
+        return data
     }
+
+
+    fun getAnomaliesBarChartDataAgg(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): List<LineChart> {
+        var seriesList = mutableListOf<LineChartSeries>()
+        val resultList = mutableListOf<LineChart>()
+        val data = repository.getAnomaliesBarChartDataAgg(es_index_user_app, startTime, stopTime, userKey)
+        JSONObject(data).getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").forEach {
+            seriesList.add(LineChartSeries(name = "Anomaly", value = JSONObject(it.toString()).getJSONObject("listBuckets").getDouble("value")))
+            resultList.add(LineChart(name =ZonedDateTime.parse(JSONObject(it.toString()).getString("key_as_string")).toDateTime(), seriesList))
+            seriesList = mutableListOf<LineChartSeries>()
+        }
+        return resultList
+
+    }
+
 
     fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelPieChart {
         val data = mutableListOf<LogLevelPoint>()
+        val esData = JSONObject(repository.getLogLevelPieChartDataAgg(es_index_user_app, startTime, stopTime, userKey))
+            .getJSONObject("aggregations")
 
-        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
-            data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
+        esData.keys().forEach{
+            data.add(LogLevelPoint(name = it.toString(), value = esData.getJSONObject(it.toString()).getDouble("value"), extra = PieExtra(code = "logs")))
         }
-
+        //        println(esData)
+//            .aggregations.listAggregations.buckets.forEach {
+//            data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
         return LogLevelPieChart(data = data)
     }
+
+//        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
+//            data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
+//        }
+
+//    }
 
     fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
@@ -109,31 +140,33 @@ class ChartsService(val repository: ChartsRepository,
         intervalAggregate: String
     ): MutableList<LineChart> {
         val dataList = mutableListOf<LineChart>()
-       JSONObject(repository.getNewTemplatesBarChartData(es_index_user_app, startTime, stopTime, user, baselineTagId, compareTagId, intervalAggregate))
-           .getJSONObject("aggregations")
-           .getJSONObject("listAggregations")
-           .getJSONArray("buckets").forEach {
-               val name = JSONObject(it.toString()).getString("key_as_string")
-               var newNormal = 0.0
-               var newAnomalies = 0.0
-               if (!JSONObject(it.toString()).getJSONObject("new_normal").toString().contains("null")) {
-                   newNormal = JSONObject(it.toString()).getJSONObject("new_normal").getDouble("value")
-                   newAnomalies = JSONObject(it.toString()).getJSONObject("new_anomalies").getDouble("value")
-               }else{
-                   newNormal = 0.0
-                   newAnomalies = 0.0
-               }
+        JSONObject(repository.getNewTemplatesBarChartData(es_index_user_app, startTime, stopTime, user, baselineTagId, compareTagId, intervalAggregate))
+            .getJSONObject("aggregations")
+            .getJSONObject("listAggregations")
+            .getJSONArray("buckets").forEach {
+                val name = JSONObject(it.toString()).getString("key_as_string")
+                var newNormal = 0.0
+                var newAnomalies = 0.0
+                if (!JSONObject(it.toString()).getJSONObject("new_normal").toString().contains("null")) {
+                    newNormal = JSONObject(it.toString()).getJSONObject("new_normal").getDouble("value")
+                    newAnomalies = JSONObject(it.toString()).getJSONObject("new_anomalies").getDouble("value")
+                }else{
+                    newNormal = 0.0
+                    newAnomalies = 0.0
+                }
 
-               val lineChartList = mutableListOf<LineChartSeries>()
-               lineChartList.add(LineChartSeries(name = "Anomaly", value = newAnomalies))
-               lineChartList.add(LineChartSeries(name = "Normal", value = newNormal))
-               dataList.add(LineChart(name = name, series = lineChartList))
-           }
+                val lineChartList = mutableListOf<LineChartSeries>()
+                lineChartList.add(LineChartSeries(name = "Anomaly", value = newAnomalies))
+                lineChartList.add(LineChartSeries(name = "Normal", value = newNormal))
+                dataList.add(LineChart(name = name, series = lineChartList))
+            }
         return dataList
     }
 
     fun ZonedDateTime.toHourMinute(): String = this.format(DateTimeFormatter.ofPattern("HH:mm"))
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+    fun String.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+
     fun ZonedDateTime.toTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
 
 }

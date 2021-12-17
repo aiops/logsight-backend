@@ -27,7 +27,23 @@ class LogRepository(
     val log: Logger = Logger.getLogger(LogRepository::class.java.toString())
 
     val jsonFormat = Json{}
-//    val topicLogstash = "logsight.log_dispatcher"
+    val topicLogstash = "logsight.log_dispatcher"
+
+
+    fun logToKafka(
+        userKey: String,
+        authMail: String,
+        appName: String,
+        inputTopicName: String,
+        appID: Long,
+        logType: LogFileTypes,
+        logs: Collection<LogMessage>
+    ){
+        val messagesKafka = createKafkaMessages(userKey, appName, logType.toString().toLowerCase(), logs)
+        messagesKafka.forEach {
+            sendToKafka(inputTopicName, jsonFormat.encodeToString(it))
+        }
+    }
 
     fun toKafka(
         authMail: String,
@@ -64,4 +80,3 @@ class LogRepository(
         })
     }
 }
-

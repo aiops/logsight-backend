@@ -1,0 +1,40 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://postgres:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    username: logsight
+    password: logsight
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+email:
+  host: smtp.gmail.com
+  port: 587
+  username: noreply.logsight@gmail.com
+  password: logsight2021123!
+
+userLimits:
+  appLimit: 5000
+
+app:
+  baseUrl: http://localhost:4200
+  qualityUrl: http://data-input-rest-api:5444/
+kafka:
+  bootstrapAddress: kafka:9092 # localhost:9093
+  groupId: 1
+
+elasticsearch:
+  url: elasticsearch:9200
+
+kibana:
+  url: kibana:5601
+
+resources:
+  path: /

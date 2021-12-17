@@ -11,8 +11,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: 550MB
+      max-request-size: 550MB
 
 email:
   host: smtp.gmail.com
@@ -20,9 +20,14 @@ email:
   username: noreply.logsight@gmail.com
   password: logsight2021123!
 
+userLimits:
+  appLimit: 5
+
 app:
-  baseUrl: http://localhost:4200
+  baseUrl: https://logsight.ai/
+  baseUrlTry: https://logsight.ai/
   qualityUrl: http://data-input-rest-api:5444/
+
 kafka:
   bootstrapAddress: kafka:9092 # localhost:9093
   groupId: 1

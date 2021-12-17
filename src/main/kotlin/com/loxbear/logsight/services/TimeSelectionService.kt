@@ -41,7 +41,10 @@ class TimeSelectionService(
             TimeSelection(id = 0, startTime = "now-1440m", endTime = "now", name = "1D", dateTimeType = DateTimeType.RELATIVE,user = user),
             TimeSelection(id = 0, startTime = "now-4320m", endTime = "now", name = "3D", dateTimeType = DateTimeType.RELATIVE,user = user),
             TimeSelection(id = 0, startTime = "now-10080m", endTime = "now", name = "1W", dateTimeType = DateTimeType.RELATIVE,user = user),
-            TimeSelection(id = 0, startTime = "now-20160m", endTime = "now", name = "2W", dateTimeType = DateTimeType.RELATIVE,user = user))
+            TimeSelection(id = 0, startTime = "now-20160m", endTime = "now", name = "2W", dateTimeType = DateTimeType.RELATIVE,user = user),
+            TimeSelection(id = 0, startTime = "now-43800m", endTime = "now", name = "1M", dateTimeType = DateTimeType.RELATIVE,user = user),
+            TimeSelection(id = 0, startTime = "now-525600m", endTime = "now", name = "1Y", dateTimeType = DateTimeType.RELATIVE,user = user)
+        )
         repository.saveAll(timeSelectionSelections)
         return timeSelectionSelections
     }
