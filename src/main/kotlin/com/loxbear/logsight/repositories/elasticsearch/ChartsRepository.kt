@@ -20,10 +20,10 @@ class ChartsRepository(
 ) {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String = ""
+    private lateinit var elasticsearchUrl: String
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun getAnomaliesBarChartData(
         es_index_user_app: String,
@@ -36,10 +36,34 @@ class ChartsRepository(
             .basicAuthentication(user.email, user.key)
             .build()
         val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot.json")
+//        val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot_agg.json")
+
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<LineChartData>(
+            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            request
+        ).body!!
+    }
+
+    fun getAnomaliesBarChartDataAgg(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
+        val restTemplate = RestTemplateBuilder()
+            .basicAuthentication(user.email, user.key)
+            .build()
+//        val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot.json")
+        val jsonString = readFileAsString("${resourcesPath}queries/dashboard_anomalies_barplot_agg.json")
+
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
+
+        return restTemplate.postForEntity<String>(
             "http://$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
@@ -84,6 +108,27 @@ class ChartsRepository(
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<LogLevelPieChartData>(
+            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            request
+        ).body!!
+    }
+
+    fun getLogLevelPieChartDataAgg(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): String {
+        val user = userRepository.findByKey(userKey).orElseThrow()
+        val restTemplate = RestTemplateBuilder()
+            .basicAuthentication(user.email, user.key)
+            .build()
+//        val jsonString: String = readFileAsString("${resourcesPath}queries/log_level_pie_chart_request.json")
+        val jsonString: String = readFileAsString("${resourcesPath}queries/log_level_pie_chart_request_agg.json")
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
+
+        return restTemplate.postForEntity<String>(
             "http://$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!

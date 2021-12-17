@@ -27,9 +27,6 @@ import javax.annotation.PreDestroy
 @RestController
 @RequestMapping("/api/fast_try")
 class FastTryController(
-    @Value("\${app.baseUrl}") val baseUrl: String,
-    @Value("\${app.baseUrlTry}") val baseUrlTry: String,
-
     val logService: LogService,
     val applicationService: ApplicationService,
     val userService: UserService,
@@ -37,6 +34,9 @@ class FastTryController(
     val elasticsearchService: ElasticsearchService,
     val emailService: EmailService
 ) {
+
+    @Value("\${app.baseUrlTry}")
+    private lateinit var baseUrlTry: String
 
     private val executor = Executors.newSingleThreadExecutor()
     val restTemplate: RestTemplate = RestTemplateBuilder()

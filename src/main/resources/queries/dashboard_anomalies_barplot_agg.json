@@ -1,6 +1,20 @@
 {
-  "version": true,
-  "size": 100,
+  "aggs": {
+    "listAggregations": {
+      "auto_date_histogram": {
+        "field": "@timestamp",
+        "buckets": 10
+      },
+      "aggs": {
+        "listBuckets": {
+          "sum": {
+            "field": "prediction"
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
   "_source": {
     "excludes": []
   },
@@ -33,15 +47,7 @@
         }
       ],
       "should": [],
-      "must_not": [
-        {
-          "match_phrase": {
-            "total_score": {
-              "query": "0"
-            }
-          }
-        }
-      ]
+      "must_not": []
     }
   }
 }

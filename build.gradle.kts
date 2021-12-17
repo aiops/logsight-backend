@@ -34,7 +34,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.2.23.jre7")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
     implementation(group = "org.json", name = "json", version = "20201115")
-    implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.6.5")
+    implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.7.2")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")
@@ -42,6 +42,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.5.4")
     implementation ("com.konghq:unirest-java:3.11.09")
+    implementation("io.springfox:springfox-swagger2:2.9.2")
+    implementation("io.springfox:springfox-bean-validators:2.9.2")
+    implementation("io.springfox:springfox-swagger-ui:2.9.2")
 }
 
 tasks.withType<KotlinCompile> {

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import utils.UtilsService
+import java.util.*
 
 
 @RestController
@@ -29,7 +30,7 @@ class ChartsController(
         @RequestParam startTime: String,
         @RequestParam endTime: String
     ): LogLevelPieChart? = userService.findByEmail(authentication.name).map { user ->
-        val applicationsIndexes = applicationService.getApplicationIndexes(user)
+        val applicationsIndexes = applicationService.getApplicationIndexesAgg(user)
         chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
     }.orElse(null)
 
@@ -38,11 +39,12 @@ class ChartsController(
         authentication: Authentication,
         @RequestParam startTime: String,
         @RequestParam endTime: String
-    ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
-            val applicationsIndexes = applicationService.getApplicationIndexes(user)
-            chartsService.getAnomaliesBarChartData(applicationsIndexes, startTime, endTime, user.key)
-    }.orElse(listOf())
-
+    ): Optional<List<LineChart>>? {
+        return userService.findByEmail(authentication.name).map { user ->
+            val applicationsIndexes = applicationService.getApplicationIndexesAgg(user)
+            chartsService.getAnomaliesBarChartDataAgg(applicationsIndexes, startTime, endTime, user.key)
+        }
+    }
     @GetMapping("/log_level_stacked_line_chart")
     fun getLogLevelStackedLineData(
         authentication: Authentication,

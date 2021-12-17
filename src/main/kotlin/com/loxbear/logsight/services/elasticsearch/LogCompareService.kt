@@ -38,9 +38,6 @@ class LogCompareService(
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     val restTemplate: RestTemplate = RestTemplateBuilder().build()
 
-    @Value("\${app.baseUrl}")
-    private val baseUrl: String? = null
-
     fun getApplicationVersions(
         applicationsIndexes: String,
         user: LogsightUser

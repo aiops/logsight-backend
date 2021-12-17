@@ -5,6 +5,8 @@ import com.loxbear.logsight.models.*
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -20,12 +22,41 @@ import utils.UtilsService
 class ApplicationController(
     val applicationService: ApplicationService,
     val userService: UserService,
+    @Value("\${user.appLimit}") private val userAppLimit: Int
 ) {
 
+
+
+    @GetMapping("")
+    fun getApplications(
+        authentication: Authentication,
+    ): ResponseEntity<Any> {
+        val user = userService.findByEmail(authentication.name)
+        if(user.isEmpty)
+            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+        return ResponseEntity(applicationService.findAllByUser(user.get()), HttpStatus.OK)
+    }
+
+    @GetMapping("/{appName}")
+    fun getApplication(
+        authentication: Authentication,
+        @PathVariable appName: String
+    ): ResponseEntity<Any> {
+        val user = userService.findByEmail(authentication.name)
+        if(user.isEmpty)
+            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+        val app = applicationService.findByUserAndName(user.get(), appName)
+        if (app.isEmpty)
+            return ResponseEntity(null, HttpStatus.NOT_FOUND)
+        return ResponseEntity(app.get(), HttpStatus.OK)
+    }
+
     @PostMapping("/create")
-    fun createApplication(@RequestBody body: ApplicationRequest): ResponseEntity<Any> {
+    fun createApplication(
+        @RequestBody body: ApplicationRequest,
+    ): ResponseEntity<Any> {
         val user = try {
-             userService.findByKey(body.key)
+            userService.findByKey(body.key)
         }catch (e: Exception){
             return ResponseEntity(
                 ApplicationResponse(
@@ -39,7 +70,7 @@ class ApplicationController(
             )
         }
 
-        if (applicationService.findAllByUser(user).size >= 5) {
+        if (applicationService.findAllByUser(user).size >= userAppLimit) {
             return ResponseEntity(
                 ApplicationResponse(
                     type = "Error",

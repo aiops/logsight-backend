@@ -20,18 +20,19 @@ import java.util.logging.Logger
 
 @Service
 class AuthService(
-    @Value("\${app.baseUrl}") val baseUrl: String,
     val userService: UserService,
     val emailService: EmailService,
     val authenticationManager: AuthenticationManager,
     val elasticsearchService: ElasticsearchService,
     val templateEngine: TemplateEngine,
 ) {
+    @Value("\${app.baseUrl}")
+    private lateinit var baseUrl: String
+
     val log: Logger = Logger.getLogger(AuthService::class.java.toString())
 
     fun registerUser(userForm: UserRegisterForm): LogsightUser? {
         val registerMailSubject = "Activate your account"
-//        val password = utils.KeyGenerator.generate()
         return userService.createUser(userForm)?.let { user ->
             try {
                 emailService.sendMimeEmail(
@@ -63,7 +64,7 @@ class AuthService(
                     ).let { user }
                 } catch (e: Exception) {
                     log.warning("Sending of the activation mail failed for user $user")
-                    null
+                    user
                 }
             } else {
                 null

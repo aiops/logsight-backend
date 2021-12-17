@@ -49,18 +49,24 @@ class UserService(
     private val executor = Executors.newSingleThreadExecutor()
 
     @Value("\${kibana.url}")
-    private val kibanaUrl: String? = null
+    private lateinit var kibanaUrl: String
 
     @Value("\${elasticsearch.url}")
-    private val elasticUrl: String? = null
+    private lateinit var elasticUrl: String
 
-    fun createUser(userForm: UserRegisterForm): LogsightUser? =
-        createUser(LogsightUser(
+    fun createUser(userForm: UserRegisterForm): LogsightUser? {
+        var userKey = KeyGenerator.generate()
+        while (userRepository.findByKey(userKey).isPresent){
+            userKey = KeyGenerator.generate()
+        }
+        return createUser(LogsightUser(
             id = 0,  // Will be replaced by auto-generated value
             email = userForm.email,
             password = encoder().encode(userForm.password),
-            key = KeyGenerator.generate(),
+            key = userKey,
         ))
+    }
+
 
     fun createPersonalKibana(user: LogsightUser) {
         val userKey = user.key
@@ -104,9 +110,9 @@ class UserService(
         findById(userActivate.id).map { user ->
             if (userActivate.key == user.key && !user.activated){
                 timeSelectionService.createPredefinedTimeSelections(user)
-                executor.submit { applicationService.createApplication("compute_sample_app", user)}
-                executor.submit{ applicationService.createApplication("auth_sample_app", user)}
-                executor.submit{ applicationService.createApplication("auth_sample_app2", user)}
+//                executor.submit { applicationService.createApplication("compute_sample_app", user)}
+//                executor.submit{ applicationService.createApplication("auth_sample_app", user)}
+//                executor.submit{ applicationService.createApplication("auth_sample_app2", user)}
                 return@map updateUser(user.copy(activated = true))
             }else
                 return@map user
@@ -138,7 +144,7 @@ class UserService(
     }
 
     @Transactional
-    @KafkaListener(topics= ["application_stats"], groupId = "")
+    @KafkaListener(topics= ["application_stats"], groupId = "1")
     fun consume(message:String) :Unit {
         val privateKey = JSONObject(message).getString("private_key")
         val usedDataNow = JSONObject(message).getLong("quantity")

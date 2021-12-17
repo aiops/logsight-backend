@@ -17,10 +17,10 @@ class IncidentRepository(
 ) {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String? = null
+    private lateinit var elasticsearchUrl: String
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun getTopKIncidentData(esIndexUserApp: String, startTime: String, stopTime: String, userKey: String): String {
         val user = userRepository.findByKey(userKey).orElseThrow()

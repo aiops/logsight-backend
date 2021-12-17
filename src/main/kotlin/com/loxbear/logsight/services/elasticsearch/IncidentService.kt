@@ -58,7 +58,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                 }
 
 
-        }
+            }
         dataList.sortByDescending { it.totalScore }
         return if (dataList.size <= numberOfIncidents) {
             dataList
@@ -163,4 +163,3 @@ class IncidentService(val repository: IncidentRepository, val applicationService
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
     fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))
 }
-

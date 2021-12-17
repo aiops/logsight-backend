@@ -6,16 +6,20 @@ import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.repositories.UserRepository
 import com.loxbear.logsight.services.AuthService
 import com.loxbear.logsight.services.EmailService
+import com.loxbear.logsight.services.LogService
 import com.loxbear.logsight.services.UserService
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.context.event.EventListener
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.net.URL
+import java.util.logging.Logger
 
 
 @RestController
@@ -24,18 +28,21 @@ class AuthController(
     val userService: UserService,
     val repository: UserRepository,
     val authService: AuthService,
-    val emailService: EmailService
+    val emailService: EmailService,
+    @Value("\${user.userAccountBootstrap}") private val webUserAccountBootstrap: Boolean
 ) {
+
+    val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
     val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build()
 
     @Value("\${kibana.url}")
-    private val kibanaUrl: String? = null
+    private lateinit var kibanaUrl: String
 
     @Value("\${app.baseUrl}")
-    private val baseUrl: String? = null
+    private lateinit var baseUrl: String
 
     @PostMapping("/register")
     fun register(@RequestBody registerForm: UserRegisterForm): ResponseEntity<LogsightUser> =
@@ -95,8 +102,9 @@ class AuthController(
         val user = userService.findByKey(JSONObject(requestBody).getString("key"))
         val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
         val request = UtilsService.createKibanaRequestWithHeaders(requestB)
-        val response = restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
-        return response
+        val kibanaURL = "http://$kibanaUrl/kibana/api/security/v1/login"
+        log.info("Log in to kibana at $kibanaURL")
+        return restTemplate.postForEntity(kibanaURL, request)
     }
 
 
@@ -138,5 +146,21 @@ class AuthController(
         }
     }
 
-
+    @EventListener
+    fun createClientUser(event: ApplicationReadyEvent) {
+        if(webUserAccountBootstrap) {
+            while (true) {
+                try {
+                    this.register(UserRegisterForm("clientadmin@logsight.ai", "samplepassword"))
+                    println("User creation was successful.")
+                    break
+                } catch (e: Exception) {
+                    println("sleeping for 5000 millis")
+                    Thread.sleep(5000)
+                }
+            }
+            val user = userService.findByEmail("clientadmin@logsight.ai").get()
+            this.activateUser(UserActivateForm(id = user.id, key = user.key))
+        }
+    }
 }

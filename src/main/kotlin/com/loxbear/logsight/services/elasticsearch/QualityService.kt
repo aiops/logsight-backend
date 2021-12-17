@@ -36,11 +36,8 @@ class QualityService(val repository: QualityRepository, val applicationService: 
     val restTemplate = RestTemplateBuilder()
         .build();
 
-    @Value("\${app.baseUrl}")
-    private val baseUrl: String? = null
-
     @Value("\${app.qualityUrl}")
-    private val qualityUrl: String? = null
+    private lateinit var qualityUrl: String
 
     fun getLogQualityData(
         applicationsIndexes: String,

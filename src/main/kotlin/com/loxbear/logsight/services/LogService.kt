@@ -4,6 +4,7 @@ import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.log.LogMessage
 import com.loxbear.logsight.models.log.LogMessageException
 import com.loxbear.logsight.repositories.kafka.LogRepository
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication
 import org.springframework.stereotype.Service
 import java.util.logging.Logger
 
@@ -13,6 +14,17 @@ class LogService(
     val logRepository: LogRepository
 ) {
     val log: Logger = Logger.getLogger(LogService::class.java.toString())
+
+
+    fun processLogMessage(userKey: String, authMail: String, appName: String, inputTopicName: String, appID: Long, logType: LogFileTypes, logs: List<String>){
+        logRepository.logToKafka(userKey,
+            authMail,
+            appName,
+            inputTopicName,
+            appID,
+            logType,
+            logs.map { LogMessage(it) })
+    }
 
     fun processFileContent(
         authMail: String,
@@ -25,7 +37,6 @@ class LogService(
             log.warning(msg)
             throw LogMessageException(msg)
         }
-
         logRepository.toKafka(authMail, appID, logType, processFileContent(fileContent))
     }
 

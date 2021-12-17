@@ -16,7 +16,7 @@ class QualityRepository(
     val elasticsearchService: ElasticsearchService,
 ) {
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun getLogQualityData(esIndexUserApp: String, startTime: String, stopTime: String, userKey: String): String =
         elasticsearchService.execElasticsearchQuery(

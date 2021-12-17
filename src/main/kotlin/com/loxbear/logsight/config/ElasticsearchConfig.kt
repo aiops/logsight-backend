@@ -16,11 +16,11 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 class ElasticsearchConfig : AbstractElasticsearchConfiguration() {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String = ""
+    private lateinit var elasticsearchUrl: String
     @Value("\${elasticsearch.username}")
-    private val username: String = ""
+    private lateinit var username: String
     @Value("\${elasticsearch.password}")
-    private val password: String = ""
+    private lateinit var password: String
 
     @Bean
     override fun elasticsearchClient(): RestHighLevelClient {

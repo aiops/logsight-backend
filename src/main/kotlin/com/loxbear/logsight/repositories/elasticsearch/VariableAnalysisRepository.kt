@@ -24,10 +24,10 @@ class VariableAnalysisRepository(
 //        .build();
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String? = null
+    private lateinit var elasticsearchUrl: String
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun getTemplates(
         esIndexUserApp: String,
