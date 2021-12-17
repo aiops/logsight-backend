@@ -42,10 +42,10 @@ class ApplicationService(
         .build()
 
     @Value("\${kibana.url}")
-    private val kibanaUrl: String? = null
+    private lateinit var kibanaUrl: String
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun createApplication(name: String, user: LogsightUser): Application? {
         val application =  _createApplication(name, user)
@@ -160,7 +160,7 @@ class ApplicationService(
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
 
 
-    @KafkaListener(topics = ["manager_settings_ack"])
+    @KafkaListener(topics = ["manager_settings_ack"], groupId = "1")
     @Transactional
     fun applicationCreatedListener(message: String) {
         try{

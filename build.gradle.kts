@@ -34,7 +34,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.2.23.jre7")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
     implementation(group = "org.json", name = "json", version = "20201115")
-    implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.6.5")
+    implementation(group = "org.springframework.kafka", name = "spring-kafka", version = "2.7.2")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation(group = "com.google.code.gson", name = "gson", version = "2.8.6")

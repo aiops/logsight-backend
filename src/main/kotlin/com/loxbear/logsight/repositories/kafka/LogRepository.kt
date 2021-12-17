@@ -27,8 +27,6 @@ class LogRepository(
     val log: Logger = Logger.getLogger(LogRepository::class.java.toString())
 
     val jsonFormat = Json{}
-    val topicLogstash = "logsight.log_dispatcher"
-
 
     fun logToKafka(
         userKey: String,

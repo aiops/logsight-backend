@@ -1,0 +1,81 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://postgresql:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    username: logsight
+    password: logsight
+  kafka:
+    bootstrap-servers: kafka:9093
+    consumer:
+      group-id: 1
+      properties:
+        group:
+          id: 1
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+email:
+  host: smtp.gmail.com
+  port: 587
+  username: noreply.logsight@gmail.com
+  password: logsight2021123!
+
+user:
+  userAccountBootstrap: true
+  appLimit: 5000
+
+app:
+  baseUrl: http://localhost:4200
+  qualityUrl: http://localhost:5444/
+  baseUrlTry: http://localhost:4200/
+
+elasticsearch:
+  url: elasticsearch:9200
+  username: elastic
+  password: elasticsearchpassword
+
+resources:
+  path: /
+
+---
+spring.config.activate.on-profile: ide
+
+spring.datasource.url: jdbc:postgresql://localhost:5432/logsight
+spring.kafka.bootstrap-servers: localhost:9093
+
+elasticsearch.url: localhost:9200
+
+kibana.url: localhost:5601
+
+app:
+  baseUrl: http://localhost:4200
+  qualityUrl: http://data-input-rest-api:5444/
+
+resources.path: src/main/resources/
+
+---
+spring.config.activate.on-profile: web-preprod
+
+app:
+  baseUrl: https://demo.logsight.ai/
+  baseUrlTry: https://demo.logsight.ai/
+  qualityUrl: https://demo.logsight.ai:5444/
+
+---
+spring.config.activate.on-profile: web-prod
+
+app:
+  baseUrl: https://logsight.ai/
+  baseUrlTry: https://logsight.ai/
+  qualityUrl: https://logsight.ai:5444/
+
+user:
+  userAccountBootstrap: false
+  appLimit: 5

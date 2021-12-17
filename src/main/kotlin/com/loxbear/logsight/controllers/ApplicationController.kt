@@ -22,9 +22,10 @@ import utils.UtilsService
 class ApplicationController(
     val applicationService: ApplicationService,
     val userService: UserService,
-    @Value("\${userLimits.appLimit}")
-    val userAppLimit: Int
+    @Value("\${user.appLimit}") private val userAppLimit: Int
 ) {
+
+
 
     @GetMapping("")
     fun getApplications(

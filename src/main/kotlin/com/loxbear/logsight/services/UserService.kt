@@ -49,10 +49,10 @@ class UserService(
     private val executor = Executors.newSingleThreadExecutor()
 
     @Value("\${kibana.url}")
-    private val kibanaUrl: String? = null
+    private lateinit var kibanaUrl: String
 
     @Value("\${elasticsearch.url}")
-    private val elasticUrl: String? = null
+    private lateinit var elasticUrl: String
 
     fun createUser(userForm: UserRegisterForm): LogsightUser? {
         var userKey = KeyGenerator.generate()
@@ -144,7 +144,7 @@ class UserService(
     }
 
     @Transactional
-    @KafkaListener(topics= ["application_stats"], groupId = "")
+    @KafkaListener(topics= ["application_stats"], groupId = "1")
     fun consume(message:String) :Unit {
         val privateKey = JSONObject(message).getString("private_key")
         val usedDataNow = JSONObject(message).getLong("quantity")

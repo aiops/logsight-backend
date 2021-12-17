@@ -25,19 +25,18 @@ import java.util.*
 
 @Service
 class ElasticsearchService(
-    @Value("\${elasticsearch.url}") val elasticsearchUrl: String = "",
-    @Value("\${resources.path}") val resourcesPath: String = "",
     val esClient: RestHighLevelClient,
     val userRepository: UserRepository,
 ) {
 
+    @Value("\${elasticsearch.url}")
+    private lateinit var elasticsearchUrl: String
+    @Value("\${kibana.url}")
+    private lateinit var kibanaUrl: String
+
     val restTemplate: RestTemplate = RestTemplateBuilder()
         .basicAuthentication("elastic", "elasticsearchpassword")
         .build()
-
-    @Value("\${kibana.url}")
-    private val kibanaUrl: String? = null
-
 
     fun createForLogsightUser(user: LogsightUser): Boolean {
         val esUserBool = PutUserRequest.withPassword(

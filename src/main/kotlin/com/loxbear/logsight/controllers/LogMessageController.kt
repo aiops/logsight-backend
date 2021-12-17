@@ -27,7 +27,7 @@ class LogMessageController(
 ) {
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     val log: Logger = Logger.getLogger(LogMessageController::class.java.toString())
     private val executor = Executors.newSingleThreadExecutor()

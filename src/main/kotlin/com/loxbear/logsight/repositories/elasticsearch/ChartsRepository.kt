@@ -20,10 +20,10 @@ class ChartsRepository(
 ) {
 
     @Value("\${elasticsearch.url}")
-    private val elasticsearchUrl: String = ""
+    private lateinit var elasticsearchUrl: String
 
     @Value("\${resources.path}")
-    private val resourcesPath: String = ""
+    private lateinit var resourcesPath: String
 
     fun getAnomaliesBarChartData(
         es_index_user_app: String,
