@@ -26,9 +26,8 @@ class KafkaConsumerConfig(
 ) {
 
     fun consumerFactory(): ConsumerFactory<String, String> {
-        val props: MutableMap<String, Any> = HashMap(kafkaProperties.buildProducerProperties())
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+        val props: MutableMap<String, Any> = HashMap(kafkaProperties.buildConsumerProperties())
+        println(props)
         return DefaultKafkaConsumerFactory(props)
     }
 

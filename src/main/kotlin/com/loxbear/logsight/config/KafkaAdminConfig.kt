@@ -15,7 +15,8 @@ class KafkaAdminConfig(
 
     @Bean
     fun kafkaAdmin(): KafkaAdmin {
-        val props: MutableMap<String, Any> = HashMap(kafkaProperties.buildProducerProperties())
+        val props: MutableMap<String, Any> = HashMap(kafkaProperties.buildAdminProperties())
+        println(props)
         return KafkaAdmin(props)
     }
 }
