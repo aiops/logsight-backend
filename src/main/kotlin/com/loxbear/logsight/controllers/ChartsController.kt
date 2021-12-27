@@ -28,9 +28,11 @@ class ChartsController(
     fun getLogLevelPieData(
         authentication: Authentication,
         @RequestParam startTime: String,
-        @RequestParam endTime: String
+        @RequestParam endTime: String,
+        @RequestParam applicationId: Long?
     ): LogLevelPieChart? = userService.findByEmail(authentication.name).map { user ->
-        val applicationsIndexes = applicationService.getApplicationIndexesAgg(user)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application)
         chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
     }.orElse(null)
 
@@ -38,10 +40,12 @@ class ChartsController(
     fun getAnomaliesBarChartData(
         authentication: Authentication,
         @RequestParam startTime: String,
-        @RequestParam endTime: String
+        @RequestParam endTime: String,
+        @RequestParam applicationId: Long?
     ): Optional<List<LineChart>>? {
         return userService.findByEmail(authentication.name).map { user ->
-            val applicationsIndexes = applicationService.getApplicationIndexesAgg(user)
+            val application = applicationId?.let { applicationService.findById(applicationId) }
+            val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application)
             chartsService.getAnomaliesBarChartDataAgg(applicationsIndexes, startTime, endTime, user.key)
         }
     }

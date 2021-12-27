@@ -11,7 +11,9 @@ class IncidentTableData(
 
         private val new_templates: List<VariableAnalysisHit> = listOf(),
 
-        private val semantic_ad: List<VariableAnalysisHit> = listOf()
+        private val semantic_ad: List<VariableAnalysisHit> = listOf(),
+
+        private val logs: List<VariableAnalysisHit> = listOf()
 ) {
     val countAds: List<VariableAnalysisHit>
         get() = count_ads
@@ -24,5 +26,8 @@ class IncidentTableData(
 
     var semanticAd: List<VariableAnalysisHit> = listOf()
         get() = semantic_ad
+
+    var logData: List<VariableAnalysisHit> = listOf()
+        get() = logs
 }
 

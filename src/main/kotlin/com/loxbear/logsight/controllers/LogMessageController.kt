@@ -84,17 +84,26 @@ class LogMessageController(
         authentication: Authentication,
         @PathVariable userKey: String
     ): ResponseEntity<ApplicationResponse> {
-        val applicationNames = listOf<String>("hdfs_node", "jobs", "name_node", "node_manager", "resource_manager")
+        val applicationNames = listOf<String>("hdfs_node", "name_node", "node_manager", "resource_manager")
         val user = userService.findByKey(userKey)
-        val timeWait = 15
-        Thread.sleep(timeWait.toLong())
-
+        val timeWait = 3000
         for (appName in applicationNames){
-            val application = applicationService.findByUserAndName(user, appName).get()
+            try{
+                val application = applicationService.findByUserAndName(user, appName).get()
+                applicationService.deleteApplication(application.id)
+                Thread.sleep(timeWait.toLong())
+            }catch (e: Exception){
+            }
+            val application = applicationService.createApplication(appName, user)
+            Thread.sleep(timeWait.toLong())
             val fileContent = File("${resourcesPath}sample_data/${appName}").inputStream().readBytes()
-            executor.submit { uploadFile(authentication, application.id, fileContent.toString(Charsets.UTF_8), LogFileTypes.UNKNOWN_FORMAT) }
+            executor.submit {
+                if (application != null) {
+                    uploadFile(authentication, application.id, fileContent.toString(Charsets.UTF_8), LogFileTypes.UNKNOWN_FORMAT)
+                }
+            }
         }
-        Thread.sleep(timeWait.toLong())
+        Thread.sleep(timeWait.toLong()*5)
         return ResponseEntity(
             ApplicationResponse(
                 type="",
