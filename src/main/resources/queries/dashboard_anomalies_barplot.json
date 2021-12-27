@@ -6,13 +6,24 @@
         "buckets": 10
       },
       "aggs": {
-        "listBuckets": {
-          "terms": {
-            "field": "prediction",
-            "order": {
-              "_count": "desc"
-            },
-            "size": 50
+        "1": {
+          "sum": {
+            "field": "prediction"
+          }
+        },
+        "3": {
+          "sum": {
+            "field": "log_levels.ERROR"
+          }
+        },
+        "4": {
+          "sum": {
+            "field": "log_levels.INFO"
+          }
+        },
+        "5": {
+          "sum": {
+            "field": "log_levels.WARNING"
           }
         }
       }

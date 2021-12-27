@@ -33,13 +33,13 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime, user.key)).getJSONObject("hits")
             .getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
-                var flag = false
-                val semanticData =  jsonData.getJSONObject("_source").getJSONArray("semantic_ad").forEach {
-                    val level = JSONObject(JSONArray(it.toString()).get(0).toString()).getString("actual_level")
-                    if(level != "INFO"){
-                        flag = true
-                    }
-                }
+                var flag = true
+//                val semanticData =  jsonData.getJSONObject("_source").getJSONArray("semantic_ad").forEach {
+//                    val level = JSONObject(JSONArray(it.toString()).get(0).toString()).getString("actual_level")
+//                    if(level != "INFO"){
+//                        flag = true
+//                    }
+//                }
                 if (flag == true){
                     dataList.add(
                         TopKIncidentTable(
@@ -90,7 +90,7 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         intervalAggregate: String,
         user: LogsightUser
     ): IncidentTableData {
-        val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad")
+        val anomalies = listOf("count_ads", "semantic_count_ads", "new_templates", "semantic_ad", "logs")
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
         return JSONObject(repository.getIncidentsTableData(applicationsIndexes, startTime, stopTime, intervalAggregate, user.key))
             .getJSONObject("hits").getJSONArray("hits").fold(IncidentTableData()) { acc, it ->
@@ -151,11 +151,15 @@ class IncidentService(val repository: IncidentRepository, val applicationService
                     if (incidentTableData["new_templates"] != null) incidentTableData["new_templates"]!! else listOf<VariableAnalysisHit>() // new log types
                 val semanticAd =
                     if (incidentTableData["semantic_ad"] != null) incidentTableData["semantic_ad"]!! else listOf<VariableAnalysisHit>() //cognitive anomalies
+
+                val logs =
+                    if (incidentTableData["logs"] != null) incidentTableData["logs"]!! else listOf<VariableAnalysisHit>() //logs
                 IncidentTableData(
                     count_ads = acc.countAds + countAds,
                     semantic_count_ads = acc.semanticCountAds + semanticCountAds,
                     new_templates = acc.newTemplates + newTemplates,
                     semantic_ad = acc.semanticAd + semanticAd,
+                    logs = acc.logData + logs
                 )
             }
     }

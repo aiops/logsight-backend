@@ -3,12 +3,27 @@
     "listAggregations": {
       "auto_date_histogram": {
         "field": "@timestamp",
-        "buckets": 10
+        "buckets": 6
       },
       "aggs": {
-        "listBuckets": {
+        "listBucketsPrediction": {
           "sum": {
             "field": "prediction"
+          }
+        },
+        "listBucketsError": {
+          "sum": {
+            "field": "log_levels.ERROR"
+          }
+        },
+        "listBucketsInfo": {
+          "sum": {
+            "field": "log_levels.INFO"
+          }
+        },
+        "listBucketsWarning": {
+          "sum": {
+            "field": "log_levels.WARNING"
           }
         }
       }

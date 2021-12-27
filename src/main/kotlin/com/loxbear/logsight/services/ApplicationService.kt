@@ -106,13 +106,10 @@ class ApplicationService(
             }_${it.name}_log_ad"
         }
 
-    fun getApplicationIndexesAgg(user: LogsightUser) =
-        findAllByUser(user).joinToString(",") {
-            "${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
-            }_${it.name}_log_agg"
-        }
-
+    fun getApplicationIndexesAgg(user: LogsightUser, application: Application?) =
+        findAllByUser(user).filter {
+            application?.let { application -> application.id == it.id } ?: true
+        }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_log_agg" }
 
     fun getApplicationIndicesForKibana(user: LogsightUser) =
 //        findAllByUser(user).joinToString(",") {
