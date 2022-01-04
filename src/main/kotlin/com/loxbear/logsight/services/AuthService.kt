@@ -7,6 +7,7 @@ import com.loxbear.logsight.models.auth.*
 import com.loxbear.logsight.security.SecurityConstants
 import com.loxbear.logsight.services.elasticsearch.ElasticsearchService
 import com.stripe.exception.AuthenticationException
+import com.sun.mail.iap.ConnectionException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -33,43 +34,50 @@ class AuthService(
 
     fun registerUser(userForm: UserRegisterForm): LogsightUser? {
         val registerMailSubject = "Activate your account"
-        return userService.createUser(userForm)?.let { user ->
+        val user = try {
+            userService.createUser(userForm)
+        } catch (e: Exception) {
+            log.info(e.message)
+            userService.findByEmail(userForm.email).get()
+        }
+
+        try {
+            emailService.sendMimeEmail(
+                Email(
+                    mailTo = "support@logsight.ai",
+                    sub = registerMailSubject,
+                    body = getResetPasswordMailBody(
+                        "notifyLogsightEmail",
+                        registerMailSubject,
+                        user!!.email, URL(baseUrl)
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            log.warning("Sending of the registration notification mail failed for user $user")
+        }
+
+        if (elasticsearchService.createForLogsightUser(user!!)) {
+            log.info("Elasticsearch user ${user.email} created")
             try {
                 emailService.sendMimeEmail(
                     Email(
-                        mailTo = "support@logsight.ai",
+                        mailTo = user.email,
                         sub = registerMailSubject,
-                        body = getResetPasswordMailBody(
-                            "notifyLogsightEmail",
+                        body = getRegisterMailBody(
+                            "activationEmail",
                             registerMailSubject,
-                            user.email, URL(baseUrl)
+                            URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}")
                         )
                     )
-                )
+                ).let { user }
             } catch (e: Exception) {
-                log.warning("Sending of the registration notification mail failed for user $user")
+                log.warning("Sending of the activation mail failed for user $user")
             }
-            if (elasticsearchService.createForLogsightUser(user)) {
-                try {
-                    emailService.sendMimeEmail(
-                        Email(
-                            mailTo = user.email,
-                            sub = registerMailSubject,
-                            body = getRegisterMailBody(
-                                "activationEmail",
-                                registerMailSubject,
-                                URL(URL(baseUrl), "auth/activate/${user.id}/${user.key}")
-                            )
-                        )
-                    ).let { user }
-                } catch (e: Exception) {
-                    log.warning("Sending of the activation mail failed for user $user")
-                    user
-                }
-            } else {
-                null
-            }
+        } else {
+            throw ConnectionException("Failed to create elasticsearch user $user")
         }
+        return user
     }
 
     fun sendLoginLink(email: String): LogsightUser? {
