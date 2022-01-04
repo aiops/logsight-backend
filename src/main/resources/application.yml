@@ -4,11 +4,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   datasource:
-    url: jdbc:postgresql://postgresql:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    url: jdbc:postgresql://postgres:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
     username: logsight
     password: logsight
   kafka:
-    bootstrap-servers: kafka:9093
+    bootstrap-servers: kafka:9092
     consumer:
       group-id: 1
       properties:
@@ -35,6 +35,8 @@ app:
   baseUrl: http://localhost:4200
   qualityUrl: http://localhost:5444/
   baseUrlTry: http://localhost:4200/
+
+kibana.url: kibana:5601
 
 elasticsearch:
   url: elasticsearch:9200

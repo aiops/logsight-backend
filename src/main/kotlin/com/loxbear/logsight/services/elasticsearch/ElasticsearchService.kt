@@ -3,6 +3,7 @@ package com.loxbear.logsight.services.elasticsearch
 import com.loxbear.logsight.entities.Application
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.UserRepository
+import com.loxbear.logsight.services.LogService
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.indices.CreateIndexRequest
@@ -16,11 +17,13 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.RestClients
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.io.IOException
 import java.util.*
+import java.util.logging.Logger
 
 
 @Service
@@ -28,6 +31,8 @@ class ElasticsearchService(
     val esClient: RestHighLevelClient,
     val userRepository: UserRepository,
 ) {
+
+    val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
     @Value("\${elasticsearch.url}")
     private lateinit var elasticsearchUrl: String
@@ -39,7 +44,8 @@ class ElasticsearchService(
         .build()
 
     fun createForLogsightUser(user: LogsightUser): Boolean {
-        val esUserBool = PutUserRequest.withPassword(
+        val esUserBool = true
+        PutUserRequest.withPassword(
             User(user.email, Collections.singletonList(user.key + "_" + user.email)),
             user.key.toCharArray(),
             true,
@@ -58,7 +64,16 @@ class ElasticsearchService(
                     "\"name\": \"Logsight\", " +
                     "\"description\" : \"This is your Logsight Space\" }"
         )
-        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
+        try {
+            restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).statusCode.value()
+        } catch (e: HttpStatusCodeException){
+            if (e.rawStatusCode == 409){
+                log.info("space already exists")
+                return esUserBool
+            } else {
+                throw e
+            }
+        }
 
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
@@ -70,7 +85,6 @@ class ElasticsearchService(
 
         return esUserBool
     }
-
 
     fun updatePassword(user: LogsightUser): Boolean =
         ChangePasswordRequest(

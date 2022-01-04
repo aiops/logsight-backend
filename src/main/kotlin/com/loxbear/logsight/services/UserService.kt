@@ -95,14 +95,17 @@ class UserService(
     }
 
     @Transactional
-    fun createUser(user: LogsightUser): LogsightUser? {
-        return if (userRepository.findByEmail(user.email).isEmpty) {
-            userRepository.save(user)
+    fun createUser(user: LogsightUser): LogsightUser {
+        if (userRepository.findByEmail(user.email).isEmpty) {
+            return userRepository.save(user)
         } else {
-            logger.warn("User with email ${user.email} already exists.")
-            null
+            throw IllegalArgumentException("User with mail ${user.email} already exists")
         }
     }
+
+    @Transactional
+    fun createOrGetUser(user: LogsightUser): LogsightUser =
+        userRepository.findByEmail(user.email).orElse(userRepository.save(user))
 
     fun findById(userId: Long): Optional<LogsightUser> = userRepository.findById(userId)
 

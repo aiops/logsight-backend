@@ -150,13 +150,16 @@ class AuthController(
     fun createClientUser(event: ApplicationReadyEvent) {
         if(webUserAccountBootstrap) {
             while (true) {
+                println("creating initial user....")
+                Thread.sleep(5000)
                 try {
-                    this.register(UserRegisterForm("clientadmin@logsight.ai", "samplepassword"))
+                    authService.registerUser(
+                        UserRegisterForm("clientadmin@logsight.ai", "samplepassword")) ?: continue
                     println("User creation was successful.")
                     break
                 } catch (e: Exception) {
-                    println("sleeping for 5000 millis")
-                    Thread.sleep(5000)
+                    println(e.message)
+                    continue
                 }
             }
             val user = userService.findByEmail("clientadmin@logsight.ai").get()
