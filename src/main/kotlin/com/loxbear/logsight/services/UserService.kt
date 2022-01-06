@@ -134,7 +134,7 @@ class UserService(
     fun updateUser(user: LogsightUser): LogsightUser? = userRepository.save(user)
 
     fun findByKey(key: String): LogsightUser =
-        userRepository.findByKey(key).orElseThrow { Exception("User with key $key not found") }
+        userRepository.findByKey(key).orElseThrow { NoSuchElementException("User with key $key not found") }
 
     fun findAllByUser(user: LogsightUser): List<Application> = applicationRepository.findAllByUser(user)
 

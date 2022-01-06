@@ -32,7 +32,7 @@ class ChartsController(
         @RequestParam applicationId: Long?
     ): LogLevelPieChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application?.orElse(null))
         chartsService.getLogLevelPieChartData(applicationsIndexes, startTime, endTime, user.key)
     }.orElse(null)
 
@@ -45,7 +45,7 @@ class ChartsController(
     ): Optional<List<LineChart>>? {
         return userService.findByEmail(authentication.name).map { user ->
             val application = applicationId?.let { applicationService.findById(applicationId) }
-            val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application)
+            val applicationsIndexes = applicationService.getApplicationIndexesAgg(user, application?.orElse(null))
             chartsService.getAnomaliesBarChartDataAgg(applicationsIndexes, startTime, endTime, user.key)
         }
     }
@@ -69,7 +69,7 @@ class ChartsController(
         @RequestParam(required = false) applicationId: Long?
     ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         chartsService.getSystemOverviewHeatmapChart(
             applicationsIndexes,
             startTime,
@@ -91,9 +91,9 @@ class ChartsController(
         @RequestParam applicationId: Long?
     ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        var applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        var applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         if (compareTagId != null && baselineTagId != null) {
-            applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
+            applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "count_ad")
         }
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         chartsService.getSystemOverviewHeatmapChart(
@@ -117,7 +117,7 @@ class ChartsController(
         @RequestParam baselineTagId: String?
     ): MutableList<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application, "count_ad")
+        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "count_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         chartsService.getNewTemplatesBarChartData(
             applicationsIndexes, startTime, endTime, user,

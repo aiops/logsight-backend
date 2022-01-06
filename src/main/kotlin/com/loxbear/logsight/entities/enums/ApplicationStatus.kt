@@ -1,7 +1,7 @@
 package com.loxbear.logsight.entities.enums
 
 enum class ApplicationStatus {
-    IN_PROGRESS,
+    CREATING,
     ACTIVE,
-    INACTIVE
+    DELETING
 }

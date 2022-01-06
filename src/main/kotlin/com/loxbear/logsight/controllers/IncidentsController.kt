@@ -29,7 +29,7 @@ class IncidentsController(
         @RequestParam(required = false) applicationId: Long?
     ): List<TopKIncidentTable> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         incidentsService.getTopKIncidentsTableData(
             applicationsIndexes,
             startTime,
@@ -47,7 +47,7 @@ class IncidentsController(
         @RequestParam(required = false) applicationId: Long?
     ): List<LineChartSeries> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         val intervalAggregate = getTimeIntervalAggregate(startTime, endTime)
         incidentsService.getIncidentsBarChartData(
             applicationsIndexes,
@@ -66,7 +66,7 @@ class IncidentsController(
         @RequestParam(required = false) applicationId: Long?
     ): IncidentTableData? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         val intervalAggregate = getTimeIntervalAggregate(startTime, endTime)
         incidentsService.getIncidentsTableData(applicationsIndexes, startTime, endTime, intervalAggregate, user)
     }.orElse(null)

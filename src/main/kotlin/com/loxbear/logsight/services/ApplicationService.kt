@@ -7,6 +7,7 @@ import com.loxbear.logsight.entities.enums.ApplicationStatus
 import com.loxbear.logsight.repositories.ApplicationRepository
 import kong.unirest.HttpResponse
 import kong.unirest.Unirest
+import org.json.JSONException
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -26,6 +27,8 @@ import java.util.concurrent.Executors
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import javax.transaction.Transactional
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 @Service
@@ -33,6 +36,9 @@ class ApplicationService(
     val repository: ApplicationRepository,
     val kafkaService: KafkaService,
 ) {
+
+    val applicationActiveListener = mutableMapOf<Long, ((Application)->Unit)>()
+    val applicationDeletedListener = mutableMapOf<Long, ((Unit)->Unit)>()
 
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -47,12 +53,26 @@ class ApplicationService(
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
 
-    fun createApplication(name: String, user: LogsightUser): Application? {
-        val application =  _createApplication(name, user)
-        application?.let { kafkaService.applicationChange(it, ApplicationAction.CREATE) }
+    suspend fun createApplicationAwaitActive(name: String, user: LogsightUser): Application? = suspendCoroutine {
+            cont -> createApplication(name, user) { cont.resume(it) }
+    }
+
+    fun createApplication(name: String, user: LogsightUser, callback: ((Application)->Unit)): Application? {
+        val application = _createApplication(name, user)
+        application?.let {
+            applicationActiveListener[it.id] = callback
+            kafkaService.applicationChange(it, ApplicationAction.CREATE)
+        }
         return application
     }
 
+    fun createApplication(name: String, user: LogsightUser): Application? {
+        val application =  _createApplication(name, user)
+        application?.let {
+            kafkaService.applicationChange(it, ApplicationAction.CREATE)
+        }
+        return application
+    }
 
     @Transactional
     protected fun _createApplication(name: String, user: LogsightUser): Application? {
@@ -70,7 +90,7 @@ class ApplicationService(
         if (b) {
             return null
         }
-        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.IN_PROGRESS, inputTopicName = "")
+        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.CREATING, inputTopicName = "")
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         try {
             repository.saveAndFlush(application)
@@ -158,41 +178,62 @@ class ApplicationService(
 
 
     @KafkaListener(topics = ["manager_settings_ack"], groupId = "1")
-    @Transactional
-    fun applicationCreatedListener(message: String) {
-        try{
-            val response = JSONObject(message)
-            val applicationId = response.get("application_id").toString().toLong()
-            logger.info("Activating application with id [{}]", applicationId)
-            repository.updateApplicationStatus(applicationId, ApplicationStatus.ACTIVE)
-            val inputTopicName = response.getJSONObject("input").getJSONObject("source").getString("topic")
-            repository.updateTopicName(applicationId, inputTopicName)
-            logger.info("Application topic updated")
-        }catch (e: Exception){
-            logger.error(e.message)
+    fun applicationStatusControlListener(msg: String) {
+
+        val jsonMsg = try {
+            JSONObject(msg)
+        } catch (e: JSONException) {
+            logger.info("Failed to parse message $msg into JSON.", e)
+            return
+        }
+
+        val ack = if(jsonMsg.has("ack")) jsonMsg.getString("ack") else ""
+        when(ack) {
+            "ACTIVE" -> {
+                val applicationId = jsonMsg.getJSONObject("app").getLong("application_id")
+                val application = findById(applicationId)
+                logger.info("Activating application with id [{}]", applicationId)
+                repository.updateApplicationStatus(applicationId, ApplicationStatus.ACTIVE)
+                val inputTopicName = jsonMsg
+                    .getJSONObject("app")
+                    .getJSONObject("input")
+                    .getJSONObject("source")
+                    .getString("topic")
+                repository.updateTopicName(applicationId, inputTopicName)
+                logger.info("Application topic updated")
+                application.ifPresent { applicationActiveListener[applicationId]?.invoke(it) }
+            }
+            "DELETED" -> {
+                val applicationId = jsonMsg.getLong("app_id")
+                repository.deleteById(applicationId)
+                applicationDeletedListener[applicationId]?.invoke(Unit)
+                logger.info("Application with id $applicationId successfully deleted")
+            }
         }
     }
 
-    fun findById(id: Long): Application =
-        repository.findById(id).orElseThrow { Exception("Application with id [$id] notapplication_id found") }
+    fun findById(id: Long): Optional<Application> = repository.findById(id)
 
     fun findByUserAndName(user: LogsightUser, applicationName: String): Optional<Application> =
         repository.findByUserAndName(user, applicationName)
 
+    fun deleteApplication(id: Long, callback: ((Unit)->Unit)) = findById(id).ifPresent { deleteApplication(it, callback) }
 
+    fun deleteApplication(id: Long) = findById(id).ifPresent { deleteApplication(it) }
 
-    fun deleteApplication(id: Long): Boolean {
-        logger.info("Deleting application with id [{}]", id)
-        try {
-            val application = findById(id)
-            kafkaService.applicationChange(application, ApplicationAction.DELETE)
-            repository.delete(application)
-            executor.submit { deleteKibanaPatterns(application) }
-        } catch (e: java.lang.Exception){
-            return false
-        }
+    suspend fun deleteApplicationAwait(app: Application): Unit = suspendCoroutine {
+        cont -> deleteApplication(app) { cont.resume(it) }
+    }
 
-        return true
+    fun deleteApplication(app: Application, callback: ((Unit)->Unit)) {
+        applicationDeletedListener[app.id] = callback
+        deleteApplication(app)
+    }
+
+    fun deleteApplication(app: Application) {
+        logger.info("Set state of application $app to deleting")
+        kafkaService.applicationChange(app, ApplicationAction.DELETE)
+        executor.submit { deleteKibanaPatterns(app) }
     }
 
     fun deleteKibanaPatterns(application: Application){

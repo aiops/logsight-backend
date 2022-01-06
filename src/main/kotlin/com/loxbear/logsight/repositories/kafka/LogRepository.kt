@@ -48,12 +48,17 @@ class LogRepository(
         appID: Long,
         logType: LogFileTypes,
         logs: Collection<LogMessage>
-    ): Unit = userService.findByEmail(authMail).map { user ->
-        val appName = applicationService.findById(appID).name
-        val inputTopicName = applicationService.findById(appID).inputTopicName
-        val messagesKafka = createKafkaMessages(user.key, appName, logType.toString().toLowerCase(), logs)
-        messagesKafka.forEach { sendToKafka(inputTopicName, jsonFormat.encodeToString(it)) }
-    }.orElseThrow()
+    ){
+        val user = userService.findByEmail(authMail)
+        val app = applicationService.findById(appID)
+        if(user.isPresent && app.isPresent){
+            log.info("Sending ${logs.size} log messages to kafka topic ${app.get().inputTopicName}")
+            val messagesKafka = createKafkaMessages(user.get().key, app.get().name, logType.toString().toLowerCase(), logs)
+            messagesKafka.forEach { sendToKafka(app.get().inputTopicName, jsonFormat.encodeToString(it)) }
+        } else {
+            log.warning("Failed to send ${logs.size} to kafka")
+        }
+    }
 
     private fun createKafkaMessages (
         privateKey: String,

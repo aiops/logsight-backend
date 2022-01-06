@@ -28,7 +28,7 @@ class VariableAnalysisController(
         authentication: Authentication
     ): List<VariableAnalysisHit> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
-        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application.orElse(null), user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
         variableAnalysisService.getTemplates(
             applicationsIndexes,
@@ -50,7 +50,7 @@ class VariableAnalysisController(
     ): Pair<String, List<LineChart>> = userService.findByEmail(authentication.name).map { user ->
         specificTemplate.template = specificTemplate.template.replace("\"","\\\"")
         val application = applicationService.findById(id)
-        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application.orElse(null), user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime)
         with(specificTemplate) {
             variableAnalysisService.getSpecificTemplateGrouped(
@@ -74,7 +74,7 @@ class VariableAnalysisController(
         @RequestParam endTime: String,
     ): Map<String, List<TopNTemplatesData>> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
-        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application.orElse(null), user.key)
         variableAnalysisService.getTopNTemplates(applicationsIndexes, user, startTime, endTime)
     }.orElse(emptyMap())
 
@@ -86,7 +86,7 @@ class VariableAnalysisController(
         authentication: Authentication
     ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(id)
-        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application, user.key)
+        val applicationsIndexes = variableAnalysisService.getApplicationIndex(application.orElse(null), user.key)
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         variableAnalysisService.getLogCountLineChart(applicationsIndexes, startTime, endTime, user, intervalAggregate)
     }.orElse(listOf())
