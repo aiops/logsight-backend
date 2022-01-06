@@ -3,6 +3,7 @@ package com.loxbear.logsight.entities
 import com.loxbear.logsight.entities.enums.ApplicationStatus
 import javax.persistence.*
 
+
 @Entity
 @Table(name = "applications")
 data class Application(

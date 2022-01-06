@@ -83,13 +83,13 @@ class FastTryController(
                 for (i in applicationService.findAllByUser(user)){
                     if (i.name.contains("logsight_fast_try_app")){
                         logger.info("The user with email $email had previously tried quickstart. Deleting all previous data...")
-                        applicationService.deleteApplication(i.id)
+                        suspend { applicationService.deleteApplicationAwait(i) }
                         logger.info("The user with email $email had previously tried quickstart. Application deleted")
                     }
                 }
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
 
-                executor.submit { processRequest(user, user.password, fileContent, logFileType, loginLinkTry, false) }
+                suspend { processRequest(user, user.password, fileContent, logFileType, loginLinkTry, false) }
             }
         }else{
             val passwd = utils.KeyGenerator.generate()
@@ -126,12 +126,11 @@ class FastTryController(
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
 
-                executor.submit { processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true) }
+                suspend { processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true) }
             }
         }
         logger.info("Returning response back to the user with email $email ")
         return FastTryResponse(id, key, kibanaPersonalUrl)
-
     }
 
 
@@ -142,57 +141,46 @@ class FastTryController(
         executor.shutdown()
     }
 
-    fun processRequest(user: LogsightUser, password: String, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
+    suspend fun processRequest(user: LogsightUser, password: String, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
         if (isNew){
             logger.info("Creating application for ${user.email}")
-            val application = applicationService.createApplication("logsight_fast_try_app", user= user)
-            logger.info("Sleeping 30 seconds")
-            Thread.sleep(30000)
-            logger.info("Uploading file")
-            application?.id?.let {uploadFile(user, it, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase())) }
-            logger.info("Sleeping 40 seconds")
-            Thread.sleep(40000)
-            logger.info("Updating kibana patterns")
-            applicationService.updateKibanaPatterns(user)
-            logger.info("${user.email}, $kibanaPersonalUrl")
-            emailService.sendMimeEmail(
-                Email(
-                    mailTo = user.email,
-                    sub = "logsight.ai Quickstart Insights",
-                    body = authService.getRegisterTryBody(
-                        "welcomeEmail",
-                        "logsight.ai Quickstart Insights",
-                        password,
-                        URL(URL(kibanaPersonalUrl), "")
+            applicationService.createApplication("logsight_fast_try_app", user= user){
+                uploadFile(user, it.id, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase()))
+                applicationService.updateKibanaPatterns(user)
+                logger.info("${user.email}, $kibanaPersonalUrl")
+                emailService.sendMimeEmail(
+                    Email(
+                        mailTo = user.email,
+                        sub = "logsight.ai Quickstart Insights",
+                        body = authService.getRegisterTryBody(
+                            "welcomeEmail",
+                            "logsight.ai Quickstart Insights",
+                            password,
+                            URL(URL(kibanaPersonalUrl), "")
+                        )
                     )
                 )
-            )
-            logger.info("Sending email to the user with email ${user.email}")
+                logger.info("Sending email to the user with email ${user.email}")
+            }
         }else{
-            logger.info("Sleeping for 30 seconds for apps to be deleted.")
-            Thread.sleep(30000)
-            val application = applicationService.createApplication("logsight_fast_try_app", user= user)
-            Thread.sleep(30000)
-            logger.info("Uploading file")
-            application?.id?.let {uploadFile(user, it, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase())) }
-            logger.info("Sleeping 40 seconds")
-            Thread.sleep(40000)
-            logger.info("Updating kibana patterns")
-            applicationService.updateKibanaPatterns(user)
-            logger.info("Finished updating kibana patterns")
-            logger.info("${user.email}, $kibanaPersonalUrl")
-            emailService.sendMimeEmail(
-                Email(
-                    mailTo = user.email,
-                    sub = "logsight.ai Quickstart Insights",
-                    body = authService.getRegisterTryBody(
-                        "logsightLiteInsights",
-                        "logsight.ai Quickstart Insights",
-                        user.password,
-                        URL(URL(kibanaPersonalUrl), "")
+            applicationService.createApplication("logsight_fast_try_app", user= user){
+                uploadFile(user, it.id, fileContent, LogFileTypes.valueOf(logFileType.toUpperCase()))
+                applicationService.updateKibanaPatterns(user)
+                logger.info("Finished updating kibana patterns")
+                logger.info("${user.email}, $kibanaPersonalUrl")
+                emailService.sendMimeEmail(
+                    Email(
+                        mailTo = user.email,
+                        sub = "logsight.ai Quickstart Insights",
+                        body = authService.getRegisterTryBody(
+                            "logsightLiteInsights",
+                            "logsight.ai Quickstart Insights",
+                            user.password,
+                            URL(URL(kibanaPersonalUrl), "")
+                        )
                     )
                 )
-            )
+            }
         }
     }
 

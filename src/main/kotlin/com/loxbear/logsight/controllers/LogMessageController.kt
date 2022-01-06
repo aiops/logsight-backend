@@ -1,13 +1,17 @@
 package com.loxbear.logsight.controllers
 
+import com.loxbear.logsight.entities.Application
+import com.loxbear.logsight.entities.enums.ApplicationAction
 import com.loxbear.logsight.entities.enums.ApplicationStatus
 import com.loxbear.logsight.entities.enums.LogFileTypes
 import com.loxbear.logsight.models.ApplicationResponse
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.models.log.LogMessage
 import com.loxbear.logsight.services.ApplicationService
+import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.LogService
 import com.loxbear.logsight.services.UserService
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -23,13 +27,15 @@ import java.util.logging.Logger
 class LogMessageController(
     val logService: LogService,
     val applicationService: ApplicationService,
-    val userService: UserService
+    val userService: UserService,
+    val kafkaService: KafkaService
 ) {
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
 
-    val log: Logger = Logger.getLogger(LogMessageController::class.java.toString())
+    val logger: org.slf4j.Logger = LoggerFactory.getLogger(ApplicationService::class.java)
+
     private val executor = Executors.newSingleThreadExecutor()
     @PostMapping("/{userKey}/{applicationName}/send_logs")
     fun sendLogs(
@@ -72,11 +78,17 @@ class LogMessageController(
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<ApplicationResponse> {
         val user = userService.findByKey(userKey)
-        val timeWait = 5000
-        Thread.sleep(timeWait.toLong())
         val application = applicationService.findByUserAndName(user, applicationName).get()
-        val fileContent = file.inputStream.readBytes()
-        return uploadFile(authentication, application.id, fileContent.toString(Charsets.UTF_8), LogFileTypes.UNKNOWN_FORMAT)
+        val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
+        logService.processFileContent(authentication.name, application.id, fileContent, LogFileTypes.UNKNOWN_FORMAT)
+        return ResponseEntity(
+                ApplicationResponse(
+                    type="",
+                    title="",
+                    instance="",
+                    detail = "Data uploaded successfully.",
+                    status = HttpStatus.OK.value()), HttpStatus.OK
+        )
     }
 
     @PostMapping("/{userKey}/sample_data")
@@ -84,26 +96,44 @@ class LogMessageController(
         authentication: Authentication,
         @PathVariable userKey: String
     ): ResponseEntity<ApplicationResponse> {
-        val applicationNames = listOf<String>("hdfs_node", "name_node", "node_manager", "resource_manager")
-        val user = userService.findByKey(userKey)
-        val timeWait = 3000
+        val applicationNames = listOf("hdfs_node", "name_node", "node_manager", "resource_manager")
+
+        val user = try {
+            userService.findByKey(userKey)
+        } catch (e: NoSuchElementException) {
+            logger.error("User key $userKey does not exist:", e)
+            return ResponseEntity(HttpStatus.UNAUTHORIZED)
+        }
+
+
+        // Internal routine to upload data
+        fun uploadSampleData(app: Application){
+            logger.info("Uploading sample data for app $app")
+            val fileContent = File("${resourcesPath}sample_data/${app.name}")
+                .inputStream()
+                .readBytes()
+                .toString(Charsets.UTF_8)
+            logService.processFileContent(authentication.name, app.id, fileContent, LogFileTypes.UNKNOWN_FORMAT)
+        }
+
         for (appName in applicationNames){
-            try{
-                val application = applicationService.findByUserAndName(user, appName).get()
-                applicationService.deleteApplication(application.id)
-                Thread.sleep(timeWait.toLong())
-            }catch (e: Exception){
-            }
-            val application = applicationService.createApplication(appName, user)
-            Thread.sleep(timeWait.toLong())
-            val fileContent = File("${resourcesPath}sample_data/${appName}").inputStream().readBytes()
-            executor.submit {
-                if (application != null) {
-                    uploadFile(authentication, application.id, fileContent.toString(Charsets.UTF_8), LogFileTypes.UNKNOWN_FORMAT)
+            try {
+                val appOld = applicationService.findByUserAndName(user, appName)
+                if(appOld.isPresent) {
+                    applicationService.deleteApplication(appOld.get()){
+                        applicationService.createApplication(appName, user){
+                            uploadSampleData(it)
+                        }
+                    }
+                } else {
+                    applicationService.createApplication(appName, user){
+                        uploadSampleData(it)
+                    }
                 }
+            } catch (e: Exception) {
+                logger.error("Error while creating sample app $appName", e)
             }
         }
-        Thread.sleep(timeWait.toLong()*5)
         return ResponseEntity(
             ApplicationResponse(
                 type="",
@@ -113,24 +143,5 @@ class LogMessageController(
                 status = HttpStatus.OK.value()), HttpStatus.OK
         )
 
-    }
-
-    private fun uploadFile(
-        authentication: Authentication,
-        appID: Long,
-        fileContent: String,
-        type: LogFileTypes
-    ): ResponseEntity<ApplicationResponse>{
-
-
-        logService.processFileContent(authentication.name, appID, fileContent, type)
-        return ResponseEntity(
-            ApplicationResponse(
-                type="",
-                title="",
-                instance="",
-                detail = "Data uploaded successfully.",
-                status = HttpStatus.OK.value()), HttpStatus.OK
-        )
     }
 }

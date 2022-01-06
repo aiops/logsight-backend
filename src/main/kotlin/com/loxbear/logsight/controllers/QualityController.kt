@@ -32,7 +32,7 @@ class QualityController(
         @RequestParam(required = false) applicationId: Long?
     ): MutableList<LogQualityTable> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application?.orElse(null))
         val qualityData = qualityService.getLogQualityData(applicationsIndexes, startTime, endTime, user)
         qualityData
     }.orElse(mutableListOf())
@@ -45,7 +45,7 @@ class QualityController(
         @RequestParam(required = false) applicationId: Long?
     ): MutableList<LogQualityOverview> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application?.orElse(null))
         val qualityData = qualityService.getLogQualityOverview(applicationsIndexes, startTime, endTime, user)
         qualityData
     }.orElse(mutableListOf())
@@ -59,7 +59,7 @@ class QualityController(
         @RequestParam(required = false) applicationId: Long?
     ): HttpStatus = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application)
+        val applicationsIndexes = applicationService.getApplicationIndexesForQuality(user, application?.orElse(null))
         qualityService.computeLogQuality(applicationsIndexes, startTime, endTime, user)
     }.orElse(HttpStatus.BAD_REQUEST)
 

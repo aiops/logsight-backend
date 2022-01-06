@@ -1,20 +1,18 @@
 package com.loxbear.logsight.controllers
 
 import com.loxbear.logsight.entities.enums.LogFileTypes
-import com.loxbear.logsight.models.*
+import com.loxbear.logsight.models.Application
+import com.loxbear.logsight.models.ApplicationRequest
+import com.loxbear.logsight.models.ApplicationResponse
+import com.loxbear.logsight.models.IdResponse
 import com.loxbear.logsight.models.log.LogFileType
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.postForEntity
-import utils.UtilsService
 
 
 @RestController
@@ -26,13 +24,12 @@ class ApplicationController(
 ) {
 
 
-
     @GetMapping("")
     fun getApplications(
         authentication: Authentication,
     ): ResponseEntity<Any> {
         val user = userService.findByEmail(authentication.name)
-        if(user.isEmpty)
+        if (user.isEmpty)
             return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
         return ResponseEntity(applicationService.findAllByUser(user.get()), HttpStatus.OK)
     }
@@ -43,7 +40,7 @@ class ApplicationController(
         @PathVariable appName: String
     ): ResponseEntity<Any> {
         val user = userService.findByEmail(authentication.name)
-        if(user.isEmpty)
+        if (user.isEmpty)
             return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
         val app = applicationService.findByUserAndName(user.get(), appName)
         if (app.isEmpty)
@@ -52,12 +49,12 @@ class ApplicationController(
     }
 
     @PostMapping("/create")
-    fun createApplication(
+    suspend fun createApplication(
         @RequestBody body: ApplicationRequest,
     ): ResponseEntity<Any> {
         val user = try {
             userService.findByKey(body.key)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             return ResponseEntity(
                 ApplicationResponse(
                     type = "Error",
@@ -82,7 +79,7 @@ class ApplicationController(
                 HttpStatus.BAD_REQUEST
             )
         }
-        val app = applicationService.createApplication(body.name, user)
+        val app = applicationService.createApplicationAwaitActive(body.name, user)
         return if (app != null) {
             ResponseEntity(
                 IdResponse(
@@ -97,7 +94,7 @@ class ApplicationController(
                     type = "Error",
                     title = "Application name already exists or invalid.",
                     status = HttpStatus.BAD_REQUEST.value(),
-                    detail =  "Please choose another name. The application already exists or incorrect name. " +
+                    detail = "Please choose another name. The application already exists or incorrect name. " +
                             "The name of the application should contain only numbers and lowercase letters. " +
                             "Special signs are not allowed(except underscore)!",
                     instance = "api/applications/create"
@@ -111,9 +108,11 @@ class ApplicationController(
         authentication: Authentication
     ): ResponseEntity<Any> = userService.findByEmail(authentication.name).let { userOpt ->
         userOpt.ifPresent { user ->
-            applicationService.createApplication("compute_sample_app", user)
-            applicationService.createApplication("auth_sample_app", user)
-            applicationService.createApplication("auth2_sample_app", user)
+            suspend {
+                applicationService.createApplicationAwaitActive("compute_sample_app", user)
+                applicationService.createApplicationAwaitActive("auth_sample_app", user)
+                applicationService.createApplicationAwaitActive("auth2_sample_app", user)
+            }
         }
         if (userOpt.isPresent)
             ResponseEntity(HttpStatus.OK)
@@ -126,7 +125,7 @@ class ApplicationController(
     fun getApplicationsForUser(@PathVariable key: String): Any {
         try {
             val user = userService.findByKey(key)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             return ResponseEntity(
                 ApplicationResponse(
                     type = "Error",
@@ -171,36 +170,22 @@ class ApplicationController(
                         type = "Error",
                         title = "User does not exist or not authenticated",
                         status = HttpStatus.BAD_REQUEST.value(),
-                        detail =  "User is not authenticated or the user does not exist!",
+                        detail = "User is not authenticated or the user does not exist!",
                         instance = "api/applications/delete"
-                    )
-                   , HttpStatus.BAD_REQUEST
+                    ), HttpStatus.BAD_REQUEST
                 )
             }
         }
-        return if (applicationService.deleteApplication(id)) {
-            ResponseEntity(
-                ApplicationResponse(
-                    type = "",
-                    title = "",
-                    status = HttpStatus.OK.value(),
-                    detail =  "Application deleted successfully.",
-                    instance = "api/applications/delete"
-                )
-                , HttpStatus.OK
-            )
-        } else {
-            ResponseEntity(
-                ApplicationResponse(
-                    type = "Error",
-                    title = "Application does not exist.",
-                    status = HttpStatus.NOT_FOUND.value(),
-                    detail =  "Application with the provided ID does not exists.",
-                    instance = "api/applications/delete"
-                )
-                , HttpStatus.NOT_FOUND
-            )
-        }
+        applicationService.deleteApplication(id)
+        return ResponseEntity(
+            ApplicationResponse(
+                type = "",
+                title = "",
+                status = HttpStatus.OK.value(),
+                detail = "Application deleted successfully.",
+                instance = "api/applications/delete"
+            ), HttpStatus.OK
+        )
     }
 
     @GetMapping("/logFileFormats")
