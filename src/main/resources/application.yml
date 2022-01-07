@@ -10,10 +10,7 @@ spring:
   kafka:
     bootstrap-servers: kafka:9092
     consumer:
-      group-id: 1
-      properties:
-        group:
-          id: 1
+      group-id: "default"
 
   servlet:
     multipart:

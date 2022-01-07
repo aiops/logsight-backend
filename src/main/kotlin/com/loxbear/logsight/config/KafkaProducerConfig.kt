@@ -21,7 +21,7 @@ class KafkaProducerConfig(
     @Bean
     fun producerFactory(): ProducerFactory<String, String> {
         val props: MutableMap<String, Any> = HashMap(kafkaProperties.buildProducerProperties())
-        props[ConsumerConfig.GROUP_ID_CONFIG] = 1
+        props[ProducerConfig.ACKS_CONFIG] = "all"
         props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         return DefaultKafkaProducerFactory(props)
