@@ -28,6 +28,8 @@ class LogRepository(
 
     val jsonFormat = Json{}
 
+    var ack = 0
+
     fun logToKafka(
         userKey: String,
         authMail: String,
@@ -55,6 +57,9 @@ class LogRepository(
             log.info("Sending ${logs.size} log messages to kafka topic ${app.get().inputTopicName}")
             val messagesKafka = createKafkaMessages(user.get().key, app.get().name, logType.toString().toLowerCase(), logs)
             messagesKafka.forEach { sendToKafka(app.get().inputTopicName, jsonFormat.encodeToString(it)) }
+            kafkaTemplate.flush()
+            log.info("Ack messages: $ack")
+            ack = 0
         } else {
             log.warning("Failed to send ${logs.size} to kafka")
         }
@@ -74,7 +79,8 @@ class LogRepository(
 
         future.addCallback(object : ListenableFutureCallback<SendResult<String, String>> {
             override fun onSuccess(result: SendResult<String, String>?) {
-                log.fine("Successfully send message to kafka topic $topicName: $message")
+                ack++
+                log.finer("Successfully send message to kafka topic $topicName: $message")
             }
 
             override fun onFailure(ex: Throwable) {

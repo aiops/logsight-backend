@@ -36,7 +36,6 @@ class LogMessageController(
 
     val logger: org.slf4j.Logger = LoggerFactory.getLogger(ApplicationService::class.java)
 
-    private val executor = Executors.newSingleThreadExecutor()
     @PostMapping("/{userKey}/{applicationName}/send_logs")
     fun sendLogs(
         authentication: Authentication,
@@ -96,7 +95,7 @@ class LogMessageController(
         authentication: Authentication,
         @PathVariable userKey: String
     ): ResponseEntity<ApplicationResponse> {
-        val applicationNames = listOf("hdfs_node", "name_node", "node_manager", "resource_manager")
+        val applicationNames = listOf("hdfs_node", "node_manager", "resource_manager", "name_node")
 
         val user = try {
             userService.findByKey(userKey)
