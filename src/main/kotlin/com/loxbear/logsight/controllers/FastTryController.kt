@@ -83,7 +83,7 @@ class FastTryController(
                 for (i in applicationService.findAllByUser(user)){
                     if (i.name.contains("logsight_fast_try_app")){
                         logger.info("The user with email $email had previously tried quickstart. Deleting all previous data...")
-                        suspend { applicationService.deleteApplicationAwait(i) }
+                        applicationService.deleteApplication(i)
                         logger.info("The user with email $email had previously tried quickstart. Application deleted")
                     }
                 }
@@ -126,7 +126,7 @@ class FastTryController(
                 restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
 
-                suspend { processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true) }
+                processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true)
             }
         }
         logger.info("Returning response back to the user with email $email ")
@@ -141,7 +141,7 @@ class FastTryController(
         executor.shutdown()
     }
 
-    suspend fun processRequest(user: LogsightUser, password: String, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
+    fun processRequest(user: LogsightUser, password: String, fileContent: String, logFileType: String, kibanaPersonalUrl: String, isNew: Boolean) {
         if (isNew){
             logger.info("Creating application for ${user.email}")
             applicationService.createApplication("logsight_fast_try_app", user= user){

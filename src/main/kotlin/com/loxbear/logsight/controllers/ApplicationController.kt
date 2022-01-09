@@ -79,7 +79,7 @@ class ApplicationController(
                 HttpStatus.BAD_REQUEST
             )
         }
-        val app = applicationService.createApplicationAwaitActive(body.name, user)
+        val app = applicationService.createApplication(body.name, user)
         return if (app != null) {
             ResponseEntity(
                 IdResponse(
@@ -109,9 +109,9 @@ class ApplicationController(
     ): ResponseEntity<Any> = userService.findByEmail(authentication.name).let { userOpt ->
         userOpt.ifPresent { user ->
             suspend {
-                applicationService.createApplicationAwaitActive("compute_sample_app", user)
-                applicationService.createApplicationAwaitActive("auth_sample_app", user)
-                applicationService.createApplicationAwaitActive("auth2_sample_app", user)
+                applicationService.createApplication("compute_sample_app", user)
+                applicationService.createApplication("auth_sample_app", user)
+                applicationService.createApplication("auth2_sample_app", user)
             }
         }
         if (userOpt.isPresent)
