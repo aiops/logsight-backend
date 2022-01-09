@@ -53,10 +53,6 @@ class ApplicationService(
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
 
-    suspend fun createApplicationAwaitActive(name: String, user: LogsightUser): Application? = suspendCoroutine {
-            cont -> createApplication(name, user) { cont.resume(it) }
-    }
-
     fun createApplication(name: String, user: LogsightUser, callback: ((Application)->Unit)): Application? {
         val application = _createApplication(name, user)
         application?.let {
@@ -220,10 +216,6 @@ class ApplicationService(
     fun deleteApplication(id: Long, callback: ((Unit)->Unit)) = findById(id).ifPresent { deleteApplication(it, callback) }
 
     fun deleteApplication(id: Long) = findById(id).ifPresent { deleteApplication(it) }
-
-    suspend fun deleteApplicationAwait(app: Application): Unit = suspendCoroutine {
-        cont -> deleteApplication(app) { cont.resume(it) }
-    }
 
     fun deleteApplication(app: Application, callback: ((Unit)->Unit)) {
         applicationDeletedListener[app.id] = callback
