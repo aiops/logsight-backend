@@ -77,9 +77,15 @@ class LogMessageController(
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<ApplicationResponse> {
         val user = userService.findByKey(userKey)
-        val application = applicationService.findByUserAndName(user, applicationName).get()
         val fileContent = file.inputStream.readBytes().toString(Charsets.UTF_8)
-        logService.processFileContent(authentication.name, application.id, fileContent, LogFileTypes.UNKNOWN_FORMAT)
+        val application = applicationService.findByUserAndName(user, applicationName)
+        if (application.isPresent){
+            logService.processFileContent(authentication.name, application.get().id, fileContent, LogFileTypes.UNKNOWN_FORMAT)
+        }else{
+            applicationService.createApplication(applicationName, user){
+                logService.processFileContent(authentication.name, it.id, fileContent, LogFileTypes.UNKNOWN_FORMAT)
+            }
+        }
         return ResponseEntity(
                 ApplicationResponse(
                     type="",
