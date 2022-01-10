@@ -11,4 +11,6 @@ interface UserStorageService {
     fun activateUser(activateUserCommand: ActivateUserCommand): User
     fun changePassword(changePasswordCommand: ChangePasswordCommand): User
     fun getUserById(userId: UUID): User
+    fun findUserByEmail(email: String): User
+    fun saveUser(user: User): User
 }

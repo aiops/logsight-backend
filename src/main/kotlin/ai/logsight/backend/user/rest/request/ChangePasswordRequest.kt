@@ -8,8 +8,8 @@ data class ChangePasswordRequest(
     val email: String,
 
     @get:Size(min = 8)
-    val oldPassword: String,
+    val newPassword: String,
 
     @get:Size(min = 8)
-    val newPassword: String
+    val confirmNewPassword: String
 )

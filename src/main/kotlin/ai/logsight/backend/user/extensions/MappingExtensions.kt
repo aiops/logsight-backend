@@ -24,3 +24,16 @@ fun UserEntity.toUser() = User(
     dateCreated = this.dateCreated ?: LocalDateTime.now()
 )
 
+fun User.toUserEntity() = UserEntity(
+    id = this.id,
+    email = this.email,
+    password = this.password,
+    privateKey = this.privateKey,
+    activationDate = this.activationDate,
+    activated = this.activated,
+    usedData = this.usedData,
+    approachingLimit = this.approachingLimit,
+    availableData = this.availableData,
+    hasPaid = this.hasPaid,
+    dateCreated = this.dateCreated
+)

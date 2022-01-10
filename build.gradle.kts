@@ -36,6 +36,7 @@ dependencies {
 //    implementation("org.liquibase:liquibase-core")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation("junit:junit:4.13.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
