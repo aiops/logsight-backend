@@ -24,8 +24,17 @@ class UserServiceImpl(
         val savedUser = userStorageService.createUser(createUserCommand)
         // generate token
         val activationToken = tokenService.createActivationToken(savedUser.id)
+
+
+        // build URL with create user activation path
+//        val uri = activateDTO.appMetaConfig.url
+//            .toURI()
+//            .resolve("/auth/login/${activateDTO.user_uuid}/${activateDTO.token}")
+//            .toURL()
+//            .toString()
+
         // send email with token
-        emailService.sendActivationEmail(activationToken, savedUser)
+        //emailService.sendActivationEmail(activationToken, savedUser)
         // return user domain object
         return savedUser
     }

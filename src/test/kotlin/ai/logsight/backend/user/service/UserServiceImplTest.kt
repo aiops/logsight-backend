@@ -1,14 +1,11 @@
 package ai.logsight.backend.user.service
 
 import ai.logsight.backend.email.service.EmailService
-import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.token.service.TokenServiceImpl
 import ai.logsight.backend.user.persistence.UserRepository
 import ai.logsight.backend.user.service.command.CreateUserCommand
 import io.mockk.every
-import io.mockk.mockk
 import io.mockk.verify
-import org.aspectj.lang.annotation.Before
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -16,8 +13,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
-import javax.mail.internet.MimeMessage
-
 
 @DisplayName("User Management Unit tests")
 @SpringBootTest
@@ -26,7 +21,7 @@ internal class UserServiceImplTest @Autowired constructor(
     val userRepository: UserRepository,
     val emailService: EmailService,
 
-    ) {
+) {
 
     companion object {
         @JvmStatic
@@ -41,14 +36,13 @@ internal class UserServiceImplTest @Autowired constructor(
         @DirtiesContext
         fun `should create a user`() {
             // given
-            val createUserCommand = CreateUserCommand(email = email, password = password )
-            //when
+            val createUserCommand = CreateUserCommand(email = email, password = password)
+            // when
             val createdUser = user.createUser(userEntity)
 
-            //then
+            // then
             verify(exactly = 1) { repository.saveAndFlush(userEntity) }
             assertThat(user.email).isEqualTo(createdUser.email)
-
         }
 
         @Test
@@ -58,12 +52,11 @@ internal class UserServiceImplTest @Autowired constructor(
             every { repository.findByEmail(email) } returns userEntity
             every { repository.saveAndFlush(userEntity) } returns userEntity
 
-            //when
+            // when
 
-            //then
+            // then
             assertThrows(EmailExistsException::class.java) { userService.createUser(userEntity) }
         }
-
     }
 
     @Nested
@@ -74,12 +67,11 @@ internal class UserServiceImplTest @Autowired constructor(
             // given
             every { repository.findByEmail(email) } returns userEntity
 
-            //when
+            // when
             userService.findByEmail(email)
 
-            //then
+            // then
             verify(exactly = 1) { repository.findByEmail(email) }
-
         }
 
         @Test
@@ -87,10 +79,9 @@ internal class UserServiceImplTest @Autowired constructor(
             // given
             every { repository.findByEmail(email) } returns null
 
-            //when
+            // when
 
-
-            //then
+            // then
             assertThrows(UserNotFoundException::class.java) { userService.findByEmail(email) }
         }
     }
@@ -102,11 +93,11 @@ internal class UserServiceImplTest @Autowired constructor(
         fun `should modify user`() {
             // given
             every { repository.save(userEntity) } returns userEntity
-            //when
+            // when
             userEntity.activated = false
             val activated = userService.activateUser(userEntity)
 
-            //then
+            // then
             verify(exactly = 1) { repository.save(userEntity) }
             assertThat(activated.activated).isTrue
         }
@@ -117,12 +108,9 @@ internal class UserServiceImplTest @Autowired constructor(
             // given
             every { repository.save(userEntity) } returns userEntity
             userEntity.activated = true
-            //when
-            //then
+            // when
+            // then
             assertThrows(UserAlreadyActivatedException::class.java) { userService.activateUser(userEntity) }
         }
-
     }
-
-
 }

@@ -15,5 +15,4 @@ data class User(
     val approachingLimit: Boolean,
     val availableData: Long,
     val activated: Boolean
-
 )
