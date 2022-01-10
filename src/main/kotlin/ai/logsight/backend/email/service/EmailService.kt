@@ -4,13 +4,10 @@ import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.email.domain.Email
 import ai.logsight.backend.email.service.dto.ActivateUserEmailDTO
 import ai.logsight.backend.email.service.dto.ResetPasswordEmailDTO
-import ai.logsight.backend.token.domain.Token
-import ai.logsight.backend.user.domain.User
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
-import java.net.URL
 
 @Service
 class EmailService(
@@ -67,6 +64,7 @@ class EmailService(
             body = emailBody
         )
 
+        // send email
         mailSender.send(email.getMimeMessage(mailSender.createMimeMessage()))
     }
 }

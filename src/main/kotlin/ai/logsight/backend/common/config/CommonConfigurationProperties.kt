@@ -6,10 +6,10 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import javax.validation.constraints.Email
 
 @ConstructorBinding
-@ConfigurationProperties(prefix = "application-config")
+@ConfigurationProperties(prefix = "common-config")
 data class CommonConfigurationProperties(
     @URL
-    val baseURL: java.net.URL,
+    val baseURL: java.net.URI,
     @Email
     val logsightEmail: String
 )

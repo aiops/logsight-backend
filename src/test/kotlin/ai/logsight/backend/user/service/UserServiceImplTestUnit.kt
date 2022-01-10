@@ -154,7 +154,4 @@ internal class UserServiceImplTestUnit {
             assertThrows(PasswordsNotMatchException::class.java) { userStorageImpl.changePassword(changePasswordCommand) }
         }
     }
-
-
-
 }
