@@ -7,7 +7,7 @@ data class User(
     val id: UUID,
     val privateKey: String,
     val email: String,
-    val password: String,
+    var password: String,
     val dateCreated: LocalDateTime,
     val activationDate: LocalDateTime,
     val hasPaid: Boolean,

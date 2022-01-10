@@ -1,8 +1,8 @@
 package ai.logsight.backend.token.service
 
+import ai.logsight.backend.exceptions.TokenNotFoundException
 import ai.logsight.backend.token.config.TokenConfigurationProperties
 import ai.logsight.backend.token.domain.Token
-import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.token.extensions.toToken
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository

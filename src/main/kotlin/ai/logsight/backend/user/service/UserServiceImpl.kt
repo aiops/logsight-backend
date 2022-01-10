@@ -2,18 +2,15 @@ package ai.logsight.backend.user.service
 
 import ai.logsight.backend.email.service.EmailService
 import ai.logsight.backend.exceptions.InvalidTokenException
+import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.user.domain.User
 import ai.logsight.backend.user.persistence.UserStorageService
+import ai.logsight.backend.user.service.command.* // ktlint-disable no-wildcard-imports // ktlint-disable no-unused-imports
 import ai.logsight.backend.user.service.command.ActivateUserCommand
-import ai.logsight.backend.user.service.command.ChangePasswordCommand
-import ai.logsight.backend.user.service.command.CreateUserCommand
-import ai.logsight.backend.user.service.command.ResetPasswordCommand
 import org.springframework.stereotype.Service
-import org.springframework.validation.annotation.Validated
 
 @Service
-@Validated
 class UserServiceImpl(
     private val userStorageService: UserStorageService,
     private val tokenService: TokenService,
@@ -39,6 +36,9 @@ class UserServiceImpl(
         return savedUser
     }
 
+    /**
+     * Activate the user given the activation link.
+     */
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
         val activationToken = tokenService.findTokenById(activateUserCommand.activationToken)
         // check activation token
@@ -53,16 +53,31 @@ class UserServiceImpl(
         return userStorageService.changePassword(changePasswordCommand)
     }
 
-    override fun resetPassword(resetPasswordCommand: ResetPasswordCommand): User {
+    /**
+     * Validate the token and change the user password.
+     */
+    override fun resetPasswordWithToken(resetPasswordCommand: ResetPasswordCommand): User {
+        // check if token exists in DB
         val passwordResetToken = tokenService.findTokenById(resetPasswordCommand.passwordResetToken)
-        // check activation token
+        // Check if matches user and not expired
         val validToken = tokenService.checkActivationToken(passwordResetToken)
-        // check token validity
         if (!validToken) throw InvalidTokenException()
 
-        val user = userStorageService.getUserById(resetPasswordCommand.userId)
-        // send email
-        // TODO: 07.01.22 Implement email
-        return user
+        // Validate password
+        if (resetPasswordCommand.password == resetPasswordCommand.repeatPassword) {
+            val user = userStorageService.findUserByEmail(resetPasswordCommand.email)
+            user.password = resetPasswordCommand.password
+            return userStorageService.saveUser(user)
+        }
+        throw PasswordsNotMatchException()
+    }
+
+    /**
+     * Create a password reset token and email the user.
+     */
+    override fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand) {
+        val user = userStorageService.findUserByEmail(createTokenCommand.email)
+        val passwordResetToken = tokenService.createPasswordResetToken(user.id)
+        emailService.sendPasswordResetEmail(passwordResetToken, user)
     }
 }
