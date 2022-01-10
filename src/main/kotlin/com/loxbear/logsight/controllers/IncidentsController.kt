@@ -27,7 +27,7 @@ class IncidentsController(
         @RequestParam endTime: String,
         @RequestParam numberOfIncidents: Int,
         @RequestParam(required = false) applicationId: Long?
-    ): List<TopKIncidentTable> = userService.findByEmail(authentication.name).map { user ->
+    ): List<TopKIncidentTable>? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application?.orElse(null))
         incidentsService.getTopKIncidentsTableData(
