@@ -1,4 +1,2 @@
-rootProject.name = "logsight"
-include("api")
-include("api")
-include("api")
+rootProject.name = "logsight-backend"
+include("application")
