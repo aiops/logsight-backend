@@ -1,5 +1,7 @@
 package ai.logsight.backend.token.service
 
+import ai.logsight.backend.exceptions.InvalidTokenTypeException
+import ai.logsight.backend.exceptions.TokenExpiredException
 import ai.logsight.backend.exceptions.TokenNotFoundException
 import ai.logsight.backend.token.config.TokenConfigurationProperties
 import ai.logsight.backend.token.domain.Token
@@ -47,11 +49,11 @@ class TokenServiceImpl(
     private fun checkToken(token: Token, tokenType: TokenType): Boolean {
         // validateAndDelete token
         if (token.tokenType != tokenType) {
-            return false
+            throw InvalidTokenTypeException()
         }
-        if (token.expiresAt.isAfter(LocalDateTime.now())) {
+        if (token.expiresAt.isBefore(LocalDateTime.now())) {
             tokenRepository.deleteById(token.token)
-            return false
+            throw TokenExpiredException()
         }
 
         tokenRepository.deleteById(token.token)
