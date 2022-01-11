@@ -1,8 +1,8 @@
 package ai.logsight.backend.user.service
 
 import ai.logsight.backend.common.config.CommonConfigurationProperties
-import ai.logsight.backend.email.service.EmailService
-import ai.logsight.backend.email.service.dto.ActivateUserEmailDTO
+import ai.logsight.backend.email.domain.EmailContext
+import ai.logsight.backend.email.service.EmailServiceImpl
 import ai.logsight.backend.exceptions.InvalidTokenException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.token.service.TokenService
@@ -14,14 +14,12 @@ import ai.logsight.backend.user.service.command.CreateTokenCommand
 import ai.logsight.backend.user.service.command.CreateUserCommand
 import ai.logsight.backend.user.service.command.ResetPasswordCommand
 import org.springframework.stereotype.Service
-import java.net.URI
 
 @Service
 class UserServiceImpl(
-    private val commonConfig: CommonConfigurationProperties,
     private val userStorageService: UserStorageService,
     private val tokenService: TokenService,
-    private val emailService: EmailService,
+    private val emailService: EmailServiceImpl,
 ) : UserService {
     override fun createUser(createUserCommand: CreateUserCommand): User {
         // create user
@@ -29,17 +27,9 @@ class UserServiceImpl(
         // generate token
         val activationToken = tokenService.createActivationToken(savedUser.id)
         // generate user activation URL
-        val activationURL = URI(
-            commonConfig.baseURL.scheme,
-            commonConfig.baseURL.authority,
-            commonConfig.baseURL.path,
-            "uuid=${savedUser.id}&token=$activationToken",
-            commonConfig.baseURL.fragment
-        ).resolve("/api/v1/user/activate").toURL() // TODO Can / should be this endpoint retrieved instead of hard-coded?
-        // create activation email dto
-        val activationEmailDTO = ActivateUserEmailDTO(savedUser.email, activationURL)
+        val emailContext = EmailContext(userEmail = savedUser.email, token = activationToken)
         // send email
-        emailService.sendActivationEmail(activationEmailDTO)
+        emailService.sendActivationEmail(emailContext)
         // return user domain object
         return savedUser
     }
@@ -86,6 +76,10 @@ class UserServiceImpl(
     override fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand) {
         val user = userStorageService.findUserByEmail(createTokenCommand.email)
         val passwordResetToken = tokenService.createPasswordResetToken(user.id)
-        // emailService.sendPasswordResetEmail(passwordResetToken, user)
+        val emailContext = EmailContext(
+            userEmail = user.email,
+            token = passwordResetToken,
+        )
+        emailService.sendPasswordResetEmail(emailContext)
     }
 }

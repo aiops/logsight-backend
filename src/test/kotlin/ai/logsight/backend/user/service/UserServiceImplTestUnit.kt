@@ -1,34 +1,29 @@
 package ai.logsight.backend.user.service
 
-import ai.logsight.backend.email.service.EmailService
+import ai.logsight.backend.email.service.EmailServiceImpl
 import ai.logsight.backend.token.domain.Token
 import ai.logsight.backend.token.persistence.TokenType
 import ai.logsight.backend.token.service.TokenServiceImpl
-import ai.logsight.backend.user.persistence.UserRepository
 import ai.logsight.backend.user.persistence.UserStorageService
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import io.mockk.mockk
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
+import org.junit.jupiter.api.TestInstance
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
 @ActiveProfiles("test")
-@SpringBootTest
-internal class UserServiceImplTestUnit @Autowired constructor(
-    private val tokenService: TokenServiceImpl,
-    val userRepository: UserRepository,
-    @Qualifier("test")
-    val emailService: EmailService
-) {
-    @Test
-    fun `should test services mocks`() {
-        // given
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+internal class UserServiceImplTestUnit {
+    private val tokenService: TokenServiceImpl = mockk()
+    private val emailService: EmailServiceImpl = mockk()
+    private val userStoreService: UserStorageService = mockk()
+
+    @BeforeAll
+    fun setup() {
         val activationToken = Token(
             userId = UUID.randomUUID(),
             tokenType = TokenType.PASSWORD_RESET_TOKEN,
@@ -36,6 +31,14 @@ internal class UserServiceImplTestUnit @Autowired constructor(
             expiresAt = LocalDateTime.now() + Duration.ofMinutes(15)
         )
         every { tokenService.checkActivationToken(activationToken) } returns true
+        every { tokenService.checkActivationToken(activationToken) } returns true
+        every { tokenService.checkActivationToken(activationToken) } returns true
+        every { tokenService.checkActivationToken(activationToken) } returns true
+    }
+
+    @Test
+    fun `should test services mocks`() {
+        // given
 
         // when
 
