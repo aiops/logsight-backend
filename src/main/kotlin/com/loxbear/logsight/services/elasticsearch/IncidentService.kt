@@ -33,13 +33,13 @@ class IncidentService(val repository: IncidentRepository, val applicationService
         JSONObject(repository.getTopKIncidentData(esIndexUserApp, startTime, stopTime, user.key)).getJSONObject("hits")
             .getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
-                var flag = false
-                val semanticData =  jsonData.getJSONObject("_source").getJSONArray("semantic_ad").forEach {
-                    val level = JSONObject(JSONArray(it.toString()).get(0).toString()).getString("actual_level")
-                    if(level != "INFO"){
-                        flag = true
-                    }
-                }
+                var flag = true
+//                val semanticData =  jsonData.getJSONObject("_source").getJSONArray("semantic_ad").forEach {
+//                    val level = JSONObject(JSONArray(it.toString()).get(0).toString()).getString("actual_level")
+//                    if(level != "INFO"){
+//                        flag = true
+//                    }
+//                }
                 if (flag == true){
                     dataList.add(
                         TopKIncidentTable(
