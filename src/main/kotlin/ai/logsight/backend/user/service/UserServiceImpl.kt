@@ -1,6 +1,5 @@
 package ai.logsight.backend.user.service
 
-import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.service.EmailServiceImpl
 import ai.logsight.backend.exceptions.InvalidTokenException
@@ -32,6 +31,10 @@ class UserServiceImpl(
         emailService.sendActivationEmail(emailContext)
         // return user domain object
         return savedUser
+    }
+
+    override fun createLocalUser(createUserCommand: CreateUserCommand): User {
+        return userStorageService.createLocalUser(createUserCommand)
     }
 
     /**

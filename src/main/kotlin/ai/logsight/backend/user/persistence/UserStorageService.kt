@@ -8,6 +8,7 @@ import java.util.UUID
 
 interface UserStorageService {
     fun createUser(createUserCommand: CreateUserCommand): User
+    fun createLocalUser(createUserCommand: CreateUserCommand): User
     fun activateUser(activateUserCommand: ActivateUserCommand): User
     fun changePassword(changePasswordCommand: ChangePasswordCommand): User
     fun getUserById(userId: UUID): User

@@ -1,5 +1,6 @@
 package ai.logsight.backend.user.rest
 
+import ai.logsight.backend.exceptions.EmailExistsException
 import ai.logsight.backend.user.rest.request.*
 import ai.logsight.backend.user.rest.response.ActivateUserResponse
 import ai.logsight.backend.user.rest.response.ChangePasswordResponse
@@ -8,6 +9,8 @@ import ai.logsight.backend.user.rest.response.ResetPasswordResponse
 import ai.logsight.backend.user.service.UserService
 import ai.logsight.backend.user.service.command.*
 import ai.logsight.backend.user.service.command.ActivateUserCommand
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -84,4 +87,16 @@ class UserController(
     fun resetUserPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         userService.generateForgotPasswordTokenAndSendEmail(CreateTokenCommand(forgotPasswordRequest.email))
     }
+
+    @EventListener
+    fun createSampleUser(event: ApplicationReadyEvent) {
+        println("Creating user")
+        try{
+            userService.createLocalUser(CreateUserCommand(email = "clientadmin@logsight.ai", password = "samplepassword"))
+        }catch (e: Exception){
+            println(e.message)
+        }
+        println("User created")
+    }
+
 }

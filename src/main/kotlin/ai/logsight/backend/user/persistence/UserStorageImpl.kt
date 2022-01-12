@@ -22,6 +22,13 @@ class UserStorageImpl(private val userRepository: UserRepository) : UserStorageS
         return savedEntity.toUser()
     }
 
+    override fun createLocalUser(createUserCommand: CreateUserCommand): User {
+        if (userRepository.findByEmail(createUserCommand.email).isPresent) throw EmailExistsException()
+        val userEntity = UserEntity(email = createUserCommand.email, password = createUserCommand.password, activated = true)
+        val savedEntity = userRepository.save(userEntity)
+        return savedEntity.toUser()
+    }
+
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
         val userEntity = userRepository.findByEmail(activateUserCommand.email).orElseThrow { UserNotFoundException() }
         userEntity.activated = true
