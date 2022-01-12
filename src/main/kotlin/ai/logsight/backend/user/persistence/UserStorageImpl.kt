@@ -42,7 +42,7 @@ class UserStorageImpl(private val userRepository: UserRepository) : UserStorageS
         return userRepository.save(userEntity).toUser()
     }
 
-    override fun getUserById(userId: UUID): User =
+    override fun findUserById(userId: UUID): User =
         userRepository.findById(userId).orElseThrow { UserNotFoundException() }.toUser()
 
     override fun findUserByEmail(email: String): User = userRepository
