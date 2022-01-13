@@ -10,5 +10,6 @@ interface UserService {
     fun activateUser(activateUserCommand: ActivateUserCommand): User
     fun changePassword(changePasswordCommand: ChangePasswordCommand): User
     fun resetPasswordWithToken(resetPasswordCommand: ResetPasswordCommand): User
+    fun findByEmail(email: String): User // fix this
     fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand)
 }

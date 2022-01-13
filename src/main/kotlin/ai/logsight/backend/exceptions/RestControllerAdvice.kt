@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import javax.naming.AuthenticationException
 
 @ControllerAdvice
 class RestControllerAdvice {
@@ -22,4 +23,14 @@ class RestControllerAdvice {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
+
+    @ExceptionHandler(AuthenticationException::class)
+    fun handleLogsightAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
+        val errorResponse =
+            ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
+    }
+
+
 }

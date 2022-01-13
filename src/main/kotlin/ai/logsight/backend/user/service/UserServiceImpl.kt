@@ -73,6 +73,10 @@ class UserServiceImpl(
         throw PasswordsNotMatchException()
     }
 
+    override fun findByEmail(email: String): User {
+        return userStorageService.findUserByEmail(email)
+    }
+
     /**
      * Create a password reset token and email the user.
      */

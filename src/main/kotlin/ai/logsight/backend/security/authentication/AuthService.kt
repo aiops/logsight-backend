@@ -1,7 +1,8 @@
 package ai.logsight.backend.security.authentication
 
+import ai.logsight.backend.security.authentication.domain.AuthenticationToken
+import ai.logsight.backend.user.service.command.CreateLoginCommand
+
 interface AuthService {
-    // define all methods
-//    fun generateAuthenticationToken()
-//    fun authenticateUser()
+    fun authenticateUser(createLoginCommand: CreateLoginCommand): AuthenticationToken
 }

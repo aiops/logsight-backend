@@ -1,25 +1,34 @@
 package ai.logsight.backend.user.rest
 
-import ai.logsight.backend.exceptions.EmailExistsException
+import ai.logsight.backend.encoder
+import ai.logsight.backend.security.authentication.AuthService
+import ai.logsight.backend.security.authentication.domain.AuthenticationToken
+import ai.logsight.backend.user.domain.User
 import ai.logsight.backend.user.rest.request.*
-import ai.logsight.backend.user.rest.response.ActivateUserResponse
-import ai.logsight.backend.user.rest.response.ChangePasswordResponse
-import ai.logsight.backend.user.rest.response.CreateUserResponse
-import ai.logsight.backend.user.rest.response.ResetPasswordResponse
+import ai.logsight.backend.user.rest.response.*
 import ai.logsight.backend.user.service.UserService
 import ai.logsight.backend.user.service.command.*
 import ai.logsight.backend.user.service.command.ActivateUserCommand
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
 @RequestMapping("/api/v1/user")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val authService: AuthService
 ) {
+
+    @GetMapping
+    fun getUser(authentication: Authentication): User {
+        return userService.findByEmail(authentication.name)
+    }
+
     /**
      * Register a new user in the system.
      */
@@ -28,7 +37,7 @@ class UserController(
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
         val createUserCommand = CreateUserCommand(
             email = createUserRequest.email,
-            password = createUserRequest.password
+            password = encoder().encode(createUserRequest.password)
         )
 
         val user = userService.createUser(createUserCommand)
@@ -84,19 +93,39 @@ class UserController(
      */
     @RequestMapping("/forgot-password", method = [RequestMethod.POST])
     @ResponseStatus(HttpStatus.OK)
-    fun resetUserPassword(forgotPasswordRequest: ForgotPasswordRequest) {
+    fun resetUserPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
         userService.generateForgotPasswordTokenAndSendEmail(CreateTokenCommand(forgotPasswordRequest.email))
+    }
+
+    /**
+     * login user (authenticate)
+     */
+
+    @PostMapping("/login")
+    fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): ResponseEntity<AuthenticationToken> {
+        println(loginUserRequest)
+        val token = authService.authenticateUser(
+            CreateLoginCommand(
+                email = loginUserRequest.email,
+                password = loginUserRequest.password
+            )
+        )
+        return ResponseEntity.ok().body(token)
     }
 
     @EventListener
     fun createSampleUser(event: ApplicationReadyEvent) {
         println("Creating user")
-        try{
-            userService.createLocalUser(CreateUserCommand(email = "clientadmin@logsight.ai", password = "samplepassword"))
-        }catch (e: Exception){
+        try {
+            userService.createLocalUser(
+                CreateUserCommand(
+                    email = "clientadmin@logsight.ai",
+                    password = encoder().encode("samplepassword")
+                )
+            )
+        } catch (e: Exception) {
             println(e.message)
         }
         println("User created")
     }
-
 }
