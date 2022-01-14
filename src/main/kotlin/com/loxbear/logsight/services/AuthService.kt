@@ -72,6 +72,7 @@ class AuthService(
                     )
                 ).let { user }
             } catch (e: Exception) {
+                log.warning(e.toString())
                 log.warning("Sending of the activation mail failed for user $user")
             }
         } else {

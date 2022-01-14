@@ -146,24 +146,24 @@ class AuthController(
         }
     }
 
-    @EventListener
-    fun createClientUser(event: ApplicationReadyEvent) {
-        if(webUserAccountBootstrap) {
-            while (true) {
-                println("creating initial user....")
-                Thread.sleep(5000)
-                try {
-                    authService.registerUser(
-                        UserRegisterForm("clientadmin@logsight.ai", "samplepassword")) ?: continue
-                    println("User creation was successful.")
-                    break
-                } catch (e: Exception) {
-                    println(e.message)
-                    continue
-                }
-            }
-            val user = userService.findByEmail("clientadmin@logsight.ai").get()
-            this.activateUser(UserActivateForm(id = user.id, key = user.key))
-        }
-    }
+//    @EventListener
+//    fun createClientUser(event: ApplicationReadyEvent) {
+//        if(webUserAccountBootstrap) {
+//            while (true) {
+//                println("creating initial user....")
+//                Thread.sleep(5000)
+//                try {
+//                    authService.registerUser(
+//                        UserRegisterForm("clientadmin@logsight.ai", "samplepassword")) ?: continue
+//                    println("User creation was successful.")
+//                    break
+//                } catch (e: Exception) {
+//                    println(e.message)
+//                    continue
+//                }
+//            }
+//            val user = userService.findByEmail("clientadmin@logsight.ai").get()
+//            this.activateUser(UserActivateForm(id = user.id, key = user.key))
+//        }
+//    }
 }
