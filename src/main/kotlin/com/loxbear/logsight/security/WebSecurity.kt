@@ -23,6 +23,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+            .antMatchers(HttpMethod.GET,"/api/log_compare/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/put/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/logs/**").permitAll()

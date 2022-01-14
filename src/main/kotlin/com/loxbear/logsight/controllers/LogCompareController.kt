@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.util.UriComponentsBuilder
 import utils.UtilsService
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 
 @RestController
 @RequestMapping("/api/log_compare")
@@ -29,7 +33,8 @@ class LogCompareController(
         @RequestParam(required = true) applicationId: Long?
     ): MutableList<String> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "log_ad")
+        val applicationsIndexes =
+            applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "log_ad")
         val applicationVersions = logCompareService.getApplicationVersions(applicationsIndexes, user)
         applicationVersions
     }.orElse(mutableListOf())
@@ -38,75 +43,31 @@ class LogCompareController(
     fun trainLogCompareModel(
         authentication: Authentication,
         @RequestParam(required = true) applicationId: Long?,
-        @RequestParam baselineTagId: String,
-        @RequestParam compareTagId: String
-    ): JSONObject {
-        return JSONObject(
-            """{
-  "risk": "80",
-  "total_n_log_messages": "5000",
-  "count_baseline": "2500",
-  "candidate_perc": "1",
-  "added_states": "5",
-  "added_states_info": "3",
-  "added_states_fault": "2",
-  "deleted_states": "10",
-  "deleted_states_info": "5",
-  "deleted_states_fault": "5",
-  "reccuring_states": "8",
-  "recurring_states_info": "3",
-  "recurring_states_fault": "5",
-  "frequency_change_threshold": "50",
-  "frequency_change": "15",
-  "frequency_change_info": "7",
-  "frequency_change_fault": "8",
-  "cols": [
-    "risk",
-    "description",
-    "baseline",
-    "candidate",
-    "template",
-    "code",
-    "count",
-    "change",
-    "coverage",
-    "level",
-    "semantics"
-  ],
-  "rows": [
-    {
-      "start_date": "",
-      "end_date": "2021-12-30 21:41:06.844941",
-      "template": "org.apache.oozie.action.ActionExecutorException: UninitializedMessageException: Message missing required fields: renewer Caused by: com.google.protobuf.UninitializedMessageException: Message missing required fields: renewer",
-      "trend_baseline": "",
-      "trend_candidate": "1",
-      "count_baseline": 0,
-      "count_candidate": 1,
-      "level": "INFO",
-      "semantics": "WARNING, ERROR, EXCEPTION, CRITICAL",
-      "dates": "--Dec.&nbsp30",
-      "count_total": 1,
-      "count_gtotal": 10287,
-      "perc_baseline": 0,
-      "perc_candidate": 100,
-      "b_color": "rgba(255, 0, 0, 0.1)",
-      "c_color": "rgba(192, 192, 192, 0.3222222222222222)",
-      "change_count": "+1",
-      "change_color": "rgba(0, 0, 0, 0.7)",
-      "change_perc": 1,
-      "coverage": 0,
-      "risk_score": 100,
-      "risk_description": "Added state (Fault)",
-      "risk_symbol": "fa fa-exclamation-triangle font-medium-1",
-      "risk_color": "rgba(255, 0, 0, 1.0)",
-      "template_code": "https://github.com/apache/hadoop/blob/release-2.0.4-alpha/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/JobClient.java#L568",
-      "count_base": "0",
-      "count_cand": "1",
-      "semantic_color": "rgba(255, 0, 0, 0.7)"
-    }
-  ]
-}"""
-        )
+        @RequestParam baselineTag: String,
+        @RequestParam compareTag: String
+    ): String {
+        val user = userService.findByEmail(authentication.name)
+        val application = applicationId?.let { applicationService.findById(applicationId) }
+        val client = HttpClient.newBuilder().build()
+        val uriComponents = application?.get()?.let {
+            UriComponentsBuilder.newInstance().scheme("http")
+                .host("localhost")
+                .port(5000)
+                .path("api/compute_log_compare")
+                .queryParam("applicationName", it.name)
+                .queryParam("baselineTag", baselineTag)
+                .queryParam("compareTag", compareTag)
+                .queryParam("privateKey", user.get().key).build()
+        }
+        if (uriComponents != null) {
+            print(uriComponents.toUriString())
+        }
+        val request = HttpRequest.newBuilder()
+            .uri(uriComponents?.toUri())
+            .build()
+
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        return JSONObject(response.body()).toString()
     }
 
     @GetMapping("/bar_plot_count")
@@ -118,7 +79,8 @@ class LogCompareController(
         @RequestParam(required = false) tag: String
     ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "log_ad")
+        val applicationsIndexes =
+            applicationService.getApplicationIndexesForLogCompare(user, application.orElse(null), "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         logCompareService.getLogCountBar(applicationsIndexes, startTime, endTime, user, intervalAggregate, tag)
     }.orElse(listOf())
@@ -132,7 +94,8 @@ class LogCompareController(
         @RequestParam(required = false) tag: String
     ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "log_ad")
+        val applicationsIndexes =
+            applicationService.getApplicationIndexesForLogCompare(user, application.orElse(null), "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         logCompareService.getAnomaliesBarChartData(
             applicationsIndexes,
@@ -154,7 +117,8 @@ class LogCompareController(
         @RequestParam(required = false) applicationId: Long
     ): List<LineChart> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationService.findById(applicationId)
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "log_ad")
+        val applicationsIndexes =
+            applicationService.getApplicationIndexesForLogCompare(user, application.orElse(null), "log_ad")
         val intervalAggregate = UtilsService.getTimeIntervalAggregate(startTime, endTime, 10)
         logCompareService.getCompareTemplatesHorizontalBar(
             applicationsIndexes,
@@ -177,7 +141,8 @@ class LogCompareController(
         @RequestParam compareTagId: String
     ): MutableList<LogCompareTable> = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
-        val applicationsIndexes = applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "count_ad")
+        val applicationsIndexes =
+            applicationService.getApplicationIndexesForLogCompare(user, application?.orElse(null), "count_ad")
         logCompareService.getLogCompareData(
             applicationsIndexes,
             startTime,
