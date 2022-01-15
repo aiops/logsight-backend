@@ -7,6 +7,7 @@ import com.loxbear.logsight.services.KafkaService
 import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.LogCompareService
 import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,6 +27,11 @@ class LogCompareController(
     val applicationService: ApplicationService,
     val kafkaService: KafkaService
 ) {
+
+    @Value("\${continuous-verification.host}")
+    private lateinit var contVerificationHost: String
+    @Value("\${continuous-verification.port}")
+    private var contVerificationPort: Int = 5554
 
     @GetMapping("/load_versions")
     fun getVersions(
@@ -52,8 +58,8 @@ class LogCompareController(
         val client = HttpClient.newBuilder().build()
         val uriComponents = application?.get()?.let {
             UriComponentsBuilder.newInstance().scheme("http")
-                .host("localhost")
-                .port(5554)
+                .host(contVerificationHost)
+                .port(contVerificationPort)
                 .path("api/compute_log_compare")
                 .queryParam("applicationName", it.name)
                 .queryParam("baselineTag", baselineTag)
