@@ -19,10 +19,10 @@ spring:
       max-request-size: 500MB
 
 email:
-  host: smtp.gmail.com
+  host: mail.privateemail.com
   port: 587
-  username: noreply.logsight@gmail.com
-  password: logsight2021123!
+  username: support@logsight.ai
+  password: tel12-5DOS
 
 user:
   userAccountBootstrap: true

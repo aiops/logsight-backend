@@ -6,7 +6,7 @@ import javax.mail.internet.MimeMessage
 
 data class Email(
     val mailTo: String,
-    val mailFrom: String = "logsight.ai",
+    val mailFrom: String = "support@logsight.ai",
     val sub: String = "Message from logsight.ai",
     val body: String
 ) {

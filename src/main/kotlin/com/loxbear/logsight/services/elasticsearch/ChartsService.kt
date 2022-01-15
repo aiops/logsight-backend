@@ -49,11 +49,11 @@ class ChartsService(val repository: ChartsRepository,
         try {
             val data = repository.getAnomaliesBarChartDataAgg(es_index_user_app, startTime, stopTime, userKey)
             JSONObject(data).getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").forEach {
-                seriesList.add(LineChartSeries(name = "Anomalies", value = JSONObject(it.toString()).getJSONObject("listBucketsPrediction").getDouble("value")))
+                seriesList.add(LineChartSeries(name = "Faults", value = JSONObject(it.toString()).getJSONObject("listBucketsPrediction").getDouble("value")))
                 seriesList.add(LineChartSeries(name = "ERROR", value = JSONObject(it.toString()).getJSONObject("listBucketsError").getDouble("value")))
                 seriesList.add(LineChartSeries(name = "WARN", value = JSONObject(it.toString()).getJSONObject("listBucketsWarning").getDouble("value")))
 
-                resultList.add(LineChart(name =ZonedDateTime.parse(JSONObject(it.toString()).getString("key_as_string")).toDateTime(), seriesList))
+                resultList.add(LineChart(name = ZonedDateTime.parse(JSONObject(it.toString()).getString("key_as_string")).toDateTime(), seriesList))
                 seriesList = mutableListOf<LineChartSeries>()
             }
         }catch (e: Exception){
