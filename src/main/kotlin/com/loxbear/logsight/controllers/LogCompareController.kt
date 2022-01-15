@@ -44,7 +44,8 @@ class LogCompareController(
         authentication: Authentication,
         @RequestParam(required = true) applicationId: Long?,
         @RequestParam baselineTag: String,
-        @RequestParam compareTag: String
+        @RequestParam compareTag: String,
+        @RequestParam selectedTime: String // this should be forwarded to the backend
     ): String {
         val user = userService.findByEmail(authentication.name)
         val application = applicationId?.let { applicationService.findById(applicationId) }
