@@ -52,7 +52,7 @@ class LogCompareController(
         val uriComponents = application?.get()?.let {
             UriComponentsBuilder.newInstance().scheme("http")
                 .host("localhost")
-                .port(5000)
+                .port(5554)
                 .path("api/compute_log_compare")
                 .queryParam("applicationName", it.name)
                 .queryParam("baselineTag", baselineTag)
