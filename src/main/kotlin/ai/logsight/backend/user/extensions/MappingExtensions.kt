@@ -1,13 +1,12 @@
 package ai.logsight.backend.user.extensions
 
+import ai.logsight.backend.user.adapters.persistence.UserEntity
 import ai.logsight.backend.user.domain.LocalUser
 import ai.logsight.backend.user.domain.User
-import ai.logsight.backend.user.persistence.UserEntity
 import java.time.LocalDateTime
 
 fun UserEntity.toLocalUser() = LocalUser(
-    id = this.id,
-    privateKey = this.privateKey
+    id = this.id, privateKey = this.privateKey
 )
 
 fun UserEntity.toUser() = User(
@@ -21,7 +20,9 @@ fun UserEntity.toUser() = User(
     approachingLimit = this.approachingLimit,
     availableData = this.availableData,
     hasPaid = this.hasPaid,
-    dateCreated = this.dateCreated ?: LocalDateTime.now()
+    dateCreated = this.dateCreated ?: LocalDateTime.now(),
+    userType = this.userType
+
 )
 
 fun User.toUserEntity() = UserEntity(
@@ -35,5 +36,6 @@ fun User.toUserEntity() = UserEntity(
     approachingLimit = this.approachingLimit,
     availableData = this.availableData,
     hasPaid = this.hasPaid,
-    dateCreated = this.dateCreated
+    dateCreated = this.dateCreated,
+    userType = this.userType
 )

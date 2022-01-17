@@ -1,13 +1,13 @@
 package ai.logsight.backend.user.service
 
-import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.service.EmailServiceImpl
 import ai.logsight.backend.exceptions.InvalidTokenException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.token.service.TokenService
+import ai.logsight.backend.user.adapters.persistence.UserStorageService
+import ai.logsight.backend.user.domain.LocalUser
 import ai.logsight.backend.user.domain.User
-import ai.logsight.backend.user.persistence.UserStorageService
 import ai.logsight.backend.user.service.command.ActivateUserCommand
 import ai.logsight.backend.user.service.command.ChangePasswordCommand
 import ai.logsight.backend.user.service.command.CreateTokenCommand
@@ -68,6 +68,10 @@ class UserServiceImpl(
             return userStorageService.saveUser(user)
         }
         throw PasswordsNotMatchException()
+    }
+
+    override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {
+        return userStorageService.createLocalUser(createUserCommand)
     }
 
     /**

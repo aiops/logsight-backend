@@ -2,7 +2,11 @@ package ai.logsight.backend.user.persistence
 
 import ai.logsight.backend.exceptions.EmailExistsException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
-import ai.logsight.backend.user.service.UserNotFoundException
+import ai.logsight.backend.exceptions.UserNotFoundException
+import ai.logsight.backend.user.adapters.persistence.UserEntity
+import ai.logsight.backend.user.adapters.persistence.UserRepository
+import ai.logsight.backend.user.adapters.persistence.UserStorageImpl
+import ai.logsight.backend.user.adapters.persistence.UserType
 import ai.logsight.backend.user.service.command.ActivateUserCommand
 import ai.logsight.backend.user.service.command.ChangePasswordCommand
 import ai.logsight.backend.user.service.command.CreateUserCommand
@@ -23,7 +27,7 @@ internal class UserServiceStoreImplTestUnit {
         @JvmStatic
         val email = "test@email.com"
         const val password = "password"
-        val userEntity = UserEntity(email = email, password = password)
+        val userEntity = UserEntity(email = email, password = password, userType = UserType.ONLINE_USER)
         val createUserCommand = CreateUserCommand(email, password = password)
     }
 
@@ -96,15 +100,14 @@ internal class UserServiceStoreImplTestUnit {
         fun `should change password of user`() {
             // given
             val newPassword = "newPassword"
-            val modifyEntity =
-                UserEntity(id = userEntity.id, password = password, email = userEntity.email)
+            val modifyEntity = UserEntity(
+                id = userEntity.id, password = password, email = userEntity.email, userType = UserType.ONLINE_USER
+            )
             every { repository.save(any()) } returns modifyEntity
             every { repository.findByEmail(email) } returns Optional.of(modifyEntity)
 
             val changePasswordCommand = ChangePasswordCommand(
-                userEntity.email,
-                newPassword = newPassword,
-                confirmNewPassword = newPassword
+                userEntity.email, newPassword = newPassword, confirmNewPassword = newPassword
             )
             // when
             val userChanged = userStorageImpl.changePassword(changePasswordCommand)
@@ -119,14 +122,13 @@ internal class UserServiceStoreImplTestUnit {
         fun `should report userNotFound`() {
             // given
             val newPassword = "newPassword"
-            val modifyEntity =
-                UserEntity(id = userEntity.id, password = password, email = userEntity.email)
+            val modifyEntity = UserEntity(
+                id = userEntity.id, password = password, email = userEntity.email, userType = UserType.ONLINE_USER
+            )
             every { repository.save(any()) } returns modifyEntity
             every { repository.findByEmail(email) } returns Optional.empty()
             val changePasswordCommand = ChangePasswordCommand(
-                userEntity.email,
-                newPassword = newPassword,
-                confirmNewPassword = newPassword
+                userEntity.email, newPassword = newPassword, confirmNewPassword = newPassword
             )
             // when
 
@@ -141,9 +143,7 @@ internal class UserServiceStoreImplTestUnit {
             val newPassword = "newPassword"
             every { repository.save(any()) } returns userEntity
             val changePasswordCommand = ChangePasswordCommand(
-                userEntity.email,
-                newPassword = newPassword,
-                confirmNewPassword = newPassword + "wrong"
+                userEntity.email, newPassword = newPassword, confirmNewPassword = newPassword + "wrong"
             )
             // when
 

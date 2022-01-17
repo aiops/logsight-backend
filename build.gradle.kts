@@ -43,9 +43,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
 //    testImplementation("org.springframework.security:spring-security-test")
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.7")
+
     testImplementation("io.mockk:mockk:1.12.1")
     implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.3")
-    testImplementation("io.mockk:mockk:1.12.1")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.2")
 }
 

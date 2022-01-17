@@ -1,5 +1,6 @@
 package ai.logsight.backend.user.service
 
+import ai.logsight.backend.user.domain.LocalUser
 import ai.logsight.backend.user.domain.User
 import ai.logsight.backend.user.service.command.*
 import ai.logsight.backend.user.service.command.ActivateUserCommand
@@ -10,4 +11,5 @@ interface UserService {
     fun changePassword(changePasswordCommand: ChangePasswordCommand): User
     fun resetPasswordWithToken(resetPasswordCommand: ResetPasswordCommand): User
     fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand)
+    fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser
 }

@@ -1,5 +1,6 @@
 package ai.logsight.backend.user.domain
 
+import ai.logsight.backend.user.adapters.persistence.UserType
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -14,5 +15,6 @@ data class User(
     val usedData: Long,
     val approachingLimit: Boolean,
     val availableData: Long,
-    val activated: Boolean
+    val activated: Boolean,
+    val userType: UserType
 )

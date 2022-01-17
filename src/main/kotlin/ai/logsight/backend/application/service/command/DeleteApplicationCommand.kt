@@ -1,4 +1,7 @@
 package ai.logsight.backend.application.service.command
 
-class DeleteApplicationCommand {
-}
+import java.util.*
+
+class DeleteApplicationCommand(
+    val applicationId: UUID
+)
