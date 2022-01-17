@@ -1,6 +1,6 @@
 // package ai.logsight.backend.connectors.persistance
 
-import ai.logsight.backend.application.adapters.persistence.ApplicationEntity
+import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import javax.persistence.*
 
 @MappedSuperclass

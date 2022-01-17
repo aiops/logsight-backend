@@ -1,6 +1,6 @@
 package ai.logsight.backend.user.domain
 
-import ai.logsight.backend.user.adapters.persistence.UserType
+import ai.logsight.backend.user.ports.out.persistence.UserType
 import java.time.LocalDateTime
 import java.util.UUID
 

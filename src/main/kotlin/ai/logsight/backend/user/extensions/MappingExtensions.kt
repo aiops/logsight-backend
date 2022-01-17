@@ -1,6 +1,6 @@
 package ai.logsight.backend.user.extensions
 
-import ai.logsight.backend.user.adapters.persistence.UserEntity
+import ai.logsight.backend.user.ports.out.persistence.UserEntity
 import ai.logsight.backend.user.domain.LocalUser
 import ai.logsight.backend.user.domain.User
 import java.time.LocalDateTime
