@@ -14,6 +14,7 @@ class LogsightBackendApplication
 fun main(args: Array<String>) {
     runApplication<LogsightBackendApplication>(*args)
 }
+
 @Bean
 fun encoder(): PasswordEncoder {
     return BCryptPasswordEncoder()

@@ -27,7 +27,11 @@ class UserServiceImpl(
         // generate token
         val activationToken = tokenService.createActivationToken(savedUser.id)
         // generate user activation URL
-        val emailContext = EmailContext(userEmail = savedUser.email, token = activationToken)
+        val emailContext = EmailContext(
+            userEmail = savedUser.email,
+            token = activationToken,
+            title = "Activate your account"
+        )
         // send email
         emailService.sendActivationEmail(emailContext)
         // return user domain object
@@ -83,6 +87,7 @@ class UserServiceImpl(
         val emailContext = EmailContext(
             userEmail = user.email,
             token = passwordResetToken,
+            title = "Reset password | logsight.ai"
         )
         emailService.sendPasswordResetEmail(emailContext)
     }

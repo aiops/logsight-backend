@@ -39,6 +39,7 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("junit:junit:4.13.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.7")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

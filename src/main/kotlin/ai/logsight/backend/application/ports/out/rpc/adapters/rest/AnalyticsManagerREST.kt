@@ -1,8 +1,8 @@
-package ai.logsight.backend.application.ports.out.communication.adapters.rest
+package ai.logsight.backend.application.ports.out.rpc.adapters.rest
 
-import ai.logsight.backend.application.ports.out.communication.LogsightAnalyticsManager
-import ai.logsight.backend.application.ports.out.communication.adapters.rest.config.AnalyticsManagerConfigurationProperties
-import ai.logsight.backend.application.ports.out.communication.dto.ApplicationDTO
+import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
+import ai.logsight.backend.application.ports.out.rpc.adapters.rest.config.AnalyticsManagerRESTConfigurationProperties
+import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
 import org.springframework.stereotype.Component
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.http.HttpClient
@@ -10,9 +10,9 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 @Component
-class AnalyticsManagerRest(
-    private val analyticsManagerConfig: AnalyticsManagerConfigurationProperties
-) : LogsightAnalyticsManager {
+class AnalyticsManagerREST(
+    private val analyticsManagerConfig: AnalyticsManagerRESTConfigurationProperties
+) : AnalyticsManagerRPC {
 
     private val httpClient: HttpClient = HttpClient.newBuilder().build()
 

@@ -1,4 +1,4 @@
-package ai.logsight.backend.application.ports.out.communication.dto
+package ai.logsight.backend.application.ports.out.rpc.dto
 
 import java.util.*
 

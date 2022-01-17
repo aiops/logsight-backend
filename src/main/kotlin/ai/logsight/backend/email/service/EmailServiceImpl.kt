@@ -12,14 +12,12 @@ class EmailServiceImpl(
 ) : EmailService {
 
     override fun sendActivationEmail(emailContext: EmailContext) {
-        emailContext.title = "Activate your account"
         val email = emailBuilder.buildActivationEmail(emailContext)
         // send email
         mailSender.send(email.getMimeMessage(mailSender.createMimeMessage()))
     }
 
     override fun sendPasswordResetEmail(emailContext: EmailContext) {
-        emailContext.title = "Reset password | logsight.ai"
         val email = emailBuilder.buildPasswordResetEmail(emailContext)
         // send email
         mailSender.send(email.getMimeMessage(mailSender.createMimeMessage()))
