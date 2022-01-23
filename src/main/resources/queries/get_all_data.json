@@ -1,0 +1,33 @@
+{
+  "size": 10000,
+  "sort": [
+    {
+      "@timestamp": {
+        "order": "asc",
+        "unmapped_type": "boolean"
+      }
+    }
+  ],
+  "query": {
+    "bool": {
+    "must": [
+    {
+    "range": {
+    "@timestamp": {
+    "format": "strict_date_optional_time",
+    "gte": "start_time",
+    "lte": "stop_time"
+    }
+    }
+    }
+    ],
+    "filter": [
+    {
+    "match_all": {}
+    }
+    ],
+    "should": [],
+    "must_not": []
+    }
+    }
+}

@@ -43,6 +43,7 @@ elasticsearch:
   url: elasticsearch:9200
   username: elastic
   password: elasticsearchpassword
+  index: esIndex
 
 resources:
   path: /
@@ -83,4 +84,4 @@ app:
 
 user:
   userAccountBootstrap: false
-  appLimit: 5
+  appLimit: 20
