@@ -38,13 +38,17 @@ class UserService(
     val timeSelectionService: TimeSelectionService
     //val predefinedTimesService: PredefinedTimesService
 ) {
+
+    @Value("\${elasticsearch.username}")
+    private lateinit var username: String
+    @Value("\${elasticsearch.password}")
+    private lateinit var password: String
+
     val exceededMailSubject = "Logsight.ai Limit exceeded"
     val nearlyExceededMailSubject = "Logsight.ai Limit at 80%"
 
     val logger: Logger = LoggerFactory.getLogger(UserService::class.java)
-    val restTemplate: RestTemplate = RestTemplateBuilder()
-        .basicAuthentication("elastic", "elasticsearchpassword")
-        .build()
+
 
     private val executor = Executors.newSingleThreadExecutor()
 
@@ -75,7 +79,10 @@ class UserService(
                     "\"name\": \"Logsight\", " +
                     "\"description\" : \"This is your Logsight Space\" }"
         )
-        restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).body!!
+        val restTemplate: RestTemplate = RestTemplateBuilder()
+            .basicAuthentication(username, password)
+            .build()
+        restTemplate.postForEntity<String>("$kibanaUrl/api/spaces/space", request).body!!
 
         request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }," +
@@ -83,14 +90,14 @@ class UserService(
                     "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
                     "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
         )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/kibana_role_$userKey", request)
+        restTemplate.put("$kibanaUrl/api/security/role/kibana_role_$userKey", request)
 
 
         request = UtilsService.createElasticSearchRequestWithHeaders(
             "{ \"password\" : \"${user.key}\", " +
                     "\"roles\" : [\"${user.key + "_" + user.email}\"] }"
         )
-        restTemplate.postForEntity<String>("http://$elasticUrl/_security/user/$userKey", request).body!!
+        restTemplate.postForEntity<String>("$elasticUrl/_security/user/$userKey", request).body!!
 
     }
 

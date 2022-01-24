@@ -34,17 +34,23 @@ class ElasticsearchService(
 
     val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
+    @Value("\${elasticsearch.username}")
+    private lateinit var username: String
+    @Value("\${elasticsearch.password}")
+    private lateinit var password: String
     @Value("\${elasticsearch.url}")
     private lateinit var elasticsearchUrl: String
     @Value("\${kibana.url}")
     private lateinit var kibanaUrl: String
 
-    val restTemplate: RestTemplate = RestTemplateBuilder()
-        .basicAuthentication("elastic", "elasticsearchpassword")
-        .build()
+
 
     fun createForLogsightUser(user: LogsightUser): Boolean {
         val esUserBool = true
+        val restTemplate: RestTemplate = RestTemplateBuilder()
+            .basicAuthentication(username, password)
+            .build()
+
         PutUserRequest.withPassword(
             User(user.email, Collections.singletonList(user.key + "_" + user.email)),
             user.key.toCharArray(),
@@ -52,8 +58,11 @@ class ElasticsearchService(
             RefreshPolicy.NONE
         ).let { req ->
             try {
-                esClient.security().putUser(req, RequestOptions.DEFAULT).isCreated
+                val isCreated = esClient.security().putUser(req, RequestOptions.DEFAULT).isCreated
+                log.info("Elasticsearch user created")
+                isCreated
             } catch (e: IOException) {
+                log.warning("Elasticsearch user creation failed: $e")
                 false
             }
         }
@@ -65,12 +74,15 @@ class ElasticsearchService(
                     "\"description\" : \"This is your Logsight Space\" }"
         )
         try {
-            restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/spaces/space", request).statusCode.value()
+            log.info("Creating kibana space for user $user")
+            restTemplate.postForEntity<String>("$kibanaUrl/api/spaces/space", request).statusCode.value()
+            log.info("Kibana space created")
         } catch (e: HttpStatusCodeException){
             if (e.rawStatusCode == 409){
                 log.info("space already exists")
                 return esUserBool
             } else {
+                log.warning("Failed to create kibana space: $e")
                 throw e
             }
         }
@@ -81,7 +93,13 @@ class ElasticsearchService(
                     "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " +
                     "\"spaces\": [ \"kibana_space_$userKey\" ] } ] }"
         )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/${user.key + "_" + user.email}", request)
+        log.info("Creating kibana role for user $user")
+        try {
+            restTemplate.put("$kibanaUrl/api/security/role/${user.key + "_" + user.email}", request)
+            log.warning("Kibana role created")
+        } catch (e: Exception) {
+            log.warning("Failed to create kibana role: $e")
+        }
 
         return esUserBool
     }
@@ -123,11 +141,11 @@ class ElasticsearchService(
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(user.email, user.key)
-            .build();
+            .build()
         val path = ClassPathResource(resourcePath).path
         val jsonString: String = UtilsService.readFileAsString(path)
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 }

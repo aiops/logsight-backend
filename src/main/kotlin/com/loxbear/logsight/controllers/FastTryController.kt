@@ -35,13 +35,15 @@ class FastTryController(
     val emailService: EmailService
 ) {
 
-    @Value("\${app.baseUrlTry}")
+    @Value("\${app.baseUrl}")
     private lateinit var baseUrlTry: String
+    @Value("\${elasticsearch.username}")
+    private lateinit var username: String
+    @Value("\${elasticsearch.password}")
+    private lateinit var password: String
 
     private val executor = Executors.newSingleThreadExecutor()
-    val restTemplate: RestTemplate = RestTemplateBuilder()
-        .basicAuthentication("elastic", "elasticsearchpassword")
-        .build()
+
     val logger: Logger = Logger.getLogger(LogService::class.java.toString())
 
 
@@ -76,7 +78,7 @@ class FastTryController(
 //                userService.changePassword(registerForm)
                 id = user.id
                 key = user.key
-//                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+//                kibanaPersonalUrl = "${baseUrlTry}s/kibana_space_${user.key}/app/kibana#/dashboards"
                 kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
                 loginLinkTry = "${baseUrlTry}auth/login?redirect=kibana"
 
@@ -98,7 +100,7 @@ class FastTryController(
             userService.createUser(registerForm)?.let { user ->
                 id = user.id
                 key = user.key
-//                kibanaPersonalUrl = "${baseUrlTry}kibana/s/kibana_space_${user.key}/app/kibana#/dashboards"
+//                kibanaPersonalUrl = "${baseUrlTry}s/kibana_space_${user.key}/app/kibana#/dashboards"
                 kibanaPersonalUrl = "${baseUrlTry}pages/kibana"
 
                 loginLinkTry = "${baseUrlTry}auth/login?redirect=kibana"
@@ -123,7 +125,10 @@ class FastTryController(
                 userService.activateUser(UserActivateForm(user.id, user.key))
                 val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
                 val request = UtilsService.createKibanaRequestWithHeaders(requestB)
-                restTemplate.postForEntity<String>("http://$kibanaUrl/kibana/api/security/v1/login", request)
+                val restTemplate: RestTemplate = RestTemplateBuilder()
+                    .basicAuthentication(username, password)
+                    .build()
+                restTemplate.postForEntity<String>("$kibanaUrl/api/security/v1/login", request)
                 logger.info("Request submitted for uploading and processsing the file of the user with email $email ")
 
                 processRequest(user, passwd, fileContent, logFileType, loginLinkTry, true)

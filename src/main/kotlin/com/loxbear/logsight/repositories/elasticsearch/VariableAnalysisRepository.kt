@@ -51,7 +51,7 @@ class VariableAnalysisRepository(
             .replace("interval_aggregate", intervalAggregate)
             .replace("search_param", search ?: "")
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
     fun getSpecificTemplate(
@@ -73,7 +73,7 @@ class VariableAnalysisRepository(
             .replace("interval_aggregate", intervalAggregate)
             .replace("query_template", template)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
     fun getSpecificTemplateDifferentParams(
@@ -95,7 +95,7 @@ class VariableAnalysisRepository(
             .replace("query_template", template).replace("param_name", param)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<LineChartData>(
-            "http://$elasticsearchUrl/$esIndexUserApp/_search",
+            "$elasticsearchUrl/$esIndexUserApp/_search",
             request
         ).body!!
     }
@@ -116,7 +116,7 @@ class VariableAnalysisRepository(
             .replace("template_size", size.toString())
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<LogLevelPieChartData>(
-            "http://$elasticsearchUrl/$esIndexUserApp/_search",
+            "$elasticsearchUrl/$esIndexUserApp/_search",
             request
         ).body!!
     }
@@ -137,6 +137,6 @@ class VariableAnalysisRepository(
             .replace("stop_time", stopTime)
             .replace("interval_aggregate", intervalAggregate)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 }

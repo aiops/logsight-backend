@@ -6,13 +6,13 @@ import com.loxbear.logsight.models.log.LogMessageKafka
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
 import org.springframework.stereotype.Repository
 import org.springframework.util.concurrent.ListenableFuture
 import org.springframework.util.concurrent.ListenableFutureCallback
-import org.springframework.kafka.core.KafkaTemplate
 import java.util.logging.Logger
 
 @Repository
@@ -26,7 +26,7 @@ class LogRepository(
 
     val log: Logger = Logger.getLogger(LogRepository::class.java.toString())
 
-    val jsonFormat = Json{}
+    val jsonFormat = Json {}
 
     var ack = 0
 
@@ -38,11 +38,15 @@ class LogRepository(
         appID: Long,
         logType: LogFileTypes,
         logs: Collection<LogMessage>
-    ){
+    ) {
         val messagesKafka = createKafkaMessages(userKey, appName, logType.toString().toLowerCase(), logs)
+        log.info("Sending ${logs.size} log messages to kafka topic $inputTopicName")
         messagesKafka.forEach {
             sendToKafka(inputTopicName, jsonFormat.encodeToString(it))
         }
+        kafkaTemplate.flush()
+        log.info("Ack messages: $ack")
+        ack = 0
     }
 
     fun toKafka(
@@ -50,12 +54,13 @@ class LogRepository(
         appID: Long,
         logType: LogFileTypes,
         logs: Collection<LogMessage>
-    ){
+    ) {
         val user = userService.findByEmail(authMail)
         val app = applicationService.findById(appID)
-        if(user.isPresent && app.isPresent){
+        if (user.isPresent && app.isPresent) {
             log.info("Sending ${logs.size} log messages to kafka topic ${app.get().inputTopicName}")
-            val messagesKafka = createKafkaMessages(user.get().key, app.get().name, logType.toString().toLowerCase(), logs)
+            val messagesKafka =
+                createKafkaMessages(user.get().key, app.get().name, logType.toString().toLowerCase(), logs)
             messagesKafka.forEach { sendToKafka(app.get().inputTopicName, jsonFormat.encodeToString(it)) }
             kafkaTemplate.flush()
             log.info("Ack messages: $ack")
@@ -65,7 +70,7 @@ class LogRepository(
         }
     }
 
-    private fun createKafkaMessages (
+    private fun createKafkaMessages(
         privateKey: String,
         appName: String,
         logType: String,

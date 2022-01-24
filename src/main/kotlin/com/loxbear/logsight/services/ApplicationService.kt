@@ -27,25 +27,23 @@ import java.util.concurrent.Executors
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import javax.transaction.Transactional
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-
 
 @Service
 class ApplicationService(
     val repository: ApplicationRepository,
     val kafkaService: KafkaService,
 ) {
+    @Value("\${elasticsearch.username}")
+    private lateinit var username: String
 
-    val applicationActiveListener = mutableMapOf<Long, ((Application)->Unit)>()
-    val applicationDeletedListener = mutableMapOf<Long, ((Unit)->Unit)>()
+    @Value("\${elasticsearch.password}")
+    private lateinit var password: String
 
+    val applicationActiveListener = mutableMapOf<Long, ((Application) -> Unit)>()
+    val applicationDeletedListener = mutableMapOf<Long, ((Unit) -> Unit)>()
 
     private val executor = Executors.newSingleThreadExecutor()
     val logger: Logger = LoggerFactory.getLogger(ApplicationService::class.java)
-    val restTemplate: RestTemplate = RestTemplateBuilder()
-        .basicAuthentication("elastic", "elasticsearchpassword")
-        .build()
 
     @Value("\${kibana.url}")
     private lateinit var kibanaUrl: String
@@ -53,7 +51,7 @@ class ApplicationService(
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
 
-    fun createApplication(name: String, user: LogsightUser, callback: ((Application)->Unit)): Application? {
+    fun createApplication(name: String, user: LogsightUser, callback: ((Application) -> Unit)): Application? {
         val application = _createApplication(name, user)
         application?.let {
             applicationActiveListener[it.id] = callback
@@ -63,7 +61,7 @@ class ApplicationService(
     }
 
     fun createApplication(name: String, user: LogsightUser): Application? {
-        val application =  _createApplication(name, user)
+        val application = _createApplication(name, user)
         application?.let {
             kafkaService.applicationChange(it, ApplicationAction.CREATE)
         }
@@ -74,7 +72,7 @@ class ApplicationService(
     protected fun _createApplication(name: String, user: LogsightUser): Application? {
         val applications = this.findAllByUser(user)
         applications.forEach {
-            if (it.name == name){
+            if (it.name == name) {
                 return null
             }
         }
@@ -86,7 +84,8 @@ class ApplicationService(
         if (b) {
             return null
         }
-        val application = Application(id = 0, name = name, user = user, status = ApplicationStatus.CREATING, inputTopicName = "")
+        val application =
+            Application(id = 0, name = name, user = user, status = ApplicationStatus.CREATING, inputTopicName = "")
         logger.info("Creating application with name [{}] for user with id [{}]", name, user.id)
         try {
             repository.saveAndFlush(application)
@@ -95,20 +94,25 @@ class ApplicationService(
         }
         val request = UtilsService.createKibanaRequestWithHeaders(
             "{ \"metadata\" : { \"version\" : 1 }, " +
-                    "\"elasticsearch\": { \"cluster\" : [ ], " +
-                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
-                    " \"privileges\" : [ \"all\" ]}] }, " +
-                    "\"kibana\": [ { \"base\": [], " +
-                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+                "\"elasticsearch\": { \"cluster\" : [ ], " +
+                "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+                " \"privileges\" : [ \"all\" ]}] }, " +
+                "\"kibana\": [ { \"base\": [], " +
+                "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
         )
-        restTemplate.put("http://$kibanaUrl/kibana/api/security/role/${user.key + "_" + user.email}", request)
+        val restTemplate: RestTemplate = RestTemplateBuilder()
+            .basicAuthentication(username, password)
+            .build()
+        restTemplate.put("$kibanaUrl/api/security/role/${user.key + "_" + user.email}", request)
         val requestDefaultIndex = UtilsService.createKibanaRequestWithHeaders(
             "{ \"value\": null}"
         )
-        restTemplate.postForEntity<String>(
-            "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/kibana/settings/defaultIndex",
-            requestDefaultIndex
-        ).body!!
+//        logger.info("Set kibana default index for app $name")
+//        restTemplate.postForEntity<String>(
+//            "$kibanaUrl/s/kibana_space_${user.key}/api/index_patterns/default",
+//            requestDefaultIndex
+//        ).body!!
+//        logger.info("Default index for app $name set successfully")
 //        kafkaService.applicationChange(application, ApplicationAction.CREATE)
         return application
     }
@@ -118,7 +122,7 @@ class ApplicationService(
     fun getApplicationIndexes(user: LogsightUser) =
         findAllByUser(user).joinToString(",") {
             "${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_ad"
         }
 
@@ -139,31 +143,29 @@ class ApplicationService(
 //        }
         findAllByUser(user).joinToString(",") {
             "\"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_count_ad\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_incidents\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_agg\", \"${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_quality\""
         }
-
 
     fun getApplicationIndexesForIncidents(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_incidents" }
 
-
     fun getApplicationIndexesForQuality(user: LogsightUser, application: Application?) =
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
         }.joinToString(",") {
             "${
-                user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
+            user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }
             }_${it.name}_log_quality"
         }
 
@@ -171,7 +173,6 @@ class ApplicationService(
         findAllByUser(user).filter {
             application?.let { application -> application.id == it.id } ?: true
         }.joinToString(",") { "${user.key.toLowerCase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$index" }
-
 
     @KafkaListener(topics = ["manager_settings_ack"], groupId = "1")
     fun applicationStatusControlListener(msg: String) {
@@ -183,12 +184,11 @@ class ApplicationService(
             return
         }
 
-        val ack = if(jsonMsg.has("ack")) jsonMsg.getString("ack") else ""
-        when(ack) {
+        val ack = if (jsonMsg.has("ack")) jsonMsg.getString("ack") else ""
+        when (ack) {
             "ACTIVE" -> {
                 val applicationId = jsonMsg.getJSONObject("app").getLong("application_id")
-                val application = findById(applicationId)
-                logger.info("Activating application with id [{}]", applicationId)
+                logger.info("Activating application with id $applicationId")
                 repository.updateApplicationStatus(applicationId, ApplicationStatus.ACTIVE)
                 val inputTopicName = jsonMsg
                     .getJSONObject("app")
@@ -197,7 +197,9 @@ class ApplicationService(
                     .getString("topic")
                 repository.updateTopicName(applicationId, inputTopicName)
                 logger.info("Application topic updated")
+                val application = findById(applicationId)
                 application.ifPresent { applicationActiveListener[applicationId]?.invoke(it) }
+                // Thread.sleep(10000)
             }
             "DELETED" -> {
                 val applicationId = jsonMsg.getLong("app_id")
@@ -213,11 +215,12 @@ class ApplicationService(
     fun findByUserAndName(user: LogsightUser, applicationName: String): Optional<Application> =
         repository.findByUserAndName(user, applicationName)
 
-    fun deleteApplication(id: Long, callback: ((Unit)->Unit)) = findById(id).ifPresent { deleteApplication(it, callback) }
+    fun deleteApplication(id: Long, callback: ((Unit) -> Unit)) =
+        findById(id).ifPresent { deleteApplication(it, callback) }
 
     fun deleteApplication(id: Long) = findById(id).ifPresent { deleteApplication(it) }
 
-    fun deleteApplication(app: Application, callback: ((Unit)->Unit)) {
+    fun deleteApplication(app: Application, callback: ((Unit) -> Unit)) {
         applicationDeletedListener[app.id] = callback
         deleteApplication(app)
     }
@@ -228,7 +231,10 @@ class ApplicationService(
         executor.submit { deleteKibanaPatterns(app) }
     }
 
-    fun deleteKibanaPatterns(application: Application){
+    fun deleteKibanaPatterns(application: Application) {
+        val restTemplate: RestTemplate = RestTemplateBuilder()
+            .basicAuthentication(username, password)
+            .build()
         for (i in getApplicationIndicesForKibana(application.user).split(",")) {
             if (i.isNotEmpty() && i.contains(application.name)) {
 
@@ -237,9 +243,12 @@ class ApplicationService(
                     "{}"
                 )
                 try {
-                    restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${application.user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
-                }catch (e: Exception){
-
+                    restTemplate.exchange<String>(
+                        "$kibanaUrl/s/kibana_space_${application.user.key}/api/saved_objects/index-pattern/$indexPattern",
+                        HttpMethod.DELETE,
+                        request
+                    )
+                } catch (e: Exception) {
                 }
             }
         }
@@ -250,52 +259,62 @@ class ApplicationService(
         var indexPatternAd = ""
         for (i in getApplicationIndicesForKibana(user).split(",")) {
             indexPattern = i.replace("\\s|\"".toRegex(), "")
-            if (i.isNotEmpty() && (i.contains("incidents") || i.contains("log_ad"))){
-                if (i.contains("log_ad") && i.contains("fast_try_app")){
+            if (i.isNotEmpty() && (i.contains("incidents") || i.contains("log_ad"))) {
+                if (i.contains("log_ad") && i.contains("fast_try_app")) {
                     indexPatternAd = i.replace("\\s|\"".toRegex(), "")
                 }
                 try {
                     val request = UtilsService.createKibanaRequestWithHeaders(
                         "{}"
                     )
-                    restTemplate.exchange<String>("http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern", HttpMethod.DELETE, request)
-
-                }catch (e: Exception){
+                    val restTemplate: RestTemplate = RestTemplateBuilder()
+                        .basicAuthentication(username, password)
+                        .build()
+                    restTemplate.exchange<String>(
+                        "$kibanaUrl/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern",
+                        HttpMethod.DELETE,
+                        request
+                    )
+                } catch (e: Exception) {
                 }
 
                 val requestCreateIndexPattern = UtilsService.createKibanaRequestWithHeaders(
                     "{\"attributes\": { \"title\": \"$indexPattern\", \"timeFieldName\": \"@timestamp\"} }"
                 )
+                val restTemplate: RestTemplate = RestTemplateBuilder()
+                    .basicAuthentication(username, password)
+                    .build()
                 restTemplate.postForEntity<String>(
-                    "http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern",
+                    "$kibanaUrl/s/kibana_space_${user.key}/api/saved_objects/index-pattern/$indexPattern",
                     requestCreateIndexPattern
                 ).body!!
 //                if (indexPattern.contains("log_ad")) {
 //
 //                }
 
-
-
-                //curl -X POST "localhost:5601/kibana/api/saved_objects/_import" --form file=@export.ndjson -H 'kbn-xsrf: true' --user elastic:elasticsearchpassword
-
-
+                // curl -X POST "localhost:5601/api/saved_objects/_import" --form file=@export.ndjson -H 'kbn-xsrf: true' --user elastic:elasticsearchpassword
             }
         }
 
         val jsonString = UtilsService.readFileAsString("${resourcesPath}dashboards/export.ndjson")
         val jsonRequest = jsonString
             .replace("index_pattern_replace_log_ad", "$indexPatternAd")
-            .replace("index_pattern_replace_incidents", "${indexPatternAd.split("_").subList(0,indexPatternAd.split("_").size-2).joinToString("_") + "_incidents"}")
+            .replace(
+                "index_pattern_replace_incidents",
+                "${
+                indexPatternAd.split("_").subList(0, indexPatternAd.split("_").size - 2)
+                    .joinToString("_") + "_incidents"
+                }"
+            )
         File("file.ndjson").bufferedWriter().use { out ->
             out.write(jsonRequest)
         }
 
         val response: HttpResponse<String> =
-            Unirest.post("http://$kibanaUrl/kibana/s/kibana_space_${user.key}/api/saved_objects/_import")
+            Unirest.post("$kibanaUrl/s/kibana_space_${user.key}/api/saved_objects/_import")
                 .header("kbn-xsrf", "true")
-                .basicAuth("elastic", "elasticsearchpassword")
+                .basicAuth(username, password)
                 .field("file", File("file.ndjson"))
                 .asString()
-
     }
 }

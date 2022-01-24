@@ -9,18 +9,19 @@ import com.loxbear.logsight.services.EmailService
 import com.loxbear.logsight.services.LogService
 import com.loxbear.logsight.services.UserService
 import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.context.event.EventListener
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import java.net.URL
 import java.util.logging.Logger
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,17 +33,16 @@ class AuthController(
     @Value("\${user.userAccountBootstrap}") private val webUserAccountBootstrap: Boolean
 ) {
 
-    val log: Logger = Logger.getLogger(LogService::class.java.toString())
-
-    val restTemplate: RestTemplate = RestTemplateBuilder()
-        .basicAuthentication("elastic", "elasticsearchpassword")
-        .build()
-
     @Value("\${kibana.url}")
     private lateinit var kibanaUrl: String
-
     @Value("\${app.baseUrl}")
     private lateinit var baseUrl: String
+    @Value("\${elasticsearch.username}")
+    private lateinit var username: String
+    @Value("\${elasticsearch.password}")
+    private lateinit var password: String
+
+    val log: Logger = Logger.getLogger(LogService::class.java.toString())
 
     @PostMapping("/register")
     fun register(@RequestBody registerForm: UserRegisterForm): ResponseEntity<LogsightUser> =
@@ -72,7 +72,6 @@ class AuthController(
             else -> ResponseEntity.ok().body(token)
         }
 
-
     @PostMapping("/login_id_key")
     fun loginIdKey(@RequestBody loginForm: UserLoginFormId): ResponseEntity<Token> =
         when (val token = authService.loginUserId(loginForm)) {
@@ -83,10 +82,10 @@ class AuthController(
     @PostMapping("/login/login-link")
     fun loginLink(@RequestBody loginLinkForm: UserLoginLinkForm): ResponseEntity<LogsightUser> {
         var isActivated = false
-        userService.findByEmail(loginLinkForm.email).map {
-                user -> if(user.activated){
+        userService.findByEmail(loginLinkForm.email).map { user ->
+            if (user.activated) {
                 isActivated = true
-        }
+            }
         }
         if (!isActivated) {
             return ResponseEntity.badRequest().build()
@@ -99,24 +98,26 @@ class AuthController(
 
     @PostMapping("/kibana/login")
     fun kibanaLogin(@RequestBody requestBody: String): ResponseEntity<String> {
+        val restTemplate: RestTemplate = RestTemplateBuilder()
+            .basicAuthentication(username, password)
+            .build()
         val user = userService.findByKey(JSONObject(requestBody).getString("key"))
         val requestB = "{\"password\":\"${user.key}\",\"username\":\"${user.email}\"}"
         val request = UtilsService.createKibanaRequestWithHeaders(requestB)
-        val kibanaURL = "http://$kibanaUrl/kibana/api/security/v1/login"
+        val kibanaURL = "$kibanaUrl/api/security/v1/login"
         log.info("Log in to kibana at $kibanaURL")
         return restTemplate.postForEntity(kibanaURL, request)
     }
-
 
     @PostMapping("/change_password")
     fun changePassword(@RequestBody changePasswordForm: String): ResponseEntity<LogsightUser> {
         val user = userService.findByKey(JSONObject(changePasswordForm).getString("key"))
         val oldPassword = JSONObject(changePasswordForm).getString("oldPassword")
         val newPassword = JSONObject(changePasswordForm).getString("password")
-        if (encoder().matches(oldPassword,user.password)){
+        if (encoder().matches(oldPassword, user.password)) {
             userService.changePassword(UserRegisterForm(user.email, newPassword))
             return ResponseEntity.ok().body(user)
-        }else{
+        } else {
             return ResponseEntity.badRequest().build()
         }
     }
@@ -126,7 +127,7 @@ class AuthController(
         val user = userService.findByEmail(JSONObject(emailForm).getString("email")).get()
         val newPassword = utils.KeyGenerator.generate()
 
-        if (user != null){
+        if (user != null) {
             userService.changePassword(UserRegisterForm(user.email, newPassword))
             emailService.sendMimeEmail(
                 Email(
@@ -141,7 +142,7 @@ class AuthController(
                 )
             )
             return ResponseEntity.ok().body(user)
-        }else{
+        } else {
             return ResponseEntity.badRequest().build()
         }
     }

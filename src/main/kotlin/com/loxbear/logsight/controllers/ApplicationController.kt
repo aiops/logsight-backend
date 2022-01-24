@@ -23,7 +23,6 @@ class ApplicationController(
     @Value("\${user.appLimit}") private val userAppLimit: Int
 ) {
 
-
     @GetMapping("")
     fun getApplications(
         authentication: Authentication,

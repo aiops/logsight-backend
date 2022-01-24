@@ -40,7 +40,7 @@ class AuthService(
             log.info(e.message)
             userService.findByEmail(userForm.email).get()
         }
-
+        log.info("User created in logsight: $user")
         try {
             emailService.sendMimeEmail(
                 Email(
@@ -78,6 +78,7 @@ class AuthService(
         } else {
             throw ConnectionException("Failed to create elasticsearch user $user")
         }
+        log.info("User created: $user")
         return user
     }
 

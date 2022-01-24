@@ -42,7 +42,7 @@ class ChartsRepository(
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<LineChartData>(
-            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            "$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
     }
@@ -64,7 +64,7 @@ class ChartsRepository(
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<String>(
-            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            "$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
     }
@@ -89,7 +89,7 @@ class ChartsRepository(
             .replace("compare_tag_label", compareTagId!!)
             .replace("interval_aggregate", intervalAggregate)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
 
@@ -108,7 +108,7 @@ class ChartsRepository(
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<LogLevelPieChartData>(
-            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            "$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
     }
@@ -129,7 +129,7 @@ class ChartsRepository(
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
         return restTemplate.postForEntity<String>(
-            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            "$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
     }
@@ -148,7 +148,7 @@ class ChartsRepository(
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         return restTemplate.postForEntity<LineChartData>(
-            "http://$elasticsearchUrl/$es_index_user_app/_search",
+            "$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
     }
@@ -171,7 +171,7 @@ class ChartsRepository(
             val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
             val returnData = restTemplate.postForEntity<SystemOverviewData>(
-                "http://$elasticsearchUrl/$esIndexUserAppLogAd/_search",
+                "$elasticsearchUrl/$esIndexUserAppLogAd/_search",
                 request
             ).body!!
             return returnData
@@ -185,7 +185,7 @@ class ChartsRepository(
                 .replace("interval_aggregate", intervalAggregate!!)
             val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
             return restTemplate.postForEntity<SystemOverviewData>(
-                "http://$elasticsearchUrl/$esIndexUserAppLogAd/_search",
+                "$elasticsearchUrl/$esIndexUserAppLogAd/_search",
                 request
             ).body!!
         }

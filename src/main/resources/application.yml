@@ -31,19 +31,17 @@ user:
 app:
   baseUrl: http://localhost:4200
   qualityUrl: http://localhost:5444/
-  baseUrlTry: http://localhost:4200/
 
-kibana.url: kibana:5601
+kibana.url: http://kibana:5601
 
 continuous-verification:
   host: logsight-continuous-verification
   port: 5554
 
 elasticsearch:
-  url: elasticsearch:9200
+  url: http://elasticsearch:9200
   username: elastic
-  password: elasticsearchpassword
-  index: esIndex
+  password: rU78MYiShH0iu2j7w76y9s87
 
 resources:
   path: /
@@ -54,9 +52,10 @@ spring.config.activate.on-profile: ide
 spring.datasource.url: jdbc:postgresql://localhost:5432/logsight
 spring.kafka.bootstrap-servers: localhost:9093
 
-elasticsearch.url: localhost:9200
+elasticsearch:
+  url: http://localhost:9200
 
-kibana.url: localhost:5601
+kibana.url: http://localhost:5601
 
 continuous-verification.host: localhost
 

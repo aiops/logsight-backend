@@ -28,7 +28,7 @@ class LogCompareRepository(
         val path = ClassPathResource("${resourcesPath}queries/application_versions.json").path
         val jsonRequest: String = UtilsService.readFileAsString(path)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
     fun getLogCountBar(
@@ -49,7 +49,7 @@ class LogCompareRepository(
             .replace("interval_aggregate", intervalAggregate)
             .replace("tag_label", tag)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
 
     fun getAnomaliesBarChartData(
@@ -71,7 +71,7 @@ class LogCompareRepository(
             .replace("tag_label", tag)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
-        return restTemplate.postForEntity<LineChartData>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<LineChartData>("$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getCompareTemplatesHorizontalBar(
@@ -94,7 +94,7 @@ class LogCompareRepository(
             .replace("baseline", baselineTagId)
             .replace("compare", compareTagId)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
     fun getLogCompareData(
@@ -118,8 +118,6 @@ class LogCompareRepository(
             .replace("baseline_tag_label", baselineTagId)
 
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
+        return restTemplate.postForEntity<String>("$elasticsearchUrl/$esIndexUserApp/_search", request).body!!
     }
-
-
 }
