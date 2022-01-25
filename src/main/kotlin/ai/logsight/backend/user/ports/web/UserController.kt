@@ -1,28 +1,18 @@
-package ai.logsight.backend.user.rest
+package ai.logsight.backend.user.ports.web
 
 import ai.logsight.backend.encoder
-import ai.logsight.backend.security.authentication.AuthService
-import ai.logsight.backend.security.authentication.domain.AuthenticationToken
-import ai.logsight.backend.user.domain.User
-import ai.logsight.backend.user.adapters.rest.request.ActivateUserRequest
-import ai.logsight.backend.user.adapters.rest.request.ChangePasswordRequest
-import ai.logsight.backend.user.adapters.rest.request.CreateUserRequest
-import ai.logsight.backend.user.adapters.rest.request.ForgotPasswordRequest
-import ai.logsight.backend.user.adapters.rest.request.ResetPasswordRequest
-import ai.logsight.backend.user.adapters.rest.response.ActivateUserResponse
-import ai.logsight.backend.user.adapters.rest.response.ChangePasswordResponse
-import ai.logsight.backend.user.adapters.rest.response.CreateUserResponse
-import ai.logsight.backend.user.adapters.rest.response.ResetPasswordResponse
+// import ai.logsight.backend.security.authentication.AuthService
+// import ai.logsight.backend.security.authentication.domain.AuthenticationToken
+import ai.logsight.backend.user.domain.service.UserService
+import ai.logsight.backend.user.domain.service.command.*
+import ai.logsight.backend.user.ports.web.request.*
+import ai.logsight.backend.user.ports.web.response.*
 import ai.logsight.backend.user.rest.request.*
-import ai.logsight.backend.user.rest.response.*
-import ai.logsight.backend.user.service.UserService
-import ai.logsight.backend.user.service.command.*
-import ai.logsight.backend.user.service.command.ActivateUserCommand
+import ai.logsight.backend.user.service.command.CreateLoginCommand
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
@@ -30,7 +20,7 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/user")
 class UserController(
     private val userService: UserService,
-    private val authService: AuthService
+//    private val authService: AuthService
 ) {
     /**
      * Register a new user in the system.
@@ -103,18 +93,18 @@ class UserController(
     /**
      * login user (authenticate)
      */
-
-    @PostMapping("/login")
-    fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): ResponseEntity<AuthenticationToken> {
-        println(loginUserRequest)
-        val token = authService.authenticateUser(
-            CreateLoginCommand(
-                email = loginUserRequest.email,
-                password = loginUserRequest.password
-            )
-        )
-        return ResponseEntity.ok().body(token)
-    }
+//
+//    @PostMapping("/login")
+//    fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): ResponseEntity<AuthenticationToken> {
+//        println(loginUserRequest)
+//        val token = authService.authenticateUser(
+//            CreateLoginCommand(
+//                email = loginUserRequest.email,
+//                password = loginUserRequest.password
+//            )
+//        )
+//        return ResponseEntity.ok().body(token)
+//    }
 
     @EventListener
     fun createSampleUser(event: ApplicationReadyEvent) {

@@ -92,7 +92,6 @@ class ChartsRepository(
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
-
     fun getLogLevelPieChartData(
         es_index_user_app: String,
         startTime: String,
@@ -166,7 +165,7 @@ class ChartsRepository(
             .basicAuthentication(user.email, user.key)
             .build()
         if (compareTagId == null && baselineTagId == null) {
-            val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview_heatmap_request.json")
+            val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview.json")
             val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 

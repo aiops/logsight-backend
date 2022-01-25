@@ -1,4 +1,10 @@
 spring:
+  security:
+
+  elasticsearch:
+    username: "elastic"
+    password: "elasticsearchpassword"
+    uris: "localhost:9200"
   main:
     banner-mode: "off"
   jpa:
@@ -23,6 +29,18 @@ spring:
   thymeleaf:
     check-template: true
     check-template-location: true
+
+
+logsight:
+  elasticsearch:
+    username: "elastic"
+    password: "elasticsearchpassword"
+    address: "localhost:9200"
+
+  token:
+    duration: 15
+
+
 
 common-config:
   base-url: http://localhost:4200

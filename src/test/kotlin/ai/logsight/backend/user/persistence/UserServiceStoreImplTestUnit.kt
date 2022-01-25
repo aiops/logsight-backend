@@ -3,13 +3,10 @@ package ai.logsight.backend.user.persistence
 import ai.logsight.backend.exceptions.EmailExistsException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.exceptions.UserNotFoundException
-import ai.logsight.backend.user.adapters.persistence.UserEntity
-import ai.logsight.backend.user.adapters.persistence.UserRepository
-import ai.logsight.backend.user.adapters.persistence.UserStorageImpl
-import ai.logsight.backend.user.adapters.persistence.UserType
-import ai.logsight.backend.user.service.command.ActivateUserCommand
-import ai.logsight.backend.user.service.command.ChangePasswordCommand
-import ai.logsight.backend.user.service.command.CreateUserCommand
+import ai.logsight.backend.user.domain.service.command.*
+import ai.logsight.backend.user.ports.out.persistence.UserEntity
+import ai.logsight.backend.user.ports.out.persistence.UserRepository
+import ai.logsight.backend.user.ports.out.persistence.UserType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

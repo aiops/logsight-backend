@@ -4,7 +4,7 @@ import ai.logsight.backend.email.service.EmailServiceImpl
 import ai.logsight.backend.token.domain.Token
 import ai.logsight.backend.token.persistence.TokenType
 import ai.logsight.backend.token.service.TokenServiceImpl
-import ai.logsight.backend.user.adapters.persistence.UserStorageService
+import ai.logsight.backend.user.ports.out.persistence.UserStorageService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeAll

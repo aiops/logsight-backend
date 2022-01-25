@@ -7,5 +7,5 @@ import java.time.Duration
 @ConfigurationProperties(prefix = "logsight.token")
 @Component
 class TokenConfigurationProperties {
-    var duration = Duration.ofMinutes(15)
+    var duration: Duration = Duration.ofMinutes(15)
 }
