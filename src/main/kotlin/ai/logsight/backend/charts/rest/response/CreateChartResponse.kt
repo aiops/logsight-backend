@@ -1,4 +1,7 @@
 package ai.logsight.backend.charts.rest.response
 
-class CreateChartResponse {
-}
+import ai.logsight.backend.charts.domain.charts.Chart
+
+data class CreateChartResponse(
+    val chart: Chart
+)

@@ -21,7 +21,7 @@ class ChartsController(
 
     @GetMapping("/heatmap")
     @ResponseStatus(HttpStatus.CREATED)
-    fun createChart(
+    fun createHeatmap(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
@@ -33,9 +33,26 @@ class ChartsController(
             applicationId = createChartRequest.applicationId
         )
 
-        chartsService.createHeatmap(query)
         // Create charts command
 
-        return CreateChartResponse()
+        return CreateChartResponse(chartsService.createHeatMap(query))
+    }
+
+    @GetMapping("/barchart")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createBarchart(
+        authentication: Authentication,
+        @RequestBody createChartRequest: ChartRequest
+    ): CreateChartResponse {
+        val user = userService.findByEmail(authentication.name)
+        val query = GetChartDataQuery(
+            credentials = Credentials(user.email, user.id.toString()),
+            chartConfig = createChartRequest.chartConfig,
+            dataSource = createChartRequest.dataSource,
+            applicationId = createChartRequest.applicationId
+        )
+
+        // Create charts command
+        return CreateChartResponse(chartsService.createBarChart(query))
     }
 }
