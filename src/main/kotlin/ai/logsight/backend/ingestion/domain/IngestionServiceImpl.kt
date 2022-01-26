@@ -1,13 +1,12 @@
 package ai.logsight.backend.ingestion.domain
 
+import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.exceptions.FileUploadException
 import ai.logsight.backend.ingestion.ports.out.Sink
-import com.loxbear.logsight.models.log.LogMessage
-import com.loxbear.logsight.services.ApplicationService
 import java.util.logging.Logger
 
 class IngestionServiceImpl(
-    private val applicationService: ApplicationService,
+    private val applicationService: ApplicationLifecycleService,
     private val sink: Sink
 ) : IngestionService {
     val log: Logger = Logger.getLogger(IngestionService::class.java.toString())
@@ -17,7 +16,7 @@ class IngestionServiceImpl(
             log.warning("Received log file is empty.")
             throw FileUploadException()
         }
-        sink.sendData(processFileContent(fileContent))
+//        sink.sendData(processFileContent(fileContent))
     }
 
     private fun processFileContent(

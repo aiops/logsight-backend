@@ -6,6 +6,7 @@ import ai.logsight.backend.exceptions.UserNotFoundException
 import ai.logsight.backend.user.domain.service.command.*
 import ai.logsight.backend.user.ports.out.persistence.UserEntity
 import ai.logsight.backend.user.ports.out.persistence.UserRepository
+import ai.logsight.backend.user.ports.out.persistence.UserStorageImpl
 import ai.logsight.backend.user.ports.out.persistence.UserType
 import io.mockk.every
 import io.mockk.mockk

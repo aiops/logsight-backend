@@ -1,3 +1,3 @@
 package ai.logsight.backend.exceptions
 
-class EmailExistsException(override val message: String?) : LogsightApplicationException(message)
+class EmailExistsException(override val message: String? = null) : LogsightApplicationException(message)
