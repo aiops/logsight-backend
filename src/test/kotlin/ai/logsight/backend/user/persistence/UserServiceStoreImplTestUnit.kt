@@ -14,12 +14,13 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.util.*
 
 internal class UserServiceStoreImplTestUnit {
 
     private val repository: UserRepository = mockk()
-    val userStorageImpl = UserStorageImpl(repository)
+    val userStorageImpl = UserStorageImpl(repository, BCryptPasswordEncoder())
 
     companion object {
         @JvmStatic

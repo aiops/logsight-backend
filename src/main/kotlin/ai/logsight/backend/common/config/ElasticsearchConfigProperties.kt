@@ -9,5 +9,5 @@ data class ElasticsearchConfigProperties(
     var username: String = "",
     var password: String = "",
     var address: String = "localhost:9200",
-    var protocol: String = "https"
+    var protocol: String = "http"
 )
