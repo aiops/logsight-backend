@@ -30,7 +30,7 @@ class ChartsController(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,
             dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId
+            applicationId = createChartRequest.applicationId.toLong()
         )
 
         // Create charts command
@@ -49,7 +49,7 @@ class ChartsController(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,
             dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId
+            applicationId = createChartRequest.applicationId.toLong()
         )
 
         // Create charts command

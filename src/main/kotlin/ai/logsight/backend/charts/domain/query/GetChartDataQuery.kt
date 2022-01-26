@@ -7,6 +7,6 @@ import ai.logsight.backend.charts.domain.dto.DataSourceConfig
 class GetChartDataQuery(
     val chartConfig: ChartConfig,
     val dataSource: DataSourceConfig,
-    val applicationId: String,
+    val applicationId: Long,
     val credentials: Credentials
 )

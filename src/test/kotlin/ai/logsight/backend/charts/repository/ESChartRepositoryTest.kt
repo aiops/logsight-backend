@@ -1,7 +1,10 @@
 package ai.logsight.backend.charts.repository
 
 import ai.logsight.backend.charts.ESChartsServiceImpl
-import ai.logsight.backend.charts.domain.charts.query.GetChartDataQuery
+import ai.logsight.backend.charts.domain.dto.ChartConfig
+import ai.logsight.backend.charts.domain.dto.Credentials
+import ai.logsight.backend.charts.domain.dto.DataSourceConfig
+import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.common.config.ElasticsearchConfigProperties
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,39 +20,16 @@ internal class ESChartRepositoryTest {
     private val service: ESChartsServiceImpl = ESChartsServiceImpl(repository)
 
     @Test
-    fun `should return heatmap data for system overview`() {
-        // given
-        val query = GetChartDataQuery(
-            "heatmap",
-            "2016-07-15T15:29:50+02:00",
-            "2022-07-15T15:29:50+02:00",
-            "system_overview",
-            "gmmlbirrlud46szjhax99imhok_jbossjson",
-            "gmmlbirrlud46szjhax99imhok_jbossjson_log_ad",
-            "elastic",
-            "elasticsearchpassword"
-        )
-        // when
-        val data = repository.getData(query)
-        // then
-        println(data)
-    }
-
-    @Test
     fun `should work with services`() {
         // given
         val query = GetChartDataQuery(
-            "heatmap",
-            "2016-07-15T15:29:50+02:00",
-            "2022-07-15T15:29:50+02:00",
-            "system_overview",
-            "gmmlbirrlud46szjhax99imhok_jbossjson",
-            "gmmlbirrlud46szjhax99imhok_jbossjson_log_ad",
-            "elastic",
-            "elasticsearchpassword"
+            credentials = Credentials("elastic", "elasticsearchpassword"),
+            chartConfig = ChartConfig("heatmap", "ngx", "now-2y", "now", "system_overview"),
+            dataSource = DataSourceConfig("elasticsearch", "bf2sop0vdr7ntnbxtpuyfen3s3g_hdfs_node_log_ad"),
+            applicationId = 5
         )
         // when
-        val data = service.createHeatmap(query)
+        val data = service.createHeatMap(query)
         // then
         println(data)
         // then
