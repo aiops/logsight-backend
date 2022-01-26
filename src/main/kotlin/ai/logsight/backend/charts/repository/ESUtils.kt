@@ -14,12 +14,11 @@ class ESUtils {
             return HttpEntity(json.toString(), headers)
         }
 
-        fun createKibanaRequestWithHeaders(timeJsonString: String): HttpEntity<String> {
+        fun createElasticSearchRequestWithHeaders(jsonRequest: String, headerName: String): HttpEntity<String> {
             val headers = HttpHeaders()
             headers.contentType = MediaType.APPLICATION_JSON
-            headers.add("kbn-xsrf", "true")
-            val json = JSONObject(timeJsonString)
-            return HttpEntity(json.toString(), headers)
+            headers.add(headerName, "true")
+            return HttpEntity(JSONObject(jsonRequest).toString(), headers)
         }
     }
 }
