@@ -1,7 +1,5 @@
 package ai.logsight.backend.security
 
-import ai.logsight.backend.encoder
-import com.loxbear.logsight.security.JWTAuthorizationFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
@@ -23,11 +21,10 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-        http.cors().and().csrf().disable().authorizeRequests()
-            .antMatchers(HttpMethod.POST, "/api/v1/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/put/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/logs/**").permitAll()
+        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll().antMatchers(HttpMethod.POST, "/api/put/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/api/logs/**").permitAll().antMatchers(HttpMethod.GET, "/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
@@ -35,22 +32,22 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
             .antMatchers(HttpMethod.POST, "/api/v1/user/login").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/login_id").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/login/login-link").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll()
-            .antMatchers("/v2/api-docs/**").permitAll()
-            .antMatchers("/swagger.json").permitAll()
-            .antMatchers("/swagger-ui.html").permitAll()
-            .antMatchers("/swagger-resources/**").permitAll()
-            .antMatchers("/webjars/**").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .addFilter(JWTAuthenticationFilter(authenticationManager()))
-            .addFilter(JWTAuthorizationFilter(authenticationManager()))
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll().antMatchers("/v2/api-docs/**")
+            .permitAll().antMatchers("/swagger.json").permitAll().antMatchers("/swagger-ui.html").permitAll()
+            .antMatchers("/swagger-resources/**").permitAll().antMatchers("/webjars/**").permitAll().anyRequest()
+            .authenticated().and().addFilter(JWTAuthenticationFilter(authenticationManager()))
+            .addFilter(JWTAuthorizationFilter(authenticationManager())).sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    }
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder {
+        return BCryptPasswordEncoder()
     }
 
     @Throws(Exception::class)
     public override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.userDetailsService<UserDetailsService>(userDetailsService).passwordEncoder(encoder())
+        auth.userDetailsService<UserDetailsService>(userDetailsService).passwordEncoder(passwordEncoder())
     }
 
     @Bean

@@ -1,8 +1,8 @@
 package ai.logsight.backend.user.extensions
 
-import ai.logsight.backend.user.ports.out.persistence.UserEntity
 import ai.logsight.backend.user.domain.LocalUser
 import ai.logsight.backend.user.domain.User
+import ai.logsight.backend.user.ports.out.persistence.UserEntity
 import java.time.LocalDateTime
 
 fun UserEntity.toLocalUser() = LocalUser(

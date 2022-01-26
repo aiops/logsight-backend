@@ -1,6 +1,6 @@
 package ai.logsight.backend.security
 
-import ai.logsight.backend.user.persistence.UserRepository
+import ai.logsight.backend.user.ports.out.persistence.UserRepository
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -13,9 +13,9 @@ class UserDetailsServiceImpl(val applicationUserRepository: UserRepository) : Us
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
-        val logsightUser = applicationUserRepository.findByEmail(username).orElseThrow { UsernameNotFoundException(username) }
-        if (logsightUser.activated)
-            return User(logsightUser.email, logsightUser.password, emptyList())
+        val logsightUser =
+            applicationUserRepository.findByEmail(username).orElseThrow { UsernameNotFoundException(username) }
+        if (logsightUser.activated) return User(logsightUser.email, logsightUser.password, emptyList())
         else throw UsernameNotFoundException(username)
     }
 }

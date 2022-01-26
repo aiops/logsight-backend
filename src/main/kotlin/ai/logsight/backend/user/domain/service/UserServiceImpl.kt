@@ -74,6 +74,10 @@ class UserServiceImpl(
         throw PasswordsNotMatchException()
     }
 
+    override fun findByEmail(email: String): User {
+        TODO("Not yet implemented")
+    }
+
     override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {
         return userStorageService.createLocalUser(createUserCommand)
     }

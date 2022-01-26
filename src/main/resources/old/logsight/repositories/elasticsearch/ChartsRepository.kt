@@ -1,7 +1,7 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
-import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
+import com.loxbear.logsight.charts.elasticsearch.PieChartData
 import com.loxbear.logsight.charts.elasticsearch.SystemOverviewData
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.UserRepository
@@ -92,13 +92,12 @@ class ChartsRepository(
         return restTemplate.postForEntity<String>("http://$elasticsearchUrl/$es_index_user_app/_search", request).body!!
     }
 
-
     fun getLogLevelPieChartData(
         es_index_user_app: String,
         startTime: String,
         stopTime: String,
         userKey: String
-    ): LogLevelPieChartData {
+    ): PieChartData {
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(user.email, user.key)
@@ -107,7 +106,7 @@ class ChartsRepository(
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 
-        return restTemplate.postForEntity<LogLevelPieChartData>(
+        return restTemplate.postForEntity<PieChartData>(
             "http://$elasticsearchUrl/$es_index_user_app/_search",
             request
         ).body!!
@@ -166,7 +165,7 @@ class ChartsRepository(
             .basicAuthentication(user.email, user.key)
             .build()
         if (compareTagId == null && baselineTagId == null) {
-            val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview_heatmap_request.json")
+            val jsonString: String = readFileAsString("${resourcesPath}queries/system_overview.json")
             val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
 

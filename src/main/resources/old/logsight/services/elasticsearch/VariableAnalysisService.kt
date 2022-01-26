@@ -1,9 +1,9 @@
 package com.loxbear.logsight.services.elasticsearch
 
-import com.loxbear.logsight.charts.data.LineChart
+import ai.logsight.backend.charts.domain.charts.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.elasticsearch.HitParam
-import com.loxbear.logsight.charts.elasticsearch.ResultBucket
+import com.loxbear.logsight.charts.elasticsearch.ValueResultBucket
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisSpecificTemplate
 import com.loxbear.logsight.entities.Application
@@ -193,8 +193,8 @@ class VariableAnalysisService(
     }
 
     private fun calculateTopTemplatesDifference(
-        top5TemplatesNow: List<ResultBucket>,
-        top5TemplatesOlder: List<ResultBucket>
+        top5TemplatesNow: List<ValueResultBucket>,
+        top5TemplatesOlder: List<ValueResultBucket>
     ): Map<String, List<TopNTemplatesData>> {
         val result: MutableMap<String, List<TopNTemplatesData>> = HashMap()
         val top5TemplatesOlderMap = top5TemplatesOlder.map { it.key to it }.toMap()

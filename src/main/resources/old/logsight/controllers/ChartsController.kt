@@ -1,9 +1,9 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.LineChart
-import com.loxbear.logsight.charts.data.LogLevelPieChart
-import com.loxbear.logsight.charts.data.LogLevelStackedLineChart
-import com.loxbear.logsight.charts.data.SystemOverviewHeatmapChart
+import ai.logsight.backend.charts.domain.charts.HeatmapChart
+import ai.logsight.backend.charts.domain.charts.LineChart
+import ai.logsight.backend.charts.domain.charts.LogLevelPieChart
+import ai.logsight.backend.charts.domain.charts.LogLevelStackedLineChart
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.ChartsService
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import utils.UtilsService
 import java.util.*
-
 
 @RestController
 @RequestMapping("/api/charts")
@@ -45,6 +44,7 @@ class ChartsController(
             chartsService.getAnomaliesBarChartDataAgg(applicationsIndexes, startTime, endTime, user.key)
         }
     }
+
     @GetMapping("/log_level_stacked_line_chart")
     fun getLogLevelStackedLineData(
         authentication: Authentication,
@@ -63,7 +63,7 @@ class ChartsController(
         @RequestParam(required = false) compareTagId: String?,
         @RequestParam(required = false) baselineTagId: String?,
         @RequestParam(required = false) applicationId: Long?
-    ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
+    ): HeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         val applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
         chartsService.getSystemOverviewHeatmapChart(
@@ -85,7 +85,7 @@ class ChartsController(
         @RequestParam compareTagId: String?,
         @RequestParam baselineTagId: String?,
         @RequestParam applicationId: Long?
-    ): SystemOverviewHeatmapChart? = userService.findByEmail(authentication.name).map { user ->
+    ): HeatmapChart? = userService.findByEmail(authentication.name).map { user ->
         val application = applicationId?.let { applicationService.findById(applicationId) }
         var applicationsIndexes = applicationService.getApplicationIndexesForIncidents(user, application)
         if (compareTagId != null && baselineTagId != null) {

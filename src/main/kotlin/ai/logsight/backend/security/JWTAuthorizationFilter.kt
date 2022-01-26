@@ -1,4 +1,4 @@
-package com.loxbear.logsight.security
+package ai.logsight.backend.security
 
 import ai.logsight.backend.security.SecurityConstants.HEADER_STRING
 import ai.logsight.backend.security.SecurityConstants.SECRET
@@ -35,10 +35,8 @@ class JWTAuthorizationFilter(authManager: AuthenticationManager?) : BasicAuthent
     private fun getAuthentication(request: HttpServletRequest): UsernamePasswordAuthenticationToken? {
         val token = request.getHeader(HEADER_STRING)
         if (token != null) {
-            val user: String? = JWT.require(Algorithm.HMAC512(SECRET.toByteArray()))
-                .build()
-                .verify(token.replace(TOKEN_PREFIX, ""))
-                .subject
+            val user: String? = JWT.require(Algorithm.HMAC512(SECRET.toByteArray())).build()
+                .verify(token.replace(TOKEN_PREFIX, "")).subject
             return if (user != null) {
                 UsernamePasswordAuthenticationToken(user, null, ArrayList())
             } else null

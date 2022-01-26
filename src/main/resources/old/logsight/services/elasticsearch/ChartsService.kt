@@ -1,5 +1,8 @@
 package com.loxbear.logsight.services.elasticsearch
 
+import ai.logsight.backend.charts.domain.charts.*
+import ai.logsight.backend.charts.domain.charts.models.ChartSeries
+import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
@@ -11,8 +14,10 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class ChartsService(val repository: ChartsRepository,
-                    val applicationService: ApplicationService) {
+class ChartsService(
+    val repository: ChartsRepository,
+    val applicationService: ApplicationService
+) {
 
     fun getAnomaliesBarChartData(
         es_index_user_app: String,
@@ -21,7 +26,7 @@ class ChartsService(val repository: ChartsRepository,
         userKey: String
     ): List<LineChart> {
 
-        val data =  repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
+        val data = repository.getAnomaliesBarChartData(es_index_user_app, startTime, stopTime, userKey)
             .aggregations.listAggregations.buckets.map {
                 val name = it.date.toDateTime()
                 val series = it.listBuckets.buckets.map { it2 ->
@@ -37,7 +42,6 @@ class ChartsService(val repository: ChartsRepository,
         return data
     }
 
-
     fun getAnomaliesBarChartDataAgg(
         es_index_user_app: String,
         startTime: String,
@@ -47,28 +51,48 @@ class ChartsService(val repository: ChartsRepository,
         var seriesList = mutableListOf<LineChartSeries>()
         val resultList = mutableListOf<LineChart>()
         val data = repository.getAnomaliesBarChartDataAgg(es_index_user_app, startTime, stopTime, userKey)
-        JSONObject(data).getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").forEach {
-            seriesList.add(LineChartSeries(name = "Anomaly", value = JSONObject(it.toString()).getJSONObject("listBuckets").getDouble("value")))
-            resultList.add(LineChart(name =ZonedDateTime.parse(JSONObject(it.toString()).getString("key_as_string")).toDateTime(), seriesList))
-            seriesList = mutableListOf<LineChartSeries>()
-        }
+        JSONObject(data).getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets")
+            .forEach {
+                seriesList.add(
+                    LineChartSeries(
+                        name = "Anomaly",
+                        value = JSONObject(it.toString()).getJSONObject("listBuckets").getDouble("value")
+                    )
+                )
+                resultList.add(
+                    LineChart(
+                        name = ZonedDateTime.parse(JSONObject(it.toString()).getString("key_as_string")).toDateTime(),
+                        seriesList
+                    )
+                )
+                seriesList = mutableListOf<LineChartSeries>()
+            }
         return resultList
-
     }
 
-
-    fun getLogLevelPieChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelPieChart {
-        val data = mutableListOf<LogLevelPoint>()
+    fun getLogLevelPieChartData(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): PieChart {
+        val data = mutableListOf<ChartSeriesPoint>()
         val esData = JSONObject(repository.getLogLevelPieChartDataAgg(es_index_user_app, startTime, stopTime, userKey))
             .getJSONObject("aggregations")
 
-        esData.keys().forEach{
-            data.add(LogLevelPoint(name = it.toString(), value = esData.getJSONObject(it.toString()).getDouble("value"), extra = PieExtra(code = "logs")))
+        esData.keys().forEach {
+            data.add(
+                ChartSeriesPoint(
+                    name = it.toString(),
+                    value = esData.getJSONObject(it.toString()).getDouble("value"),
+                    extra = PieExtra(code = "logs")
+                )
+            )
         }
         //        println(esData)
 //            .aggregations.listAggregations.buckets.forEach {
 //            data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
-        return LogLevelPieChart(data = data)
+        return PieChart(data = data)
     }
 
 //        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
@@ -77,9 +101,19 @@ class ChartsService(val repository: ChartsRepository,
 
 //    }
 
-    fun getLogLevelStackedLineChartData(es_index_user_app: String, startTime: String, stopTime: String, userKey: String): LogLevelStackedLineChart {
+    fun getLogLevelStackedLineChartData(
+        es_index_user_app: String,
+        startTime: String,
+        stopTime: String,
+        userKey: String
+    ): LogLevelStackedLineChart {
         val dict = mutableMapOf<String, MutableList<StackedLogLevelPoint>>()
-        val res = repository.getLogLevelStackedLineChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets
+        val res = repository.getLogLevelStackedLineChartData(
+            es_index_user_app,
+            startTime,
+            stopTime,
+            userKey
+        ).aggregations.listAggregations.buckets
         res.forEach {
             for (i in it.listBuckets.buckets) {
                 val list = dict[i.key] ?: mutableListOf()
@@ -102,32 +136,36 @@ class ChartsService(val repository: ChartsRepository,
         compareTagId: String?,
         baselineTagId: String?,
         intervalAggregate: String?
-    ): SystemOverviewHeatmapChart {
+    ): HeatmapChart {
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
-        repository.getSystemOverviewHeatmapChartData(esIndexUserAppLogAd,
+        val heatMapLogLevelSeries = mutableListOf<ChartSeries>()
+        repository.getSystemOverviewHeatmapChartData(
+            esIndexUserAppLogAd,
             startTime,
-            stopTime, user, compareTagId, baselineTagId, intervalAggregate).aggregations.listAggregations.buckets.forEach {
-            val listPoints = mutableListOf<HeatMapLogLevelPoint>()
+            stopTime, user, compareTagId, baselineTagId, intervalAggregate
+        ).aggregations.listAggregations.buckets.forEach {
+            val listPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
                 var name = ""
-                if (compareTagId == null && baselineTagId == null){
+                if (compareTagId == null && baselineTagId == null) {
                     name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("  ")
-                }else{
+                } else {
                     name = i.key.split("_").subList(1, i.key.split("_").size - 2).joinToString("  ")
                 }
-                listPoints.add(HeatMapLogLevelPoint(
-                    name = name,
-                    value = i.valueData.value,
-                    extra = PieExtra(""),
-                    id = UtilsService.getApplicationIdFromIndex(applications, i.key),
-                    count = i.docCount)
+                listPoints.add(
+                    ChartSeriesPoint(
+                        name = name,
+                        value = i.valueData.value,
+                        extra = PieExtra(""),
+                        id = UtilsService.getApplicationIdFromIndex(applications, i.key),
+                        count = i.docCount
+                    )
                 )
             }
 
-            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))
+            heatMapLogLevelSeries.add(ChartSeries(name = it.date.toDateTime(), series = listPoints))
         }
-        return SystemOverviewHeatmapChart(data = heatMapLogLevelSeries)
+        return HeatmapChart(data = heatMapLogLevelSeries)
     }
 
     fun getNewTemplatesBarChartData(
@@ -140,7 +178,17 @@ class ChartsService(val repository: ChartsRepository,
         intervalAggregate: String
     ): MutableList<LineChart> {
         val dataList = mutableListOf<LineChart>()
-        JSONObject(repository.getNewTemplatesBarChartData(es_index_user_app, startTime, stopTime, user, baselineTagId, compareTagId, intervalAggregate))
+        JSONObject(
+            repository.getNewTemplatesBarChartData(
+                es_index_user_app,
+                startTime,
+                stopTime,
+                user,
+                baselineTagId,
+                compareTagId,
+                intervalAggregate
+            )
+        )
             .getJSONObject("aggregations")
             .getJSONObject("listAggregations")
             .getJSONArray("buckets").forEach {
@@ -150,7 +198,7 @@ class ChartsService(val repository: ChartsRepository,
                 if (!JSONObject(it.toString()).getJSONObject("new_normal").toString().contains("null")) {
                     newNormal = JSONObject(it.toString()).getJSONObject("new_normal").getDouble("value")
                     newAnomalies = JSONObject(it.toString()).getJSONObject("new_anomalies").getDouble("value")
-                }else{
+                } else {
                     newNormal = 0.0
                     newAnomalies = 0.0
                 }
@@ -168,5 +216,4 @@ class ChartsService(val repository: ChartsRepository,
     fun String.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
 
     fun ZonedDateTime.toTimeWithSeconds(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
-
 }

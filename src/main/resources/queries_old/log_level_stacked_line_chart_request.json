@@ -1,0 +1,57 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "auto_date_histogram": {
+        "field": "@timestamp",
+        "buckets": 5
+      },
+      "aggs": {
+        "listBuckets": {
+          "terms": {
+            "field": "actual_level.keyword",
+            "order": {
+              "_count": "desc"
+            },
+            "size": 10
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
+  "_source": {
+    "excludes": []
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {},
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
+      "filter": [
+        {
+          "match_all": {}
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

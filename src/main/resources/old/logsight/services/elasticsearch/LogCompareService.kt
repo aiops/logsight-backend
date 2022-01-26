@@ -1,6 +1,6 @@
 package com.loxbear.logsight.services.elasticsearch
 
-import com.loxbear.logsight.charts.data.LineChart
+import ai.logsight.backend.charts.domain.charts.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.elasticsearch.*
 import com.loxbear.logsight.entities.LogsightUser
@@ -10,7 +10,6 @@ import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
 
 import org.springframework.stereotype.Service
