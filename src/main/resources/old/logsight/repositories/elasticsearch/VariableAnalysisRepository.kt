@@ -1,7 +1,7 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
-import com.loxbear.logsight.charts.elasticsearch.PieChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
 import com.loxbear.logsight.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder

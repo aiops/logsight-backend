@@ -11,7 +11,7 @@ import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfig
 class RestClientConfig : AbstractElasticsearchConfiguration() {
     @Bean
     override fun elasticsearchClient(): RestHighLevelClient {
-        val clientConfiguration = ClientConfiguration.builder().connectedTo("localhost:9200").build()
+        val clientConfiguration = ClientConfiguration.builder().connectedTo("localhost:9200").withBasicAuth("elastic", "elasticsearchpassword").build()
         return RestClients.create(clientConfiguration).rest()
     }
 }

@@ -75,7 +75,7 @@ class UserServiceImpl(
     }
 
     override fun findByEmail(email: String): User {
-        TODO("Not yet implemented")
+        return userStorageService.findUserByEmail(email)
     }
 
     override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {

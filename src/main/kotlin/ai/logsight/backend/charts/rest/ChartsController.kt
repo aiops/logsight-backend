@@ -9,18 +9,17 @@ import ai.logsight.backend.user.domain.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.*
 
-@Controller
+@RestController
+@RequestMapping("/api/v1/charts")
 class ChartsController(
     private val chartsService: ChartsService,
     private val userService: UserService
 ) {
 
-    @GetMapping("/heatmap")
-    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/heatmap")
+    @ResponseStatus(HttpStatus.OK)
     fun createHeatmap(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
@@ -32,6 +31,7 @@ class ChartsController(
             dataSource = createChartRequest.dataSource,
             applicationId = createChartRequest.applicationId.toLong()
         )
+        println(query)
 
         // Create charts command
 
@@ -49,7 +49,7 @@ class ChartsController(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,
             dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId.toLong()
+            applicationId = createChartRequest.applicationId
         )
 
         // Create charts command

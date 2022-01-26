@@ -21,11 +21,13 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll().antMatchers(HttpMethod.POST, "/api/put/**")
-            .permitAll().antMatchers(HttpMethod.POST, "/api/logs/**").permitAll().antMatchers(HttpMethod.GET, "/**")
-            .permitAll().antMatchers(HttpMethod.POST, "/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
+        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/user/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/fast_try/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/api/put/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/api/logs/**")
+            .permitAll().antMatchers(HttpMethod.GET, "/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/**")
+            .permitAll().antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
             .antMatchers(HttpMethod.PUT, "/api/auth/activate").permitAll()

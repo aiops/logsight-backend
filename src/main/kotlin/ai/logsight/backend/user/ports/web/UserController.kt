@@ -1,18 +1,21 @@
 package ai.logsight.backend.user.ports.web
 
-import ai.logsight.backend.encoder
 import ai.logsight.backend.security.authentication.AuthService
-import ai.logsight.backend.security.authentication.domain.AuthenticationToken
+import ai.logsight.backend.user.domain.User
 import ai.logsight.backend.user.domain.service.UserService
 import ai.logsight.backend.user.domain.service.command.*
+import ai.logsight.backend.user.extensions.toUserEntity
+import ai.logsight.backend.user.ports.out.persistence.UserEntity
 import ai.logsight.backend.user.ports.web.request.*
 import ai.logsight.backend.user.ports.web.response.*
 import ai.logsight.backend.user.rest.request.*
+import ai.logsight.backend.user.rest.response.LoginResponse
+import ai.logsight.backend.user.rest.response.UserDTO
 import ai.logsight.backend.user.service.command.CreateLoginCommand
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
@@ -22,11 +25,21 @@ class UserController(
     private val userService: UserService,
     private val authService: AuthService
 ) {
+
+    @GetMapping
+    fun getUser(
+        authentication: Authentication
+    ): User {
+        val user = userService.findByEmail(authentication.name)
+        return user
+    }
+
     /**
      * Register a new user in the system.
      */
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
         val createUserCommand = CreateUserCommand(
             email = createUserRequest.email,
@@ -95,19 +108,19 @@ class UserController(
      */
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): ResponseEntity<AuthenticationToken> {
+    fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): LoginResponse {
         val token = authService.authenticateUser(
             CreateLoginCommand(
                 email = loginUserRequest.email,
                 password = loginUserRequest.password
             )
         )
-        return ResponseEntity.ok().body(token)
+        val user = userService.findByEmail(loginUserRequest.email)
+        return LoginResponse(token = token.token, user = UserDTO(user.id, user.email))
     }
 
     @EventListener
     fun createSampleUser(event: ApplicationReadyEvent) {
-        println("Creating user")
         try {
             userService.createLocalUser(
                 CreateUserCommand(
@@ -118,6 +131,5 @@ class UserController(
         } catch (e: Exception) {
             println(e.message)
         }
-        println("User created")
     }
 }

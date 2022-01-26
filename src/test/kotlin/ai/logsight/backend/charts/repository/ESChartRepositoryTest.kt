@@ -25,7 +25,7 @@ internal class ESChartRepositoryTest {
         val query = GetChartDataQuery(
             credentials = Credentials("elastic", "elasticsearchpassword"),
             chartConfig = ChartConfig("heatmap", "ngx", "now-2y", "now", "system_overview"),
-            dataSource = DataSourceConfig("elasticsearch", "gmmlbirrlud46szjhax99imhok_jbossjson_log_ad"),
+            dataSource = DataSourceConfig("elasticsearch", "bf2sop0vdr7ntnbxtpuyfen3s3g_hdfs_node_log_ad"),
             applicationId = 5
         )
         // when

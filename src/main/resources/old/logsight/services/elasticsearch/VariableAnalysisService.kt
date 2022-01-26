@@ -3,7 +3,7 @@ package com.loxbear.logsight.services.elasticsearch
 import ai.logsight.backend.charts.domain.charts.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.elasticsearch.HitParam
-import com.loxbear.logsight.charts.elasticsearch.ValueResultBucket
+import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultBucket
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisSpecificTemplate
 import com.loxbear.logsight.entities.Application

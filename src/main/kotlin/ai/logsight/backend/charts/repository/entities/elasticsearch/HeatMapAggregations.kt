@@ -1,6 +1,5 @@
-package com.loxbear.logsight.charts.elasticsearch
-
+package ai.logsight.backend.charts.repository.entities.elasticsearch
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class HeatMapAggregations (val listAggregations: HeatMapListAggregations)
+data class HeatMapAggregations(val listAggregations: HeatMapListAggregations)
