@@ -1,5 +1,3 @@
 package ai.logsight.backend.exceptions
 
-import ai.logsight.backend.exceptions.LogsightApplicationException
-
-class UserNotFoundException : LogsightApplicationException()
+class UserNotFoundException(override val message: String?) : LogsightApplicationException(message)
