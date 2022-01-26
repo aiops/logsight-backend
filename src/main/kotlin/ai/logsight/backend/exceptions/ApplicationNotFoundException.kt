@@ -1,3 +1,3 @@
 package ai.logsight.backend.exceptions
 
-class ApplicationNotFoundException : LogsightApplicationException()
+class ApplicationNotFoundException(override val message: String?) : LogsightApplicationException(message)
