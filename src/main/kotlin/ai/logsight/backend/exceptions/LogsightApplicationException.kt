@@ -1,3 +1,3 @@
 package ai.logsight.backend.exceptions
 
-open class LogsightApplicationException(override val message: String?) : RuntimeException(message = message)
+open class LogsightApplicationException(override val message: String? = null) : Throwable(message = message)

@@ -1,5 +1,6 @@
 package ai.logsight.backend.user.persistence
 
+import ai.logsight.backend.user.ports.out.persistence.UserStorageImpl
 import org.mockito.Mockito
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

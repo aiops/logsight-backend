@@ -41,6 +41,7 @@ dependencies {
 //    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
     implementation("org.json:json:20160810")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
