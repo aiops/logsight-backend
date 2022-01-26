@@ -1,6 +1,6 @@
 package ai.logsight.backend.charts
 
-import ai.logsight.backend.charts.domain.charts.query.GetChartDataQuery
+import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.ESChartRepository
 import com.loxbear.logsight.charts.data.HeatMapLogLevelPoint
 import com.loxbear.logsight.charts.data.HeatMapLogLevelSeries

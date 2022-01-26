@@ -17,8 +17,3 @@ fun main(args: Array<String>) {
     println("ApplicationStarted")
     runApplication<LogsightBackendApplication>(*args)
 }
-
-@Bean
-fun encoder(): PasswordEncoder {
-    return BCryptPasswordEncoder()
-}

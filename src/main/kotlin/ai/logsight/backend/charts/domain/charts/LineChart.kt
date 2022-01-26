@@ -1,14 +1,6 @@
-package ai.logsight.backend.charts.domain.charts
+package com.loxbear.logsight.charts.data
 
-import ai.logsight.backend.charts.ESChart
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder
-
-class LineChart : ESChart {
-    override fun create() {
-        TODO("Not yet implemented")
-    }
-
-    override fun buildQuery(): TermsAggregationBuilder {
-        TODO("Not yet implemented")
-    }
-}
+data class LineChart(
+    val name: String,
+    val series: List<LineChartSeries>
+)
