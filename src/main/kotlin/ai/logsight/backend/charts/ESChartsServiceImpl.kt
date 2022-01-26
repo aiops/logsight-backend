@@ -19,13 +19,15 @@ import kotlin.reflect.full.memberProperties
 class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : ChartsService {
     override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
         // get the String response from elasticsearch and map it into a HeatMapData Object.
-        val heatMapData = Json { ignoreUnknownKeys = true }.decodeFromString<HeatMapData>(chartsRepository.getData(getChartDataQuery))
+        val heatMapData = Json { ignoreUnknownKeys = true }
+            .decodeFromString<HeatMapData>(chartsRepository.getData(getChartDataQuery))
         // map the HeatMapDataObject into HeatMapChart Object
         val heatMapSeries = mutableListOf<ChartSeries>()
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
-                val name = i.key.toString().split("_").subList(1, i.key.toString().split("_").size - 2).joinToString("  ")
+                val name = i.key.toString().split("_")
+                    .subList(1, i.key.toString().split("_").size - 2).joinToString("  ")
                 heatMapListPoints.add(
                     ChartSeriesPoint(
                         name = name,
@@ -40,7 +42,8 @@ class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : Cha
 
     override fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
-        val barChartData = Json { ignoreUnknownKeys = true }.decodeFromString<BarChartData>(chartsRepository.getData(getChartDataQuery))
+        val barChartData = Json { ignoreUnknownKeys = true }
+            .decodeFromString<BarChartData>(chartsRepository.getData(getChartDataQuery))
         // map the BarChartData into BarChart Object
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
@@ -54,10 +57,9 @@ class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : Cha
     }
 
     override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
-        // get the String response from elasticsearch and map it into a BarChartData Object.
-        val pieChartData = Json {
-            ignoreUnknownKeys = true
-        }.decodeFromString<PieChartData>(chartsRepository.getData(getChartDataQuery))
+        // get the String response from elasticsearch and map it into a PieChart Object.
+        val pieChartData = Json { ignoreUnknownKeys = true }
+            .decodeFromString<PieChartData>(chartsRepository.getData(getChartDataQuery))
         val pieChartSeries = mutableListOf<ChartSeriesPoint>()
         pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
             pieChartSeries.add(ChartSeriesPoint(name = it.name, it.get(pieChartData.aggregations) as Double))
