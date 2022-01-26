@@ -8,5 +8,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class ElasticsearchConfigProperties(
     var username: String = "",
     var password: String = "",
-    var address: String = "localhost:9200"
+    var address: String = "localhost:9200",
+    var protocol: String = "https"
 )

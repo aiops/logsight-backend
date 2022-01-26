@@ -1,3 +1,5 @@
 package ai.logsight.backend.connectors.zeromq
 
-class ZeroMqConnector : Conector()
+import ai.logsight.backend.connectors.Connector
+
+class ZeroMqConnector : Connector
