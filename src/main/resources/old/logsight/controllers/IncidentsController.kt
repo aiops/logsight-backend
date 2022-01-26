@@ -1,6 +1,6 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.IncidentTableData
+import ai.logsight.backend.charts.domain.charts.IncidentTableData
 import com.loxbear.logsight.charts.data.LineChartSeries
 import com.loxbear.logsight.charts.data.TopKIncidentTable
 import com.loxbear.logsight.services.ApplicationService

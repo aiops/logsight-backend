@@ -1,44 +1,67 @@
 package ai.logsight.backend.charts
 
+import ai.logsight.backend.charts.domain.charts.BarChart
+import ai.logsight.backend.charts.domain.charts.HeatmapChart
+import ai.logsight.backend.charts.domain.charts.PieChart
+import ai.logsight.backend.charts.domain.charts.models.ChartSeries
+import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.ESChartRepository
-import com.loxbear.logsight.charts.data.HeatMapLogLevelPoint
-import com.loxbear.logsight.charts.data.HeatMapLogLevelSeries
-import com.loxbear.logsight.charts.data.HeatmapChart
-import com.loxbear.logsight.charts.data.PieExtra
-import org.json.JSONObject
+import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
+import com.loxbear.logsight.charts.elasticsearch.BarChartData
+import com.loxbear.logsight.charts.elasticsearch.PieChartData
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
+import kotlin.reflect.full.memberProperties
 
 @Service
-class ESChartsServiceImpl(
-    private val chartsRepository: ESChartRepository
-) : ChartsService {
-    override fun createHeatmap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
-        val data = JSONObject(chartsRepository.getData(getChartDataQuery))
-        val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
-
-        data.getJSONObject("aggregations").getJSONObject("listAggregations").getJSONArray("buckets").forEach {
-            val jsonData = JSONObject(it.toString())
-            val listPoints = mutableListOf<HeatMapLogLevelPoint>()
-
-            for (i in jsonData.getJSONObject("listBuckets").getJSONArray("buckets")) {
-                val bucket = JSONObject(i) // ova ne treba vaka
-                val name = bucket.getJSONObject("key").toString().split("_")
-                    .subList(1, bucket.getJSONObject("key").toString().split("_").size - 2).joinToString("  ")
-
-                listPoints.add(
-                    HeatMapLogLevelPoint(
+class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : ChartsService {
+    override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
+        // get the String response from elasticsearch and map it into a HeatMapData Object.
+        val heatMapData = Json { ignoreUnknownKeys = true }.decodeFromString<HeatMapData>(chartsRepository.getData(getChartDataQuery))
+        // map the HeatMapDataObject into HeatMapChart Object
+        val heatMapSeries = mutableListOf<ChartSeries>()
+        heatMapData.aggregations.listAggregations.buckets.forEach {
+            val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
+            for (i in it.listBuckets.buckets) {
+                val name = i.key.toString().split("_").subList(1, i.key.toString().split("_").size - 2).joinToString("  ")
+                heatMapListPoints.add(
+                    ChartSeriesPoint(
                         name = name,
-                        value = bucket.getJSONObject("valueData").getDouble("value"),
-                        extra = PieExtra(""),
-                        id = getChartDataQuery.applicationId.toString(),
-                        count = bucket.getDouble("docCount")
+                        value = i.valueData.value,
                     )
                 )
             }
-
-            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = jsonData.getString("date"), series = listPoints))
+            heatMapSeries.add(ChartSeries(name = it.date.toString(), series = heatMapListPoints))
         }
-        return HeatmapChart(data = heatMapLogLevelSeries)
+        return HeatmapChart(data = heatMapSeries)
+    }
+
+    override fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart {
+        // get the String response from elasticsearch and map it into a BarChartData Object.
+        val barChartData = Json { ignoreUnknownKeys = true }.decodeFromString<BarChartData>(chartsRepository.getData(getChartDataQuery))
+        // map the BarChartData into BarChart Object
+        val barChartSeries = mutableListOf<ChartSeries>()
+        val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
+        barChartData.aggregations.listAggregations.buckets.forEach {
+            barChartSeriesPoints.add(ChartSeriesPoint(name = "Anomalies", value = it.bucketPrediction.value))
+            barChartSeriesPoints.add(ChartSeriesPoint(name = "ERROR", value = it.bucketError.value))
+            barChartSeriesPoints.add(ChartSeriesPoint(name = "WARN", value = it.bucketWarning.value))
+            barChartSeries.add(ChartSeries(name = it.date.toString(), series = barChartSeriesPoints))
+        }
+        return BarChart(data = barChartSeries)
+    }
+
+    override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
+        // get the String response from elasticsearch and map it into a BarChartData Object.
+        val pieChartData = Json {
+            ignoreUnknownKeys = true
+        }.decodeFromString<PieChartData>(chartsRepository.getData(getChartDataQuery))
+        val pieChartSeries = mutableListOf<ChartSeriesPoint>()
+        pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
+            pieChartSeries.add(ChartSeriesPoint(name = it.name, it.get(pieChartData.aggregations) as Double))
+        }
+        return PieChart(data = pieChartSeries)
     }
 }

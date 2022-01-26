@@ -1,21 +1,21 @@
 {
   "aggs": {
-    "ERROR": {
+    "error": {
       "sum": {
         "field": "log_levels.ERROR"
       }
     },
-    "INFO": {
+    "info": {
       "sum": {
         "field": "log_levels.INFO"
       }
     },
-    "WARN": {
+    "warn": {
       "sum": {
         "field": "log_levels.WARN"
       }
     },
-    "DEBUG": {
+    "debug": {
       "sum": {
         "field": "log_levels.DEBUG"
       }

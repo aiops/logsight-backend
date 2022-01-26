@@ -1,5 +1,8 @@
 package com.loxbear.logsight.services.elasticsearch
 
+import ai.logsight.backend.charts.domain.charts.*
+import ai.logsight.backend.charts.domain.charts.models.ChartSeries
+import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.repositories.elasticsearch.ChartsRepository
@@ -72,14 +75,14 @@ class ChartsService(
         startTime: String,
         stopTime: String,
         userKey: String
-    ): LogLevelPieChart {
-        val data = mutableListOf<LogLevelPoint>()
+    ): PieChart {
+        val data = mutableListOf<ChartSeriesPoint>()
         val esData = JSONObject(repository.getLogLevelPieChartDataAgg(es_index_user_app, startTime, stopTime, userKey))
             .getJSONObject("aggregations")
 
         esData.keys().forEach {
             data.add(
-                LogLevelPoint(
+                ChartSeriesPoint(
                     name = it.toString(),
                     value = esData.getJSONObject(it.toString()).getDouble("value"),
                     extra = PieExtra(code = "logs")
@@ -89,7 +92,7 @@ class ChartsService(
         //        println(esData)
 //            .aggregations.listAggregations.buckets.forEach {
 //            data.add(LogLevelPoint(name = it.key, value = it.docCount, extra = PieExtra(code = "logs")))
-        return LogLevelPieChart(data = data)
+        return PieChart(data = data)
     }
 
 //        repository.getLogLevelPieChartData(es_index_user_app, startTime, stopTime, userKey).aggregations.listAggregations.buckets.forEach {
@@ -135,13 +138,13 @@ class ChartsService(
         intervalAggregate: String?
     ): HeatmapChart {
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val heatMapLogLevelSeries = mutableListOf<HeatMapLogLevelSeries>()
+        val heatMapLogLevelSeries = mutableListOf<ChartSeries>()
         repository.getSystemOverviewHeatmapChartData(
             esIndexUserAppLogAd,
             startTime,
             stopTime, user, compareTagId, baselineTagId, intervalAggregate
         ).aggregations.listAggregations.buckets.forEach {
-            val listPoints = mutableListOf<HeatMapLogLevelPoint>()
+            val listPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
                 var name = ""
                 if (compareTagId == null && baselineTagId == null) {
@@ -150,7 +153,7 @@ class ChartsService(
                     name = i.key.split("_").subList(1, i.key.split("_").size - 2).joinToString("  ")
                 }
                 listPoints.add(
-                    HeatMapLogLevelPoint(
+                    ChartSeriesPoint(
                         name = name,
                         value = i.valueData.value,
                         extra = PieExtra(""),
@@ -160,7 +163,7 @@ class ChartsService(
                 )
             }
 
-            heatMapLogLevelSeries.add(HeatMapLogLevelSeries(name = it.date.toDateTime(), series = listPoints))
+            heatMapLogLevelSeries.add(ChartSeries(name = it.date.toDateTime(), series = listPoints))
         }
         return HeatmapChart(data = heatMapLogLevelSeries)
     }

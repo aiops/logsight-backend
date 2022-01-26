@@ -1,12 +1,9 @@
-package com.loxbear.logsight.charts.data
+package ai.logsight.backend.charts.domain.charts.models
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class HeatMapLogLevelPoint(
+data class ChartSeriesPoint(
     val name: String,
     val value: Double,
-    val extra: PieExtra,
-    val id: String,
-    val count: Double,
 )

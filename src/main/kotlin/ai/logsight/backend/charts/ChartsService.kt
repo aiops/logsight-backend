@@ -1,8 +1,12 @@
 package ai.logsight.backend.charts
 
+import ai.logsight.backend.charts.domain.charts.BarChart
+import ai.logsight.backend.charts.domain.charts.HeatmapChart
+import ai.logsight.backend.charts.domain.charts.PieChart
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
-import com.loxbear.logsight.charts.data.HeatmapChart
 
 interface ChartsService {
-    fun createHeatmap(getChartDataQuery: GetChartDataQuery): HeatmapChart
+    fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart
+    fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart
+    fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart
 }

@@ -1,9 +1,9 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.HeatmapChart
-import com.loxbear.logsight.charts.data.LineChart
-import com.loxbear.logsight.charts.data.LogLevelPieChart
-import com.loxbear.logsight.charts.data.LogLevelStackedLineChart
+import ai.logsight.backend.charts.domain.charts.HeatmapChart
+import ai.logsight.backend.charts.domain.charts.LineChart
+import ai.logsight.backend.charts.domain.charts.LogLevelPieChart
+import ai.logsight.backend.charts.domain.charts.LogLevelStackedLineChart
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.UserService
 import com.loxbear.logsight.services.elasticsearch.ChartsService

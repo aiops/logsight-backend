@@ -1,6 +1,6 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.LineChart
+import ai.logsight.backend.charts.domain.charts.LineChart
 import com.loxbear.logsight.models.LogCompareTable
 import com.loxbear.logsight.services.ApplicationService
 import com.loxbear.logsight.services.KafkaService

@@ -1,16 +1,11 @@
 package com.loxbear.logsight.repositories.elasticsearch
 
 import com.loxbear.logsight.charts.elasticsearch.LineChartData
-import com.loxbear.logsight.charts.elasticsearch.LogLevelPieChartData
+import com.loxbear.logsight.charts.elasticsearch.PieChartData
 import com.loxbear.logsight.repositories.UserRepository
-import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Repository
-import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 import utils.UtilsService
 import utils.UtilsService.Companion.readFileAsString
@@ -106,7 +101,7 @@ class VariableAnalysisRepository(
         stopTime: String,
         size: Int,
         userKey: String
-    ): LogLevelPieChartData {
+    ): PieChartData {
         val user = userRepository.findByKey(userKey).orElseThrow()
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(user.email, user.key)
@@ -115,7 +110,7 @@ class VariableAnalysisRepository(
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             .replace("template_size", size.toString())
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        return restTemplate.postForEntity<LogLevelPieChartData>(
+        return restTemplate.postForEntity<PieChartData>(
             "http://$elasticsearchUrl/$esIndexUserApp/_search",
             request
         ).body!!

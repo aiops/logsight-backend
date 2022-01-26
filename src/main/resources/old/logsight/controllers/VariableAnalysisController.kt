@@ -1,6 +1,6 @@
 package com.loxbear.logsight.controllers
 
-import com.loxbear.logsight.charts.data.LineChart
+import ai.logsight.backend.charts.domain.charts.LineChart
 import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHit
 import com.loxbear.logsight.models.SpecificTemplateRequest
 import com.loxbear.logsight.models.TopNTemplatesData

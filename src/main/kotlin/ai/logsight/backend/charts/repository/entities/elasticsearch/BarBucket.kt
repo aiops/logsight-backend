@@ -8,7 +8,8 @@ import java.time.ZonedDateTime
 data class BarBucket(
     @JsonProperty("key_as_string")
     val date: ZonedDateTime,
-    @JsonProperty("new_normal")
-    val newNormal: BarResult,
-    val newAnomalies: BarResult
+    val bucketInfo: ValueResultBucket,
+    val bucketWarning: ValueResultBucket,
+    val bucketError: ValueResultBucket,
+    val bucketPrediction: ValueResultBucket,
 )

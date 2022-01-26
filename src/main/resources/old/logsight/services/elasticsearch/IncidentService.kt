@@ -1,5 +1,6 @@
 package com.loxbear.logsight.services.elasticsearch
 
+import ai.logsight.backend.charts.domain.charts.IncidentTableData
 import com.loxbear.logsight.charts.data.*
 import com.loxbear.logsight.repositories.elasticsearch.IncidentRepository
 import org.json.JSONObject

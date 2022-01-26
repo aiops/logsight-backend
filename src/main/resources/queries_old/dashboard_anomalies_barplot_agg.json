@@ -6,22 +6,22 @@
         "buckets": 6
       },
       "aggs": {
-        "listBucketsPrediction": {
+        "bucketPrediction": {
           "sum": {
             "field": "prediction"
           }
         },
-        "listBucketsError": {
+        "bucketError": {
           "sum": {
             "field": "log_levels.ERROR"
           }
         },
-        "listBucketsInfo": {
+        "bucketInfo": {
           "sum": {
             "field": "log_levels.INFO"
           }
         },
-        "listBucketsWarning": {
+        "bucketsWarning": {
           "sum": {
             "field": "log_levels.WARNING"
           }
