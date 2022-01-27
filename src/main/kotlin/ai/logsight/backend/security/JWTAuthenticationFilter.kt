@@ -16,7 +16,7 @@ import javax.servlet.FilterChain
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import ai.logsight.backend.user.domain.User as LogsightUser
+import ai.logsight.backend.users.domain.User as LogsightUser
 
 class JWTAuthenticationFilter(private val authenticationManager2: AuthenticationManager) :
     UsernamePasswordAuthenticationFilter() {

@@ -12,7 +12,7 @@ class AnalyticsManagerLogSinkZeroMQ : AnalyticsManagerLogSink {
     val zmqSocket: ZMQ.Socket = AnalyticsManagerLogSinkConfiguration().zeroMqPubSocket()
     override fun sendLogs(msg: String): Int {
         zmqSocket.send(msg)
-        println("Sent $msg")
+        println("Sent ${msg}")
         return 0
     }
 }

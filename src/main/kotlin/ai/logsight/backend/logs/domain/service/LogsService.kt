@@ -4,4 +4,5 @@ import ai.logsight.backend.logs.domain.LogContext
 
 interface LogsService {
     fun forwardLogs(logContext: LogContext): Int
+    fun uploadFile(fileContent: String)
 }

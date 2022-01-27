@@ -1,11 +1,10 @@
 package ai.logsight.backend.email.service.helpers
 
-import ai.logsight.backend.common.config.CommonConfigurationProperties
+import ai.logsight.backend.elasticsearch.config.CommonConfigurationProperties
 import ai.logsight.backend.token.domain.Token
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.net.URL
-import java.util.*
 
 @Service
 class URIResolver(val commonConfig: CommonConfigurationProperties) {

@@ -18,19 +18,36 @@ class RestControllerAdvice {
 
     @ExceptionHandler(EmailExistsException::class)
     fun handleLogsightApplicationException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
-        val errorResponse =
-            ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, emailExistsException.message.toString())
+        val errorResponse = ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, emailExistsException.message.toString())
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
 
     @ExceptionHandler(AuthenticationException::class)
     fun handleLogsightAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
-        val errorResponse =
-            ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
+        val errorResponse = ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
     }
 
+    @ExceptionHandler(EmailExistsException::class)
+    fun handleLogsightEmailExistsException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, emailExistsException.message.toString())
 
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    }
+
+    @ExceptionHandler(InvalidFeatureException::class)
+    fun handleLogsightInvalidFeature(invalidFeatureException: InvalidFeatureException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, invalidFeatureException.message.toString())
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    }
+
+    @ExceptionHandler(PasswordsNotMatchException::class)
+    fun handleLogsightPasswordsNotMatch(passwordsNotMatchException: PasswordsNotMatchException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, passwordsNotMatchException.message.toString())
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    }
 }

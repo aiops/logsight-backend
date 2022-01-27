@@ -33,9 +33,16 @@ spring:
 
 logsight:
   elasticsearch:
-    username: "elastic"
-    password: "elasticsearchpassword"
-    address: "localhost:9200"
+    host: "localhost"
+    port: "9200"
+    protocol: "http"
+    credentials:
+      username: "elastic"
+      password: "elasticsearchpassword"
+
+  kibana:
+    host: "localhost"
+    port: "5601"
 
   token:
     duration: 15

@@ -6,7 +6,7 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.user.extensions.toUserEntity
+import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
 import java.util.*
 

@@ -1,6 +1,7 @@
 package ai.logsight.backend.application.ports.out.persistence
 
-import ai.logsight.backend.user.ports.out.persistence.UserEntity
+import ai.logsight.backend.security.KeyGenerator
+import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import java.util.*
 import javax.persistence.*
 
@@ -9,6 +10,9 @@ import javax.persistence.*
 class ApplicationEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
+
+    @Column(name = "application_key", nullable = false)
+    var applicationKey: String = KeyGenerator.generate(),
 
     @Column(name = "name")
     val name: String,

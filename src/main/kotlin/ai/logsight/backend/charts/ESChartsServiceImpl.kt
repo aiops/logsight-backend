@@ -7,20 +7,21 @@ import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import ai.logsight.backend.charts.repository.entities.elasticsearch.BarChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import kotlin.reflect.full.memberProperties
 
 @Service
 class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : ChartsService {
-    val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()).configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
     override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
         // get the String response from elasticsearch and map it into a HeatMapData Object.

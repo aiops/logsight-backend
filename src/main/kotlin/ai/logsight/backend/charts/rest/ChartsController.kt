@@ -1,14 +1,14 @@
 package ai.logsight.backend.charts.rest
 
 import ai.logsight.backend.charts.ChartsService
-import ai.logsight.backend.charts.domain.dto.Credentials
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.rest.request.ChartRequest
 import ai.logsight.backend.charts.rest.response.CreateChartResponse
-import ai.logsight.backend.user.domain.service.UserService
+import ai.logsight.backend.common.dto.Credentials
+import ai.logsight.backend.users.domain.service.UserService
+import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -24,7 +24,7 @@ class ChartsController(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findByEmail(authentication.name)
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
         val query = GetChartDataQuery(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,
@@ -44,7 +44,7 @@ class ChartsController(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findByEmail(authentication.name)
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
         val query = GetChartDataQuery(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,

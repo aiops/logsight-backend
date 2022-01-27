@@ -1,6 +1,6 @@
 package ai.logsight.backend.security
 
-import ai.logsight.backend.user.ports.out.persistence.UserRepository
+import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

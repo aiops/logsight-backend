@@ -2,12 +2,16 @@ package ai.logsight.backend.charts.repository
 
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.builders.ESQueryBuilder
-import ai.logsight.backend.common.config.ElasticsearchConfigProperties
+import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.RestTemplateConnector
+import ai.logsight.backend.elasticsearch.config.ElasticsearchConfigProperties
 import org.springframework.stereotype.Repository
+import org.springframework.web.util.UriComponentsBuilder
 
 @Repository
 class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) {
+    private val connector = RestTemplateConnector()
+
     fun getData(getDataQuery: GetChartDataQuery): String {
         val chartConfig = getDataQuery.chartConfig
         val query = ESQueryBuilder().buildQuery(
@@ -16,9 +20,10 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
             featureType = chartConfig.feature,
             chartType = chartConfig.type
         )
-        val url =
-            "${elasticsearchConfig.protocol}://${elasticsearchConfig.address}/${getDataQuery.dataSource.index}/_search" // Do it with URL BUILDER
-        val connector = RestTemplateConnector(url, getDataQuery.credentials.username, getDataQuery.credentials.password)
-        return connector.sendRequest(query)
+        val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.protocol).host(elasticsearchConfig.host)
+            .port(elasticsearchConfig.port).path(getDataQuery.dataSource.index).path("_search").build().toString()
+        return connector.sendRequest(
+            url, Credentials(getDataQuery.credentials.username, getDataQuery.credentials.password), query
+        )
     }
 }

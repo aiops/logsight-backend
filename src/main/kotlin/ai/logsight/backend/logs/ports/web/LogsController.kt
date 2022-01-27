@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
-@RequestMapping("/api/v1/logs")
+@RequestMapping("/api/v1/upload")
 class LogsController(
     val logsService: LogsService
 ) {
 
-    @PostMapping("/send/list")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun sendLogList(@Valid @RequestBody singleLogRequest: SendLogListRequest): SendLogsResponse {
         val logContext = LogContext(
@@ -29,7 +29,7 @@ class LogsController(
         return SendLogsResponse(numLogs)
     }
 
-    @PostMapping("/send/file")
+    @PostMapping("/file")
     @ResponseStatus(HttpStatus.OK)
     fun sendLogFile(@Valid @RequestBody singleLogRequest: SendLogListRequest): SendLogsResponse {
         TODO("Not yet implemented")

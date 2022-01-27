@@ -1,6 +1,6 @@
 package ai.logsight.backend.application.domain.service.command
 
-import ai.logsight.backend.user.domain.User
+import ai.logsight.backend.users.domain.User
 
 data class CreateApplicationCommand(
     val applicationName: String,
