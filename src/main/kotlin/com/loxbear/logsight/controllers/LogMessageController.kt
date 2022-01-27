@@ -99,6 +99,7 @@ class LogMessageController(
             JSONObject(requestBody).getLong("elasticsearchPeriod") * 1000 // from seconds to milliseconds
         val elasticsearchUser = JSONObject(requestBody).getString("elasticsearchUser")
         val elasticsearchPassword = JSONObject(requestBody).getString("elasticsearchPassword")
+        val elasticsearchTimestampName = JSONObject(requestBody).getString("elasticsearchTimestamp")
         // TODO there is no tracking of successfully setup connections
 
         // restTemplate creation
@@ -106,13 +107,13 @@ class LogMessageController(
             .basicAuthentication(elasticsearchUser, elasticsearchPassword)
             .build()
 
-        val stopTime = "now"
-        val startTime = "now-1h"
+        val stopTime = JSONObject(requestBody).getString("elasticsearchStartTime")
+        val startTime = JSONObject(requestBody).getString("elasticsearchEndTime")
 
         // try first query to check if connection is OK and if index exists
         val jsonString: String =
             UtilsService.readFileAsString("${resourcesPath}queries/get_all_data.json")
-        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime).replace("timestamp_name", elasticsearchTimestampName)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         try {
             JSONObject(
@@ -128,6 +129,7 @@ class LogMessageController(
                     elasticsearchUrl,
                     elasticsearchIndex,
                     elasticsearchPeriod,
+                    elasticsearchTimestampName,
                     restTemplate
                 )
             }
@@ -184,6 +186,7 @@ class LogMessageController(
         elasticsearchUrl: String,
         elasticsearchIndex: String,
         elasticsearchPeriod: Long,
+        elasticsearchTimestampName: String,
         restTemplate: RestTemplate
     ) {
         logger.info("Started elasticsearch polling thread.")
@@ -210,7 +213,7 @@ class LogMessageController(
 
                 val filteredData = data.filter { d ->
                     val log = JSONObject(d.toString())
-                    startTime = log.getJSONObject("_source").getString("@timestamp")
+                    startTime = log.getJSONObject("_source").getString(elasticsearchTimestampName)
                     log.has("_source") && log.getJSONObject("_source").has("kubernetes")
                 }
                 logger.info("${data.length() - filteredData.size} / ${data.length()} log messages were dropped due to missing k8s meta-information.")

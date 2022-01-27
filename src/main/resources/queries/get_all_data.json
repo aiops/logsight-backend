@@ -2,7 +2,7 @@
   "size": 10000,
   "sort": [
     {
-      "@timestamp": {
+      "timestamp_name": {
         "order": "asc",
         "unmapped_type": "boolean"
       }
@@ -13,7 +13,7 @@
     "must": [
     {
     "range": {
-    "@timestamp": {
+    "timestamp_name": {
     "format": "strict_date_optional_time",
     "gte": "start_time",
     "lte": "stop_time"
