@@ -19,13 +19,10 @@ spring:
     password: logsight
     driver-class-name: org.postgresql.Driver
   mail:
-    host: smtp.gmail.com
+    host: mail.privateemail.com
     port: 587
-    username: logsight.ai.noreply@gmail.com
-    password: makedonija123
-    properties.mail.smtp.auth: false
-    properties.mail.smtp.starttls.enable: true
-    properties.mail.transport.protocol: smtp
+    username: support@logsight.ai
+    password: tel12-5DOS
   thymeleaf:
     check-template: true
     check-template-location: true
