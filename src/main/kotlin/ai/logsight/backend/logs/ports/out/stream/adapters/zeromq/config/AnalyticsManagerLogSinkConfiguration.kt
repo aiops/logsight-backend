@@ -11,9 +11,8 @@ class AnalyticsManagerLogSinkConfiguration(
     @Bean
     fun zeroMqPubSocket(): ZMQ.Socket {
         val context = ZMQ.context(1)
-        val socket = context.socket(SocketType.PUB)
-        val connected = socket.connect("${logSinkConfig.protocol}://${logSinkConfig.host}:${logSinkConfig.port}")
-        println(connected)
+        val socket = context.socket(SocketType.PUSH)
+        socket.bind("${logSinkConfig.protocol}://${logSinkConfig.host}:${logSinkConfig.port}")
         return socket
     }
 }
