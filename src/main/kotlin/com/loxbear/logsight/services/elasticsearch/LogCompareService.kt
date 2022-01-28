@@ -2,7 +2,9 @@ package com.loxbear.logsight.services.elasticsearch
 
 import com.loxbear.logsight.charts.data.LineChart
 import com.loxbear.logsight.charts.data.LineChartSeries
-import com.loxbear.logsight.charts.elasticsearch.*
+import com.loxbear.logsight.charts.elasticsearch.HitParam
+import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHitCompare
+import com.loxbear.logsight.charts.elasticsearch.VariableAnalysisHitCompareCount
 import com.loxbear.logsight.entities.LogsightUser
 import com.loxbear.logsight.models.LogCompareTable
 import com.loxbear.logsight.repositories.elasticsearch.LogCompareRepository
@@ -10,13 +12,11 @@ import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Value
+import org.slf4j.LoggerFactory
 import org.springframework.boot.web.client.RestTemplateBuilder
-
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import utils.UtilsService
-import java.lang.ClassCastException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -27,13 +27,13 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 
-
 @Service
 class LogCompareService(
     val logCompareRepository: LogCompareRepository,
     val applicationService: ApplicationService,
 
 ) {
+    val logger: org.slf4j.Logger = LoggerFactory.getLogger(ApplicationService::class.java)
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     val restTemplate: RestTemplate = RestTemplateBuilder().build()
@@ -43,12 +43,16 @@ class LogCompareService(
         user: LogsightUser
     ): MutableList<String> {
         val dataList = mutableListOf<String>()
-        JSONObject(logCompareRepository.getApplicationVersions(applicationsIndexes, user.key))
-            .getJSONObject("aggregations")
-            .getJSONObject("listAggregations")
-            .getJSONArray("buckets").forEach {
-                dataList.add(JSONObject(it.toString()).getString("key"))
-            }
+        try {
+            JSONObject(logCompareRepository.getApplicationVersions(applicationsIndexes, user.key))
+                .getJSONObject("aggregations")
+                .getJSONObject("listAggregations")
+                .getJSONArray("buckets").forEach {
+                    dataList.add(JSONObject(it.toString()).getString("key"))
+                }
+        } catch (e: Exception) {
+            logger.info("No application indices found.")
+        }
         return dataList
     }
 
@@ -138,7 +142,7 @@ class LogCompareService(
             .getJSONArray("buckets").map {
                 val jsonData = JSONObject(it.toString())
                 val name = jsonData.getString("key")
-                val series = jsonData.getJSONObject("tags").getJSONArray("buckets").map{ it2 ->
+                val series = jsonData.getJSONObject("tags").getJSONArray("buckets").map { it2 ->
                     val jsonData2 = JSONObject(it2.toString())
                     LineChartSeries(name = jsonData2.getString("key"), value = jsonData2.getDouble("doc_count"))
                 }
@@ -154,13 +158,22 @@ class LogCompareService(
         user: LogsightUser,
         baselineTagId: String,
         compareTagId: String
-    ) : MutableList<LogCompareTable> {
+    ): MutableList<LogCompareTable> {
         val dataList = mutableListOf<LogCompareTable>()
         val applications = applicationService.findAllByUser(user).map { it.name to it.id }.toMap()
-        val data = JSONObject(logCompareRepository.getLogCompareData(applicationsIndexes, startTime, stopTime, user.key, baselineTagId, compareTagId))
+        val data = JSONObject(
+            logCompareRepository.getLogCompareData(
+                applicationsIndexes,
+                startTime,
+                stopTime,
+                user.key,
+                baselineTagId,
+                compareTagId
+            )
+        )
             .getJSONObject("hits").getJSONArray("hits").forEach {
                 val jsonData = JSONObject(it.toString())
-                val countPrediction = 1.0//jsonData.getJSONObject("_source").getDouble("prediction")
+                val countPrediction = 1.0 // jsonData.getJSONObject("_source").getDouble("prediction")
                 val timestamp = jsonData.getJSONObject("_source").getString("@timestamp")
                 val timestampStart = jsonData.getJSONObject("_source").getString("timestamp_start")
                 val timestampEnd = jsonData.getJSONObject("_source").getString("timestamp_end")
@@ -171,14 +184,14 @@ class LogCompareService(
                 val countAnomalies = JSONArray(jsonData.getJSONObject("_source").getString("message"))
                 val countAnomalyList = mutableListOf<VariableAnalysisHitCompareCount>()
 
-                for(i in 0 until countAnomalies.length()){
+                for (i in 0 until countAnomalies.length()) {
                     val newTemplateData = JSONObject(countAnomalies[i].toString())
                     val newTemplate = newTemplateData.getString("template")
                     val appName = newTemplateData.getString("app_name")
-                    val newTemplateTimestamp =  newTemplateData.getString("@timestamp")
-                    var newTemplatePrediction: String = if (newTemplateData.getDouble("prediction") > 0){
+                    val newTemplateTimestamp = newTemplateData.getString("@timestamp")
+                    var newTemplatePrediction: String = if (newTemplateData.getDouble("prediction") > 0) {
                         "Anomaly"
-                    }else{
+                    } else {
                         "Normal"
                     }
 //                    val newTemplatePrediction = newTemplateData.getDouble("prediction")
@@ -195,19 +208,18 @@ class LogCompareService(
                     while (keys.hasNext()) {
                         val key = keys.next()
                         if (key.startsWith("param_")) {
-                            try{
+                            try {
                                 params.add(HitParam(key, newTemplateData.getString(key)))
-                            }catch (e: JSONException){
+                            } catch (e: JSONException) {
                                 continue
                             }
-
                         }
                     }
                     val templateToGoList = mutableListOf<VariableAnalysisHitCompare>()
-                    val templatesToGo =  newTemplateData.getJSONArray("templates_to_go")
-                    val expectedRates =  newTemplateData.getJSONArray("smrs")
-                    val ratesNow =  newTemplateData.getJSONArray("rate_now")
-                    for (j in 0 until templatesToGo.length()){
+                    val templatesToGo = newTemplateData.getJSONArray("templates_to_go")
+                    val expectedRates = newTemplateData.getJSONArray("smrs")
+                    val ratesNow = newTemplateData.getJSONArray("rate_now")
+                    for (j in 0 until templatesToGo.length()) {
                         val item = JSONObject(templatesToGo[j].toString())
                         val hitParams = mutableListOf<HitParam>()
                         val hitKeys: Iterator<String> = item.keys()
@@ -220,30 +232,33 @@ class LogCompareService(
                         var rateNow = 0.0
                         try {
                             rateNow = (ratesNow[j] as BigDecimal).toDouble()
-                        }catch (e: ClassCastException){
+                        } catch (e: ClassCastException) {
                             rateNow = (ratesNow[j] as Int).toDouble()
                         }
                         var expectedRate = 0.0
                         try {
                             expectedRate = (expectedRates[j] as BigDecimal).toDouble()
-                        }catch (e: ClassCastException){
+                        } catch (e: ClassCastException) {
                             expectedRate = (expectedRates[j] as Int).toDouble()
                         }
 
-                        templateToGoList.add(VariableAnalysisHitCompare(
-                            message = item.getString("message"),
-                            template = item.getString("template"),
-                            prediction = if (item.getDouble("prediction") > 0){
-                                "Anomaly"
-                            }else{
-                                "Normal"
-                            },
-                            params = hitParams,
-                            timestamp = item.getString("@timestamp"),
-                            actualLevel = item.getString("actual_level"),
-                            applicationId = applications[appName]!!,
-                            rateNow = roundOffDecimal(rateNow),
-                            expectedRate = roundOffDecimal(expectedRate)))
+                        templateToGoList.add(
+                            VariableAnalysisHitCompare(
+                                message = item.getString("message"),
+                                template = item.getString("template"),
+                                prediction = if (item.getDouble("prediction") > 0) {
+                                    "Anomaly"
+                                } else {
+                                    "Normal"
+                                },
+                                params = hitParams,
+                                timestamp = item.getString("@timestamp"),
+                                actualLevel = item.getString("actual_level"),
+                                applicationId = applications[appName]!!,
+                                rateNow = roundOffDecimal(rateNow),
+                                expectedRate = roundOffDecimal(expectedRate)
+                            )
+                        )
 
                         ratioScoreCount += abs(rateNow - expectedRate)
                     }
@@ -266,14 +281,14 @@ class LogCompareService(
                 }
 
                 val newTemplateList = mutableListOf<VariableAnalysisHitCompare>()
-                for (i in newTemplates){
+                for (i in newTemplates) {
                     val newTemplateData = JSONObject(JSONArray(i.toString())[0].toString())
                     val newTemplate = newTemplateData.getString("template")
                     val appName = newTemplateData.getString("app_name")
-                    val newTemplateTimestamp =  newTemplateData.getString("@timestamp")
-                    val newTemplatePrediction: String = if (newTemplateData.getDouble("prediction") > 0){
+                    val newTemplateTimestamp = newTemplateData.getString("@timestamp")
+                    val newTemplatePrediction: String = if (newTemplateData.getDouble("prediction") > 0) {
                         "Anomaly"
-                    }else{
+                    } else {
                         "Normal"
                     }
                     val newTemplateMessage = newTemplateData.getString("message")
@@ -286,7 +301,6 @@ class LogCompareService(
                         val key = keys.next()
                         if (key.startsWith("param_")) {
                             params.add(HitParam(key, newTemplateData.getString(key)))
-
                         }
                     }
                     val variableHit = VariableAnalysisHitCompare(
@@ -304,7 +318,10 @@ class LogCompareService(
                 }
                 dataList.add(
                     LogCompareTable(
-                        applicationId = UtilsService.getApplicationIdFromIndex(applications, jsonData["_index"].toString()),
+                        applicationId = UtilsService.getApplicationIdFromIndex(
+                            applications,
+                            jsonData["_index"].toString()
+                        ),
                         indexName = jsonData["_index"].toString(),
                         timestamp = timestamp,
                         prediction = countPrediction,
@@ -332,4 +349,3 @@ class LogCompareService(
     fun ZonedDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
     fun LocalDateTime.toDateTime(): String = this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))
 }
-

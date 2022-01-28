@@ -46,14 +46,19 @@ class LogMessageController(
 
     @PostMapping("/test_elasticsearch")
     fun testElasticsearch(@RequestBody elasticsearchConfigRequest: ElasticsearchConfigRequest): ResponseEntity<ApplicationResponse> {
-        logger.info("Testing $elasticsearchConfigRequest")
+        logger.info(
+            "Testing elasticsearch connection on ${elasticsearchConfigRequest.elasticsearchUrl} " +
+                "with index ${elasticsearchConfigRequest.elasticsearchIndex} for user " +
+                elasticsearchConfigRequest.elasticsearchUser
+        )
         try {
             val uri = URI(elasticsearchConfigRequest.elasticsearchUrl)
             elasticsearchTestConnect(
                 uri,
                 elasticsearchConfigRequest.elasticsearchIndex,
                 elasticsearchConfigRequest.elasticsearchUser,
-                elasticsearchConfigRequest.elasticsearchPassword
+                elasticsearchConfigRequest.elasticsearchPassword,
+                elasticsearchConfigRequest.elasticsearchTimestamp
             )
         } catch (e: Exception) {
             logger.warn(
@@ -99,7 +104,7 @@ class LogMessageController(
             JSONObject(requestBody).getLong("elasticsearchPeriod") * 1000 // from seconds to milliseconds
         val elasticsearchUser = JSONObject(requestBody).getString("elasticsearchUser")
         val elasticsearchPassword = JSONObject(requestBody).getString("elasticsearchPassword")
-        val elasticsearchTimestampName = JSONObject(requestBody).getString("elasticsearchTimestamp")
+        val timestampKey = JSONObject(requestBody).getString("elasticsearchTimestamp")
         // TODO there is no tracking of successfully setup connections
 
         // restTemplate creation
@@ -113,7 +118,8 @@ class LogMessageController(
         // try first query to check if connection is OK and if index exists
         val jsonString: String =
             UtilsService.readFileAsString("${resourcesPath}queries/get_all_data.json")
-        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime).replace("timestamp_name", elasticsearchTimestampName)
+        val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("timestamp_name", timestampKey)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         try {
             JSONObject(
@@ -129,8 +135,9 @@ class LogMessageController(
                     elasticsearchUrl,
                     elasticsearchIndex,
                     elasticsearchPeriod,
-                    elasticsearchTimestampName,
-                    restTemplate
+                    timestampKey,
+                    restTemplate,
+                    timestampKey
                 )
             }
             return ResponseEntity(
@@ -159,12 +166,12 @@ class LogMessageController(
         }
     }
 
-    fun elasticsearchTestConnect(uri: URI, index: String, user: String, password: String) {
+    fun elasticsearchTestConnect(uri: URI, index: String, user: String, password: String, timestampKey: String) {
         // restTemplate creation
         val restTemplate = RestTemplateBuilder()
             .basicAuthentication(user, password)
             .build()
-        val request = getQueryRequest("now-1h", "now")
+        val request = getQueryRequest("now-1h", "now", timestampKey)
         JSONObject(
             restTemplate.postForEntity<String>(
                 "$uri/$index/_search",
@@ -174,10 +181,11 @@ class LogMessageController(
         restTemplate.getForEntity(uri, String::class.java)
     }
 
-    fun getQueryRequest(startTime: String, stopTime: String): HttpEntity<String> {
+    fun getQueryRequest(startTime: String, stopTime: String, timestampKey: String): HttpEntity<String> {
         val jsonString: String =
             UtilsService.readFileAsString("${resourcesPath}queries/get_all_data.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("timestamp_name", timestampKey)
         return UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
     }
 
@@ -187,57 +195,75 @@ class LogMessageController(
         elasticsearchIndex: String,
         elasticsearchPeriod: Long,
         elasticsearchTimestampName: String,
-        restTemplate: RestTemplate
+        restTemplate: RestTemplate,
+        timestampKey: String
     ) {
         logger.info("Started elasticsearch polling thread.")
         // start to query with a period of 2 years
-        var stopTime = "now"
+        val stopTime = "now"
         var startTime = "now-30m"
+        val batchSize = 50000
+        var currentSize = 0
         // i set this count as a threshold for how many times we wait without data before exiting the thread. Currently, set to 1 day.
-        val waitingCount = 1440
+        val waitingCount = if (elasticsearchPeriod > 0) 86400 / elasticsearchPeriod else 86400
         var countEmpty = 0
+        val appLogMap: HashMap<String, ArrayList<LogMessage>> = hashMapOf()
         while (countEmpty < waitingCount) {
-            val appLogMap: HashMap<String, ArrayList<LogMessage>> = hashMapOf()
+            appLogMap.clear()
             while (true) {
-                val data = loadESData(restTemplate, elasticsearchUrl, elasticsearchIndex, startTime, stopTime)
-
-                if (data.length() == 0) {
-                    logger.info("No data received.")
-                    countEmpty += 1 // if there is no data, increase the counter (this is when we have reach some threshold for the thread to finish)
-                    Thread.sleep(60000)
-                    continue
-                } else {
-                    logger.info("${data.length()} data objects received")
-                    countEmpty = 0
-                }
-
-                val filteredData = data.filter { d ->
-                    val log = JSONObject(d.toString())
-                    startTime = log.getJSONObject("_source").getString(elasticsearchTimestampName)
-                    log.has("_source") && log.getJSONObject("_source").has("kubernetes")
-                }
-                logger.info("${data.length() - filteredData.size} / ${data.length()} log messages were dropped due to missing k8s meta-information.")
-
-                val appLogPairs = filteredData.map { d ->
-                    val log = JSONObject(d.toString()).getJSONObject("_source")
-                    if (log.has("log")) {
-                        log.put("message", log.getString("log"))
-                        log.remove("log")
-                    }
-                    log.put("tag", log.getJSONObject("kubernetes").getString("container_image_id"))
-
-                    val appName = log.getJSONObject("kubernetes").getString("container_name")
-                    val appNameClean: String = appName.toLowerCase().replace(Regex("[^a-z0-9]"), "")
-                    Pair(appNameClean, log.toString())
-                }
-                appLogPairs.forEach { appLog ->
-                    if (appLogMap.contains(appLog.first)) {
-                        appLogMap[appLog.first]?.add(LogMessage(appLog.second))
+                currentSize = 0
+                while (currentSize < batchSize) {
+                    val data = loadESData(restTemplate, elasticsearchUrl, elasticsearchIndex, startTime, stopTime, timestampKey)
+                    currentSize += data.length()
+                    if (data.length() == 0) {
+                        logger.info("No data received.")
+                        countEmpty += 1 // if there is no data, increase the counter (this is when we have reach some threshold for the thread to finish)
+                        break
                     } else {
-                        appLogMap[appLog.first] = arrayListOf()
+                        logger.info("${data.length()} data objects received")
+                        countEmpty = 0
                     }
+
+                    val filteredData = data.filter { d ->
+                        val log = JSONObject(d.toString())
+                        startTime = log.getJSONObject("_source").getString(elasticsearchTimestampName)
+                        log.has("_source") && log.getJSONObject("_source").has("kubernetes")
+                    }
+                    logger.info("${data.length() - filteredData.size} / ${data.length()} log messages were dropped due to missing k8s meta-information.")
+
+                    val appLogPairs = filteredData.map { d ->
+                        val log = JSONObject(d.toString()).getJSONObject("_source")
+                        if (log.has("log")) {
+                            log.put("message", log.getString("log"))
+                            log.remove("log")
+                        }
+
+                        val k8sMeta = log.getJSONObject("kubernetes")
+                        if (k8sMeta.has("container_image_id")) {
+                            log.put("tag", k8sMeta.getString("container_image_id"))
+                        } else {
+                            log.put("tag", k8sMeta.getString("default"))
+                        }
+
+                        if (k8sMeta.has("container_name")) {
+                            val appName = k8sMeta.getString("container_name")
+                            val appNameClean: String = appName.toLowerCase().replace(Regex("[^a-z0-9]"), "")
+                            Pair(appNameClean, log.toString())
+                        } else {
+                            Pair("default", log.toString())
+                        }
+                    }
+                    appLogPairs.forEach { appLog ->
+                        if (appLogMap.contains(appLog.first)) {
+                            appLogMap[appLog.first]?.add(LogMessage(appLog.second))
+                        } else {
+                            appLogMap[appLog.first] = arrayListOf()
+                        }
+                    }
+                    if (data.length() < 10000)
+                        break
                 }
-                if (data.length() < 10000)
+                if (currentSize < batchSize)
                     break
             }
 
@@ -277,11 +303,13 @@ class LogMessageController(
         elasticsearchUrl: String,
         elasticsearchIndex: String,
         startTime: String,
-        stopTime: String
+        stopTime: String,
+        timestampKey: String
     ): JSONArray {
         val jsonString: String =
             UtilsService.readFileAsString("${resourcesPath}queries/get_all_data.json")
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
+            .replace("timestamp_name", timestampKey)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
         logger.info("Executing polling query request.")
         return JSONObject(

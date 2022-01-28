@@ -5,5 +5,6 @@ data class ElasticsearchConfigRequest(
     val elasticsearchIndex: String,
     val elasticsearchPeriod: String,
     val elasticsearchUser: String,
-    val elasticsearchPassword: String
+    val elasticsearchPassword: String,
+    val elasticsearchTimestamp: String
 )
