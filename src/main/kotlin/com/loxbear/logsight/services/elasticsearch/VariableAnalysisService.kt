@@ -90,11 +90,16 @@ class VariableAnalysisService(
         )
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
         return resp.getJSONObject("hits").getJSONArray("hits").mapNotNull {
-            val hit = JSONObject(it.toString()).getJSONObject("_source")
-            val timestamp = LocalDateTime.parse(hit.getString("@timestamp"), formatter)
-            if (hit.has(param))
-                VariableAnalysisSpecificTemplate(timestamp, hit.getString(param)) //.replace("[^\\d.]", "")
-            else null
+            try {
+                val hit = JSONObject(it.toString()).getJSONObject("_source")
+                val timestamp = LocalDateTime.parse(hit.getString("@timestamp"), formatter)
+                if (hit.has(param))
+                    VariableAnalysisSpecificTemplate(timestamp, hit.getString(param))
+                else
+                    null
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 

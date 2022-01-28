@@ -1,10 +1,11 @@
 package utils
 
+import com.loxbear.logsight.services.ApplicationService
 import org.json.JSONObject
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import java.lang.Exception
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.time.LocalDateTime
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit
 class UtilsService {
 
     companion object {
+        val logger: org.slf4j.Logger = LoggerFactory.getLogger(ApplicationService::class.java)
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
         val formatterWithoutSeconds = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
         fun readFileAsString(path: String): String {
@@ -24,7 +26,12 @@ class UtilsService {
         fun createElasticSearchRequestWithHeaders(timeJsonString: String): HttpEntity<String> {
             val headers = HttpHeaders()
             headers.contentType = MediaType.APPLICATION_JSON
-            val json = JSONObject(timeJsonString)
+            val json = try {
+                JSONObject(timeJsonString)
+            } catch (e: Exception) {
+                logger.info("Received invalid json.")
+                JSONObject()
+            }
             return HttpEntity(json.toString(), headers)
         }
 
@@ -36,7 +43,7 @@ class UtilsService {
             return HttpEntity(json.toString(), headers)
         }
 
-        //TODO should be improved
+        // TODO should be improved
         fun getLeadingNumber(param: String): String = param.trim().takeWhile { c -> c.isDigit() || c == '.' }
 
         fun getApplicationIdFromIndex(applications: Map<String, Long>, index: String): Long {
@@ -55,7 +62,7 @@ class UtilsService {
                 val startDate = try {
                     ZonedDateTime.parse(startTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 } catch (e: Exception) {
-                    try { //doesn't look good, but it works
+                    try { // doesn't look good, but it works
                         LocalDateTime.parse(startTimeString, formatter)
                     } catch (e: Exception) {
                         LocalDateTime.parse(startTimeString, formatterWithoutSeconds)
@@ -64,7 +71,7 @@ class UtilsService {
                 val endDate = try {
                     ZonedDateTime.parse(endTimeString, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 } catch (e: Exception) {
-                    try { //doesn't look good, but it works
+                    try { // doesn't look good, but it works
                         LocalDateTime.parse(endTimeString, formatter)
                     } catch (e: Exception) {
                         LocalDateTime.parse(endTimeString, formatterWithoutSeconds)

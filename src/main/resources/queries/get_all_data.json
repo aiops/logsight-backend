@@ -15,7 +15,7 @@
     "range": {
     "timestamp_name": {
     "format": "strict_date_optional_time",
-    "gte": "start_time",
+    "gt": "start_time",
     "lte": "stop_time"
     }
     }

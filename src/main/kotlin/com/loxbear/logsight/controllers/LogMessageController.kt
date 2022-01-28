@@ -112,8 +112,8 @@ class LogMessageController(
             .basicAuthentication(elasticsearchUser, elasticsearchPassword)
             .build()
 
-        val stopTime = JSONObject(requestBody).getString("elasticsearchStartTime")
-        val startTime = JSONObject(requestBody).getString("elasticsearchEndTime")
+        val stopTime = JSONObject(requestBody).getString("elasticsearchEndTime")
+        val startTime = JSONObject(requestBody).getString("elasticsearchStartTime")
 
         // try first query to check if connection is OK and if index exists
         val jsonString: String =
@@ -137,7 +137,8 @@ class LogMessageController(
                     elasticsearchPeriod,
                     timestampKey,
                     restTemplate,
-                    timestampKey
+                    timestampKey,
+                    startTime
                 )
             }
             return ResponseEntity(
@@ -196,13 +197,14 @@ class LogMessageController(
         elasticsearchPeriod: Long,
         elasticsearchTimestampName: String,
         restTemplate: RestTemplate,
-        timestampKey: String
+        timestampKey: String,
+        startTime: String
     ) {
         logger.info("Started elasticsearch polling thread.")
         // start to query with a period of 2 years
         val stopTime = "now"
-        var startTime = "now-30m"
-        val batchSize = 50000
+        var startTimeVar = startTime
+        val batchSize = 30000
         var currentSize = 0
         // i set this count as a threshold for how many times we wait without data before exiting the thread. Currently, set to 1 day.
         val waitingCount = if (elasticsearchPeriod > 0) 86400 / elasticsearchPeriod else 86400
@@ -210,61 +212,62 @@ class LogMessageController(
         val appLogMap: HashMap<String, ArrayList<LogMessage>> = hashMapOf()
         while (countEmpty < waitingCount) {
             appLogMap.clear()
+            currentSize = 0
+            logger.info("Executing polling query request.")
             while (true) {
-                currentSize = 0
-                while (currentSize < batchSize) {
-                    val data = loadESData(restTemplate, elasticsearchUrl, elasticsearchIndex, startTime, stopTime, timestampKey)
-                    currentSize += data.length()
-                    if (data.length() == 0) {
-                        logger.info("No data received.")
-                        countEmpty += 1 // if there is no data, increase the counter (this is when we have reach some threshold for the thread to finish)
-                        break
-                    } else {
-                        logger.info("${data.length()} data objects received")
-                        countEmpty = 0
-                    }
-
-                    val filteredData = data.filter { d ->
-                        val log = JSONObject(d.toString())
-                        startTime = log.getJSONObject("_source").getString(elasticsearchTimestampName)
-                        log.has("_source") && log.getJSONObject("_source").has("kubernetes")
-                    }
-                    logger.info("${data.length() - filteredData.size} / ${data.length()} log messages were dropped due to missing k8s meta-information.")
-
-                    val appLogPairs = filteredData.map { d ->
-                        val log = JSONObject(d.toString()).getJSONObject("_source")
-                        if (log.has("log")) {
-                            log.put("message", log.getString("log"))
-                            log.remove("log")
-                        }
-
-                        val k8sMeta = log.getJSONObject("kubernetes")
-                        if (k8sMeta.has("container_image_id")) {
-                            log.put("tag", k8sMeta.getString("container_image_id"))
-                        } else {
-                            log.put("tag", k8sMeta.getString("default"))
-                        }
-
-                        if (k8sMeta.has("container_name")) {
-                            val appName = k8sMeta.getString("container_name")
-                            val appNameClean: String = appName.toLowerCase().replace(Regex("[^a-z0-9]"), "")
-                            Pair(appNameClean, log.toString())
-                        } else {
-                            Pair("default", log.toString())
-                        }
-                    }
-                    appLogPairs.forEach { appLog ->
-                        if (appLogMap.contains(appLog.first)) {
-                            appLogMap[appLog.first]?.add(LogMessage(appLog.second))
-                        } else {
-                            appLogMap[appLog.first] = arrayListOf()
-                        }
-                    }
-                    if (data.length() < 10000)
-                        break
-                }
-                if (currentSize < batchSize)
+                val data =
+                    loadESData(restTemplate, elasticsearchUrl, elasticsearchIndex, startTimeVar, stopTime, timestampKey)
+                currentSize += data.length()
+                if (data.length() == 0) {
+                    logger.info("No data received.")
+                    countEmpty += 1 // if there is no data, increase the counter (this is when we have reach some threshold for the thread to finish)
                     break
+                } else {
+                    countEmpty = 0
+                }
+
+                val filteredData = data.filter { d ->
+                    val log = JSONObject(d.toString())
+                    startTimeVar = log.getJSONObject("_source").getString(elasticsearchTimestampName)
+                    log.has("_source") && log.getJSONObject("_source").has("kubernetes")
+                }
+                logger.debug("${data.length() - filteredData.size} log messages were dropped due to missing k8s meta-information.")
+
+                val appLogPairs = filteredData.map { d ->
+                    val log = JSONObject(d.toString()).getJSONObject("_source")
+                    if (log.has("log")) {
+                        log.put("message", log.getString("log"))
+                        log.remove("log")
+                    }
+
+                    val k8sMeta = log.getJSONObject("kubernetes")
+                    if (k8sMeta.has("container_image_id")) {
+                        log.put("tag", k8sMeta.getString("container_image_id"))
+                    } else {
+                        log.put("tag", k8sMeta.getString("default"))
+                    }
+
+                    if (k8sMeta.has("container_name")) {
+                        val appName = k8sMeta.getString("container_name")
+                        val appNameClean: String = appName.toLowerCase().replace(Regex("[^a-z0-9]"), "")
+                        Pair(appNameClean, log.toString())
+                    } else {
+                        Pair("default", log.toString())
+                    }
+                }
+                appLogPairs.forEach { appLog ->
+                    if (!appLogMap.contains(appLog.first))
+                        appLogMap[appLog.first] = arrayListOf()
+                    appLogMap[appLog.first]?.add(LogMessage(appLog.second))
+                }
+                if (data.length() < 10000 || currentSize >= batchSize)
+                    break
+            }
+
+            if (currentSize == 0) {
+                logger.info("No data received")
+            } else {
+                logger.info("$currentSize data objects received")
             }
 
             appLogMap.forEach { appLog ->
@@ -294,7 +297,8 @@ class LogMessageController(
                 }
             }
             // sleep before polling again.
-            Thread.sleep(elasticsearchPeriod)
+            if (currentSize < batchSize)
+                Thread.sleep(elasticsearchPeriod)
         }
     }
 
@@ -311,7 +315,6 @@ class LogMessageController(
         val jsonRequest = jsonString.replace("start_time", startTime).replace("stop_time", stopTime)
             .replace("timestamp_name", timestampKey)
         val request = UtilsService.createElasticSearchRequestWithHeaders(jsonRequest)
-        logger.info("Executing polling query request.")
         return JSONObject(
             restTemplate.postForEntity<String>(
                 "$elasticsearchUrl/$elasticsearchIndex/_search",
