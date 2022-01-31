@@ -55,4 +55,40 @@ class ChartsController(
         // Create charts command
         return CreateChartResponse(chartsService.createBarChart(query))
     }
+
+    @GetMapping("/piechart")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createPieChart(
+        authentication: Authentication,
+        @RequestBody createChartRequest: ChartRequest
+    ): CreateChartResponse {
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
+        val query = GetChartDataQuery(
+            credentials = Credentials(user.email, user.id.toString()),
+            chartConfig = createChartRequest.chartConfig,
+            dataSource = createChartRequest.dataSource,
+            applicationId = createChartRequest.applicationId
+        )
+
+        // Create charts command
+        return CreateChartResponse(chartsService.createPieChart(query))
+    }
+
+    @GetMapping("/table")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createTableChart(
+        authentication: Authentication,
+        @RequestBody createChartRequest: ChartRequest
+    ): CreateChartResponse {
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
+        val query = GetChartDataQuery(
+            credentials = Credentials(user.email, user.id.toString()),
+            chartConfig = createChartRequest.chartConfig,
+            dataSource = createChartRequest.dataSource,
+            applicationId = createChartRequest.applicationId
+        )
+
+        // Create charts command
+        return CreateChartResponse(chartsService.createTableChart(query))
+    }
 }

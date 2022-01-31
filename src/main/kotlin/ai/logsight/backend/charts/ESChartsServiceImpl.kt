@@ -3,6 +3,7 @@ package ai.logsight.backend.charts
 import ai.logsight.backend.charts.domain.charts.BarChart
 import ai.logsight.backend.charts.domain.charts.HeatmapChart
 import ai.logsight.backend.charts.domain.charts.PieChart
+import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
@@ -10,6 +11,7 @@ import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.BarChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -68,5 +70,10 @@ class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : Cha
             pieChartSeries.add(ChartSeriesPoint(name = it.name, it.get(pieChartData.aggregations) as Double))
         }
         return PieChart(data = pieChartSeries)
+    }
+
+    override fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart {
+        val tableChartData = mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery))
+        return TableChart(data = tableChartData.hits.hits)
     }
 }
