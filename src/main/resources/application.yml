@@ -28,6 +28,11 @@ spring:
     check-template-location: true
 
 
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+      
 logsight:
   elasticsearch:
     host: "localhost"

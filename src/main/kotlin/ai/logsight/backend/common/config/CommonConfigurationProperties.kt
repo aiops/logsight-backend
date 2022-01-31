@@ -1,4 +1,4 @@
-package ai.logsight.backend.elasticsearch.config
+package ai.logsight.backend.common.config
 
 import org.hibernate.validator.constraints.URL
 import org.springframework.boot.context.properties.ConfigurationProperties

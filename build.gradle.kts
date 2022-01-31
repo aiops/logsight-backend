@@ -25,6 +25,10 @@ repositories {
 }
 
 dependencies {
+//    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
+
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.8")
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server") //
@@ -36,8 +40,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
-    implementation("org.springframework.data:spring-data-elasticsearch:4.3.1") //
-//    implementation("org.liquibase:liquibase-core")
+    implementation("org.springframework.data:spring-data-elasticsearch:4.3.1")
+    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
     implementation("org.json:json:20160810")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
@@ -46,7 +50,6 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("junit:junit:4.13.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    implementation("org.springframework.integration:spring-integration-zeromq:5.5.7")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

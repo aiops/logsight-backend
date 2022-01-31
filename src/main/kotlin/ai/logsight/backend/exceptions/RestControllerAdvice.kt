@@ -15,14 +15,7 @@ class RestControllerAdvice {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
-
-    @ExceptionHandler(EmailExistsException::class)
-    fun handleLogsightApplicationException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, emailExistsException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
-    }
-
+    
     @ExceptionHandler(AuthenticationException::class)
     fun handleLogsightAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
