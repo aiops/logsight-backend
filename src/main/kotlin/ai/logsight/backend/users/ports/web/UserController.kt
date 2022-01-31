@@ -40,7 +40,7 @@ class UserController(
 
         val user = userService.createUser(createUserCommand)
 
-        return CreateUserResponse(id = user.id, email = user.email, privateKey = user.elasticsearchKey)
+        return CreateUserResponse(id = user.id, email = user.email, privateKey = user.key)
     }
 
     /**

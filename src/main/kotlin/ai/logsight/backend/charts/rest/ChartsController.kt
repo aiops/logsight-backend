@@ -1,5 +1,6 @@
 package ai.logsight.backend.charts.rest
 
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.ChartsService
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.rest.request.ChartRequest
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/charts")
 class ChartsController(
     private val chartsService: ChartsService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val applicationService: ApplicationStorageService
 ) {
 
     @PostMapping("/heatmap")
@@ -24,71 +26,53 @@ class ChartsController(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        val query = GetChartDataQuery(
-            credentials = Credentials(user.email, user.id.toString()),
-            chartConfig = createChartRequest.chartConfig,
-            dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId.toLong()
-        )
-        println(query)
-
+        val query = getChartQuery(authentication, createChartRequest)
         // Create charts command
-
         return CreateChartResponse(chartsService.createHeatMap(query))
     }
 
     @GetMapping("/barchart")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     fun createBarchart(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        val query = GetChartDataQuery(
-            credentials = Credentials(user.email, user.id.toString()),
-            chartConfig = createChartRequest.chartConfig,
-            dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId
-        )
-
+        val query = getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createBarChart(query))
     }
 
     @GetMapping("/piechart")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     fun createPieChart(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        val query = GetChartDataQuery(
-            credentials = Credentials(user.email, user.id.toString()),
-            chartConfig = createChartRequest.chartConfig,
-            dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId
-        )
-
+        val query = getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createPieChart(query))
     }
 
     @GetMapping("/table")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     fun createTableChart(
         authentication: Authentication,
         @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        val query = GetChartDataQuery(
-            credentials = Credentials(user.email, user.id.toString()),
-            chartConfig = createChartRequest.chartConfig,
-            dataSource = createChartRequest.dataSource,
-            applicationId = createChartRequest.applicationId
-        )
-
+        val query = getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createTableChart(query))
+    }
+
+    fun getChartQuery(authentication: Authentication, createChartRequest: ChartRequest): GetChartDataQuery {
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
+        val application =
+            createChartRequest.applicationId?.let { applicationService.findApplicationById(createChartRequest.applicationId) }
+        return GetChartDataQuery(
+            credentials = Credentials(user.email, user.id.toString()),
+            chartConfig = createChartRequest.chartConfig,
+            user = user,
+            application = application
+        )
     }
 }

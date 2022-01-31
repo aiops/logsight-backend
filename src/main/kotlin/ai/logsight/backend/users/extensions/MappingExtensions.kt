@@ -6,14 +6,14 @@ import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import java.time.LocalDateTime
 
 fun UserEntity.toLocalUser() = LocalUser(
-    id = this.id, elasticsearchKey = this.elasticsearchKey
+    id = this.id, key = this.key
 )
 
 fun UserEntity.toUser() = User(
     id = this.id,
     email = this.email,
     password = this.password,
-    elasticsearchKey = this.elasticsearchKey,
+    key = this.key,
     activationDate = this.activationDate ?: LocalDateTime.now(),
     activated = this.activated,
     usedData = this.usedData,
@@ -29,7 +29,7 @@ fun User.toUserEntity() = UserEntity(
     id = this.id,
     email = this.email,
     password = this.password,
-    elasticsearchKey = this.elasticsearchKey,
+    key = this.key,
     activationDate = this.activationDate,
     activated = this.activated,
     usedData = this.usedData,

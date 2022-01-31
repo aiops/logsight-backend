@@ -12,7 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder
 class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) {
     private val connector = RestTemplateConnector()
 
-    fun getData(getDataQuery: GetChartDataQuery): String {
+    fun getData(getDataQuery: GetChartDataQuery, applicationIndices: String): String {
         val chartConfig = getDataQuery.chartConfig
         val query = ESQueryBuilder().buildQuery(
             startTime = chartConfig.startTime,
@@ -21,7 +21,7 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
             chartType = chartConfig.type
         )
         val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.protocol).host(elasticsearchConfig.host)
-            .port(elasticsearchConfig.port).path(getDataQuery.dataSource.index).path("_search").build().toString()
+            .port(elasticsearchConfig.port).path(applicationIndices).path("/_search").build().toString()
         return connector.sendRequest(
             url, Credentials(getDataQuery.credentials.username, getDataQuery.credentials.password), query
         )

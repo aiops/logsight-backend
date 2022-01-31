@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class User(
     val id: UUID,
-    val elasticsearchKey: String,
+    val key: String,
     val email: String,
     var password: String,
     val dateCreated: LocalDateTime,

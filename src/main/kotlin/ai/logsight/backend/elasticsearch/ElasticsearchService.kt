@@ -43,7 +43,6 @@ class ElasticsearchService(
         val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/kibana").path("/api").path("/security").path("/role").path("/$userKey")
             .build().toString()
-        println(elasticsearchConfig.credentials)
         kibanaClient.putRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
         )

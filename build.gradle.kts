@@ -41,7 +41,7 @@ dependencies {
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation("org.springframework.data:spring-data-elasticsearch:4.3.1")
-    implementation("org.liquibase:liquibase-core")
+//    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
     implementation("org.json:json:20160810")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
