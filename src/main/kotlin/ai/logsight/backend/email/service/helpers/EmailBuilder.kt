@@ -1,6 +1,6 @@
 package ai.logsight.backend.email.service.helpers
 
-import ai.logsight.backend.elasticsearch.config.CommonConfigurationProperties
+import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.email.domain.Email
 import ai.logsight.backend.email.domain.EmailContext
 import org.springframework.stereotype.Service

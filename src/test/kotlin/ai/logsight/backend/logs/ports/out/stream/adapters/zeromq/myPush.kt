@@ -1,26 +1,34 @@
 package ai.logsight.backend.logs.ports.out.stream.adapters.zeromq
 
-import org.zeromq.ZMQ
+import org.springframework.integration.zeromq.inbound.ZeroMqMessageProducer
+import org.springframework.messaging.Message
+import org.springframework.messaging.MessageChannel
+import org.zeromq.SocketType
+import org.zeromq.ZContext
+import zmq.Msg
+import java.time.Duration
 
 fun main() {
-    val context = ZMQ.context(1)
+    val uri = "tcp://127.0.0.1:3006"
+    val context = ZContext(1)
+    val socket = context.createSocket(SocketType.PUSH)
 
-    val socket = context.socket(ZMQ.PUSH)
-    println("connecting to a pulling client...")
-    socket.connect("tcp://localhost:5897")
+    socket.hwm = 10
+    socket.linger = 1
+    println("connecting to $uri")
+    socket.connect(uri)
 
-    for (i in 1..20) {
+    fun publish(path: String, msg: String) {
+        socket.sendMore(path)
+        socket.send(msg.toByteArray())
+    }
 
-        Thread.sleep(100)
+    var count = 0
 
-        var plainRequest = "Hello "
-
-        var byteRequest = plainRequest.toByteArray()
-
-        byteRequest[byteRequest.size - 1] = 0
-
-        println("sending push $i $plainRequest")
-
-        socket.send(byteRequest, 0)
+    for (i in 1..5) {
+        val msg = "message : ${++count}"
+        socket.send("test message".toByteArray())
+        publish("", msg)
+        println(msg)
     }
 }

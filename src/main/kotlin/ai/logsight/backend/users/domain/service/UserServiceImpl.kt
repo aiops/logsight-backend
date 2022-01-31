@@ -22,7 +22,9 @@ class UserServiceImpl(
 ) : UserService {
     override fun createUser(createUserCommand: CreateUserCommand): User {
         // create user
-        val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
+        try {
+            val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
+        } catch (Email)
 
         // send Activation email
         sendActivationEmail(SendActivationEmailCommand(savedUser.email))

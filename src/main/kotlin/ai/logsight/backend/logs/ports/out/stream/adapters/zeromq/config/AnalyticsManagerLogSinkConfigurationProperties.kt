@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 
-@Component
 @ConfigurationProperties(prefix = "logsight.manager.log-stream")
 @ConstructorBinding
 class AnalyticsManagerLogSinkConfigurationProperties(

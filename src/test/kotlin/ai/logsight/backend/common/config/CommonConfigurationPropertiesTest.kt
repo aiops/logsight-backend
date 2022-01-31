@@ -1,6 +1,5 @@
 package ai.logsight.backend.common.config
 
-import ai.logsight.backend.elasticsearch.config.CommonConfigurationProperties
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

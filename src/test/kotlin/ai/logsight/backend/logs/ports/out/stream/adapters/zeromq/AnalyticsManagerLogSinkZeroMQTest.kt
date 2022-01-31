@@ -2,10 +2,12 @@ package ai.logsight.backend.logs.ports.out.stream.adapters.zeromq
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.integration.zeromq.inbound.ZeroMqMessageProducer
 import org.zeromq.ZMQ
+import zeroMqMessageProducer
 
 internal class AnalyticsManagerLogSinkZeroMQTest {
-
     @Test
     fun sendLogs() {
         val zeromq = AnalyticsManagerLogSinkZeroMQ()
