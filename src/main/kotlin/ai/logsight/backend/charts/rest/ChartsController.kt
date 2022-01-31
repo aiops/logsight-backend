@@ -53,7 +53,7 @@ class ChartsController(
         return CreateChartResponse(chartsService.createPieChart(query))
     }
 
-    @GetMapping("/table")
+    @GetMapping("/tablechart")
     @ResponseStatus(HttpStatus.OK)
     fun createTableChart(
         authentication: Authentication,

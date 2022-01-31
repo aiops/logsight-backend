@@ -51,7 +51,8 @@
             "@timestamp": {
               "format": "strict_date_optional_time",
               "gte": "start_time",
-              "lte": "stop_time"
+              "lte": "stop_time",
+              "time_zone": "time_zone_parameter"
             }
           }
         }

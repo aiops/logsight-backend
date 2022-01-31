@@ -5,5 +5,6 @@ data class ChartConfig(
     val startTime: String,
     val stopTime: String,
     val feature: String,
-    val indexType: String
+    val indexType: String,
+    val timeZone: String
 )

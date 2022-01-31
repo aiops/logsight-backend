@@ -18,6 +18,8 @@ data class TopKIncidentSource(
     val countAD: String,
     @JsonProperty("semantic_count_ads")
     val scAnomalies: String,
+    @JsonProperty("logs")
+    val logData: String,
     @JsonProperty("total_score")
     val totalScore: Int
 )

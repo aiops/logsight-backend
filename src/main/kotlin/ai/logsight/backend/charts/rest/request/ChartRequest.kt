@@ -6,6 +6,5 @@ import java.util.*
 
 data class ChartRequest(
     val chartConfig: ChartConfig,
-    val dataSource: DataSourceConfig,
     val applicationId: UUID?,
 )
