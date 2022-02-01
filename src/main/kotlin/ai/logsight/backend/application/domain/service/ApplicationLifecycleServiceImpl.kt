@@ -28,7 +28,7 @@ class ApplicationLifecycleServiceImpl(
 
         // create index patterns
         elasticsearchService.createKibanaIndexPatterns(
-            createApplicationCommand.user.elasticsearchKey, application.applicationKey, indexPatters
+            createApplicationCommand.user.key, application.applicationKey, indexPatters
         )
         //
         application.status = ApplicationStatus.READY

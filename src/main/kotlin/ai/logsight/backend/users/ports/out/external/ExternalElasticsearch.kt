@@ -11,9 +11,9 @@ class ExternalElasticsearch(
 
     override fun initialize(user: User) {
         elasticsearchService.createESUser(
-            username = user.email, password = user.password, roles = user.elasticsearchKey
+            username = user.email, password = user.password, roles = user.key
         )
-        elasticsearchService.createKibanaRole(user.elasticsearchKey)
-        elasticsearchService.createKibanaSpace(user.elasticsearchKey)
+        elasticsearchService.createKibanaRole(user.key)
+        elasticsearchService.createKibanaSpace(user.key)
     }
 }

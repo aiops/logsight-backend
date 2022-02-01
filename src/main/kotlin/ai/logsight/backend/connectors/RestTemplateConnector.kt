@@ -17,7 +17,6 @@ open class RestTemplateConnector : Connector {
     fun sendRequest(url: String, query: String, headerName: String? = null): String {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().build()
-        println(url)
         return restTemplate.postForEntity<String>(url, request).body!!
     }
 

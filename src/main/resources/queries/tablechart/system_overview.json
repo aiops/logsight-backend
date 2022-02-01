@@ -1,31 +1,6 @@
 {
-  "aggs": {
-    "listAggregations": {
-      "auto_date_histogram": {
-        "field": "@timestamp",
-        "buckets": 10
-      },
-      "aggs": {
-        "listBuckets": {
-          "terms": {
-            "field": "_index",
-            "order": {
-              "_key": "desc"
-            },
-            "size": 50
-          },
-          "aggs": {
-            "1": {
-              "sum": {
-                "field": "total_score"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "size": 0,
+  "version": true,
+  "size": 100,
   "_source": {
     "excludes": []
   },
@@ -59,7 +34,15 @@
         }
       ],
       "should": [],
-      "must_not": []
+      "must_not": [
+        {
+          "match_phrase": {
+            "total_score": {
+              "query": "0"
+            }
+          }
+        }
+      ]
     }
   }
 }

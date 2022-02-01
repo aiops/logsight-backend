@@ -21,7 +21,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/user/**")
+        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/users/**")
             .permitAll().antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/put/**").permitAll().antMatchers(HttpMethod.POST, "/api/logs/**")
             .permitAll().antMatchers(HttpMethod.GET, "/**").permitAll().antMatchers(HttpMethod.POST, "/**").permitAll()
@@ -29,7 +29,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
             .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
             .antMatchers(HttpMethod.PUT, "/api/auth/activate").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/v1/user/login").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/login_id").permitAll()
             .antMatchers(HttpMethod.POST, "/api/auth/login/login-link").permitAll()
             .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll().antMatchers("/v2/api-docs/**")

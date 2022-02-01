@@ -3,23 +3,27 @@
     "listAggregations": {
       "auto_date_histogram": {
         "field": "@timestamp",
-        "buckets": 10
+        "buckets": 6
       },
       "aggs": {
-        "listBuckets": {
-          "terms": {
-            "field": "_index",
-            "order": {
-              "_key": "desc"
-            },
-            "size": 50
-          },
-          "aggs": {
-            "1": {
-              "sum": {
-                "field": "total_score"
-              }
-            }
+        "bucketPrediction": {
+          "sum": {
+            "field": "prediction"
+          }
+        },
+        "bucketError": {
+          "sum": {
+            "field": "log_levels.ERROR"
+          }
+        },
+        "bucketInfo": {
+          "sum": {
+            "field": "log_levels.INFO"
+          }
+        },
+        "bucketsWarning": {
+          "sum": {
+            "field": "log_levels.WARNING"
           }
         }
       }

@@ -15,7 +15,7 @@ class UserEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "elasticsearch_key", nullable = false)
-    var elasticsearchKey: String = KeyGenerator.generate(),
+    var key: String = KeyGenerator.generate(),
 
     @Column(name = "email", nullable = false, unique = true)
     val email: String,

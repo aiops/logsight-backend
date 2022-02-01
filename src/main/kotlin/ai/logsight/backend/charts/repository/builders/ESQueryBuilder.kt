@@ -8,8 +8,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 class ESQueryBuilder {
-    fun buildQuery(startTime: String, stopTime: String, featureType: String, chartType: String): String {
-        return this.loadJsonQuery(featureType, chartType).modifyTime(startTime, stopTime).query
+    fun buildQuery(startTime: String, stopTime: String, featureType: String, chartType: String, timeZone: String): String {
+        return this.loadJsonQuery(featureType, chartType).modifyTime(startTime, stopTime, timeZone).query
     }
 
     private fun loadJsonQuery(featureType: String, chartType: String): ESQuery {
