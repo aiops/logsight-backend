@@ -1,7 +1,7 @@
 package ai.logsight.backend.users.domain.service
 
 import ai.logsight.backend.email.domain.EmailContext
-import ai.logsight.backend.email.service.EmailServiceImpl
+import ai.logsight.backend.email.domain.service.EmailServiceImpl
 import ai.logsight.backend.exceptions.InvalidTokenException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.token.service.TokenService

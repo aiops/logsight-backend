@@ -2,8 +2,8 @@ package ai.logsight.backend.logs.domain
 
 import java.util.*
 
-data class LogContext(
-    val userId: UUID,
-    val appId: UUID,
+data class LogDTO(
+    val email: String,
+    val appName: UUID,
     val logs: List<String>
 )
