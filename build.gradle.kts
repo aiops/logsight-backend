@@ -28,7 +28,7 @@ dependencies {
 //    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
 
     implementation("org.springframework.integration:spring-integration-zeromq:5.5.8")
-
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server") //
@@ -54,10 +54,14 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
-//    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.security:spring-security-test")
     implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.3")
     testImplementation("io.mockk:mockk:1.12.2")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.2")
+    // testing dependencies
+    testCompileOnly("org.mockito:mockito-junit-jupiter:2.23.0")
+    testImplementation("org.mockito:mockito-inline:2.13.0")
+    testCompileOnly("org.assertj:assertj-core:3.11.1")
 }
 
 tasks.withType<KotlinCompile> {
