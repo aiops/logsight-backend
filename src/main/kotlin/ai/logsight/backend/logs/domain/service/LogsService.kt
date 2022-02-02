@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.domain.service
 
-import ai.logsight.backend.logs.domain.LogDTO
+import ai.logsight.backend.logs.domain.service.command.LogCommand
 
 interface LogsService {
-    fun forwardLogs(logDTO: LogDTO)
+    fun forwardLogs(logCommand: LogCommand)
 }

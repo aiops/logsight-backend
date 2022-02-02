@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
-@RequestMapping("/api/v1/applications")
+@RequestMapping("/api/v1/application")
 class ApplicationLifecycleController(
     private val userService: UserStorageService,
     private val applicationService: ApplicationLifecycleService,
@@ -43,9 +43,9 @@ class ApplicationLifecycleController(
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(authentication: Authentication, @Valid @RequestBody deleteApplicationRequest: DeleteApplicationRequest): DeleteApplicationResponse {
         val deleteApplicationCommand = DeleteApplicationCommand(
-            applicationId = deleteApplicationRequest.id,
+            applicationId = deleteApplicationRequest.applicationId,
         )
-        val application = applicationStorageService.findApplicationById(deleteApplicationRequest.id)
+        val application = applicationStorageService.findApplicationById(deleteApplicationRequest.applicationId)
         applicationService.deleteApplication(deleteApplicationCommand)
 
         return DeleteApplicationResponse(description = "Application created successfully", applicationName = application.name, applicationId = application.id)

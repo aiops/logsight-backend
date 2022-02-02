@@ -24,6 +24,6 @@ data class TimeSelectionEntity(
     val dateTimeType: DateTimeType,
 
     @ManyToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "user_id")
     val user: UserEntity
 )

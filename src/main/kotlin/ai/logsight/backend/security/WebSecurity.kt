@@ -20,22 +20,15 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
 
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
-        http.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, "/api/v1/users/**")
-            .permitAll().antMatchers(HttpMethod.POST, "/api/fast_try/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/put/**").permitAll().antMatchers(HttpMethod.POST, "/api/logs/**")
-            .permitAll().antMatchers(HttpMethod.GET, "/**").permitAll().antMatchers(HttpMethod.POST, "/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/applications/**").permitAll()
-            .antMatchers(HttpMethod.GET, "/api/applications/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-            .antMatchers(HttpMethod.PUT, "/api/auth/activate").permitAll()
+        http.cors().and().csrf().disable().authorizeRequests()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/auth/login_id").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/auth/login/login-link").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/payments/webhook**").permitAll().antMatchers("/v2/api-docs/**")
-            .permitAll().antMatchers("/swagger.json").permitAll().antMatchers("/swagger-ui.html").permitAll()
-            .antMatchers("/swagger-resources/**").permitAll().antMatchers(
-                "/webjars/**", "/v3/api-docs", "/swagger-ui.html", "/swagger-ui/**"
-            ).permitAll().anyRequest().authenticated().and().addFilter(JWTAuthenticationFilter(authenticationManager()))
+            .antMatchers("/v2/api-docs/**").permitAll()
+            .antMatchers("/swagger.json").permitAll()
+            .antMatchers("/swagger-ui.html").permitAll()
+            .antMatchers("/swagger-resources/**").permitAll()
+            .antMatchers("/webjars/**", "/v3/api-docs", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+            .anyRequest().authenticated().and().addFilter(JWTAuthenticationFilter(authenticationManager()))
             .addFilter(JWTAuthorizationFilter(authenticationManager())).sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }

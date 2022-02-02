@@ -23,19 +23,19 @@ class RestControllerAdvice {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
     }
 
-    @ExceptionHandler(UserExistsException::class)
-    fun handleUserExistsException(userExistsException: UserExistsException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userExistsException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
-    }
-
-    @ExceptionHandler(UserNotActivatedException::class)
-    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userNotActivatedException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
-    }
+//    @ExceptionHandler(UserExistsException::class)
+//    fun handleUserExistsException(userExistsException: UserExistsException): ResponseEntity<ErrorResponse> {
+//        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userExistsException.message.toString())
+//
+//        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+//    }
+//
+//    @ExceptionHandler(UserNotActivatedException::class)
+//    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException): ResponseEntity<ErrorResponse> {
+//        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userNotActivatedException.message.toString())
+//
+//        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+//    }
 
     @ExceptionHandler(EmailExistsException::class)
     fun handleEmailExistsException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {

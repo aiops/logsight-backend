@@ -18,6 +18,7 @@ class ZeroMQPubStream(
         val objectMapper = ObjectMapper()
         logs.forEach { log ->
             zeroMqPubSocket.send("$topic ${objectMapper.writeValueAsString(log)}")
+            println("$topic ${objectMapper.writeValueAsString(log)}")
         }
     }
 }

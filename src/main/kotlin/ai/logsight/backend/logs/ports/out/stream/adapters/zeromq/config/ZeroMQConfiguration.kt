@@ -21,4 +21,5 @@ class ZeroMQConfiguration(
             throw ConnectException("ZeroMQ is not able to bind socket to $adr")
         return zeroMqPubSocket
     }
+
 }
