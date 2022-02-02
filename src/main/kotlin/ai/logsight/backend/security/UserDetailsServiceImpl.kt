@@ -1,14 +1,15 @@
 package ai.logsight.backend.security
 
-import ai.logsight.backend.users.ports.out.persistence.TimeSelectionRepository
+import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
+import kotlin.jvm.Throws
 
 @Service
-class UserDetailsServiceImpl(val applicationUserRepository: TimeSelectionRepository) : UserDetailsService {
+class UserDetailsServiceImpl(val applicationUserRepository: UserRepository) : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {

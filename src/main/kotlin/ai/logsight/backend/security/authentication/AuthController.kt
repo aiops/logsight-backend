@@ -3,7 +3,8 @@ package ai.logsight.backend.security.authentication
 import ai.logsight.backend.security.authentication.domain.service.AuthService
 import ai.logsight.backend.security.authentication.response.LoginResponse
 import ai.logsight.backend.security.authentication.response.UserDTO
-import ai.logsight.backend.users.ports.out.persistence.TimeSelectionStorageService
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,7 +15,7 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/auth")
 class AuthController(
     private val authService: AuthService,
-    private val userService: TimeSelectionStorageService
+    private val userService: UserStorageService
 ) {
 
     /**

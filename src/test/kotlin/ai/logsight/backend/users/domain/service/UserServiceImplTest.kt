@@ -1,6 +1,5 @@
 package ai.logsight.backend.users.domain.service
 
-import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.users.domain.service.command.CreateUserCommand
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -15,7 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 @ActiveProfiles("test")
 internal class UserServiceImplTest {
     @Autowired
-    lateinit var userService: TimeSelectionService
+    lateinit var userService: UserService
 
     @Nested
     @DisplayName("Create user")
