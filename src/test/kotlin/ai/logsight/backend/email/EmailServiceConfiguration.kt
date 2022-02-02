@@ -1,6 +1,6 @@
 package ai.logsight.backend.email
 
-import ai.logsight.backend.email.service.EmailServiceImpl
+import ai.logsight.backend.email.domain.service.EmailServiceImpl
 import org.mockito.Mockito
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

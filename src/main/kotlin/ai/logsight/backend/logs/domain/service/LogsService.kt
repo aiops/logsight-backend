@@ -1,8 +1,7 @@
 package ai.logsight.backend.logs.domain.service
 
-import ai.logsight.backend.logs.domain.LogContext
+import ai.logsight.backend.logs.domain.LogDTO
 
 interface LogsService {
-    fun forwardLogs(logContext: LogContext): Int
-    fun uploadFile(fileContent: String)
+    fun forwardLogs(logDTO: LogDTO)
 }

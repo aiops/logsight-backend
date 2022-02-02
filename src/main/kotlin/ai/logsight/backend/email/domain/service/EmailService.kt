@@ -1,4 +1,4 @@
-package ai.logsight.backend.email.service
+package ai.logsight.backend.email.domain.service
 
 import ai.logsight.backend.email.domain.EmailContext
 import java.util.*
