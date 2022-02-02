@@ -1,4 +1,4 @@
-package ai.logsight.backend.email.service.helpers
+package ai.logsight.backend.email.domain.service.helpers
 
 import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.token.domain.Token

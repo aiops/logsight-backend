@@ -1,7 +1,7 @@
-package ai.logsight.backend.email.service
+package ai.logsight.backend.email.domain.service
 
 import ai.logsight.backend.email.domain.EmailContext
-import ai.logsight.backend.email.service.helpers.EmailBuilder
+import ai.logsight.backend.email.domain.service.helpers.EmailBuilder
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 

@@ -15,30 +15,44 @@ class RestControllerAdvice {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
-    
+
     @ExceptionHandler(AuthenticationException::class)
-    fun handleLogsightAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
+    fun handleAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
     }
 
+    @ExceptionHandler(UserExistsException::class)
+    fun handleUserExistsException(userExistsException: UserExistsException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userExistsException.message.toString())
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    }
+
+    @ExceptionHandler(UserNotActivatedException::class)
+    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userNotActivatedException.message.toString())
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    }
+
     @ExceptionHandler(EmailExistsException::class)
-    fun handleLogsightEmailExistsException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
+    fun handleEmailExistsException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(HttpStatus.CONFLICT, emailExistsException.message.toString())
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
     }
 
     @ExceptionHandler(InvalidFeatureException::class)
-    fun handleLogsightInvalidFeature(invalidFeatureException: InvalidFeatureException): ResponseEntity<ErrorResponse> {
+    fun handleInvalidFeature(invalidFeatureException: InvalidFeatureException): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, invalidFeatureException.message.toString())
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
     }
 
     @ExceptionHandler(PasswordsNotMatchException::class)
-    fun handleLogsightPasswordsNotMatch(passwordsNotMatchException: PasswordsNotMatchException): ResponseEntity<ErrorResponse> {
+    fun handlePasswordsNotMatch(passwordsNotMatchException: PasswordsNotMatchException): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, passwordsNotMatchException.message.toString())
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
