@@ -5,14 +5,14 @@ import ai.logsight.backend.logs.domain.LogDTO
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.Log
-import ai.logsight.backend.users.domain.service.UserService
+import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import org.springframework.stereotype.Service
 import java.util.logging.Logger
 
 @Service
 class LogsServiceImpl(
-    val userService: UserService,
+    val userService: TimeSelectionService,
     val applicationStorageService: ApplicationStorageService,
     val topicBuilder: TopicBuilder,
     val logStream: LogStream,

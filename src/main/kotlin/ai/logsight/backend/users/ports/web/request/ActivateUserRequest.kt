@@ -1,6 +1,6 @@
 package ai.logsight.backend.users.ports.web.request
 
-import java.util.UUID
+import java.util.*
 import javax.validation.constraints.Email
 
 class ActivateUserRequest(

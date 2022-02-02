@@ -2,11 +2,7 @@ package ai.logsight.backend.users.ports.out.persistence
 
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
-import ai.logsight.backend.users.domain.service.command.ActivateUserCommand
-import ai.logsight.backend.users.domain.service.command.ChangePasswordCommand
-import ai.logsight.backend.users.domain.service.command.CreateUserCommand
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
-import java.util.UUID
+import java.util.*
 
 interface UserStorageService {
     fun createUser(email: String, password: String): User

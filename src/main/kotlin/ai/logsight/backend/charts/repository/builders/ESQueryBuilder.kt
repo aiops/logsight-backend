@@ -5,7 +5,6 @@ import ai.logsight.backend.exceptions.InvalidFeatureException
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists
-import kotlin.io.path.isRegularFile
 
 class ESQueryBuilder {
     fun buildQuery(startTime: String, stopTime: String, featureType: String, chartType: String, timeZone: String): String {

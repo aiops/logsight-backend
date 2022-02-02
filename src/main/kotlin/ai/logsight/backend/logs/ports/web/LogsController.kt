@@ -4,9 +4,8 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageS
 import ai.logsight.backend.logs.domain.LogContext
 import ai.logsight.backend.logs.domain.service.LogsService
 import ai.logsight.backend.logs.ports.web.requests.SendLogListRequest
-import ai.logsight.backend.logs.ports.web.requests.SendSingleLogRequest
 import ai.logsight.backend.logs.ports.web.responses.SendLogsResponse
-import ai.logsight.backend.users.domain.service.UserService
+import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
@@ -17,7 +16,7 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/logs")
 class LogsController(
     val logsService: LogsService,
-    val userService: UserService,
+    val userService: TimeSelectionService,
     val applicationStorageService: ApplicationStorageService
 ) {
 

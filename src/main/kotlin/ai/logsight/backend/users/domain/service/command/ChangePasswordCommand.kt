@@ -2,7 +2,6 @@ package ai.logsight.backend.users.domain.service.command
 
 import javax.validation.constraints.Email
 import javax.validation.constraints.Size
-import kotlin.String
 
 data class ChangePasswordCommand(
     @get:Email

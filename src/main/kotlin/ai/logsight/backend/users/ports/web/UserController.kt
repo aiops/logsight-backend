@@ -5,7 +5,10 @@ import ai.logsight.backend.users.domain.service.UserService
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.web.request.*
-import ai.logsight.backend.users.ports.web.response.*
+import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
+import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
+import ai.logsight.backend.users.ports.web.response.CreateUserResponse
+import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus

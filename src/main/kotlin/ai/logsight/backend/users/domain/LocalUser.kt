@@ -1,6 +1,6 @@
 package ai.logsight.backend.users.domain
 
-import java.util.UUID
+import java.util.*
 
 data class LocalUser(
     val id: UUID,

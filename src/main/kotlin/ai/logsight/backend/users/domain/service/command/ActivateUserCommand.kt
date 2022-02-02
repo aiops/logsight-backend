@@ -1,6 +1,6 @@
 package ai.logsight.backend.users.domain.service.command
 
-import java.util.UUID
+import java.util.*
 
 data class ActivateUserCommand(
     val email: String,

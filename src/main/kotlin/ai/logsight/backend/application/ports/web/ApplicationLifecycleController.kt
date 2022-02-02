@@ -8,7 +8,7 @@ import ai.logsight.backend.application.ports.web.requests.CreateApplicationReque
 import ai.logsight.backend.application.ports.web.requests.DeleteApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
-import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import ai.logsight.backend.users.ports.out.persistence.TimeSelectionStorageService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -17,7 +17,7 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/v1/applications")
 class ApplicationLifecycleController(
-    private val userService: UserStorageService,
+    private val userService: TimeSelectionStorageService,
     private val applicationService: ApplicationLifecycleService,
     private val applicationStorageService: ApplicationStorageService
 ) {

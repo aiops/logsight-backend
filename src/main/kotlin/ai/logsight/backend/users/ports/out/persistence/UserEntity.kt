@@ -2,7 +2,7 @@ package ai.logsight.backend.users.ports.out.persistence
 
 import ai.logsight.backend.security.KeyGenerator
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id

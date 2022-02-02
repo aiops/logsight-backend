@@ -11,7 +11,7 @@ import ai.logsight.backend.token.persistence.TokenRepository
 import ai.logsight.backend.token.persistence.TokenType
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Service
 class TokenServiceImpl(

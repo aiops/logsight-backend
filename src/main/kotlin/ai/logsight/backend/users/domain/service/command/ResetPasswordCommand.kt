@@ -1,7 +1,6 @@
 package ai.logsight.backend.users.domain.service.command
 
-import java.util.UUID
-import kotlin.String
+import java.util.*
 
 class ResetPasswordCommand(
     val email: String,

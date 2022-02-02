@@ -2,7 +2,7 @@ package ai.logsight.backend.token.persistence
 
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id
 

@@ -2,7 +2,7 @@ package ai.logsight.backend.users.domain
 
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class User(
     val id: UUID,

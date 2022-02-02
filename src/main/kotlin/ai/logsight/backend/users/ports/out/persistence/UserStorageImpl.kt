@@ -11,7 +11,7 @@ import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Service
 class UserStorageImpl(

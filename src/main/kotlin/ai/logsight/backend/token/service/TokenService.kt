@@ -1,7 +1,7 @@
 package ai.logsight.backend.token.service
 
 import ai.logsight.backend.token.domain.Token
-import java.util.UUID
+import java.util.*
 
 interface TokenService {
     fun findTokenById(tokenId: UUID): Token
