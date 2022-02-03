@@ -4,5 +4,6 @@ import java.util.*
 
 data class ApplicationDTO(
     val id: UUID,
-    val name: String
+    val name: String,
+    val key: String
 )

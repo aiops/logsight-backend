@@ -30,7 +30,7 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-      
+
 logsight:
   elasticsearch:
     host: "localhost"
@@ -47,8 +47,6 @@ logsight:
   token:
     duration: 15
 
-
-
-common-config:
-  base-url: http://localhost:4200
-  logsight-email: info@logsight.ai
+  common-config:
+    base-url: http://localhost:4200
+    logsight-email: info@logsight.ai

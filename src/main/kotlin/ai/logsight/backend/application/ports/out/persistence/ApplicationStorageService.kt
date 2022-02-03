@@ -8,9 +8,7 @@ import java.util.*
 
 interface ApplicationStorageService {
     fun createApplication(createApplicationCommand: CreateApplicationCommand): Application
-    fun createApplicationWithCallback(createApplicationCommand: CreateApplicationCommand, callback: ((Application) -> Unit)): Application
     fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand)
-    fun deleteApplicationWithCallback(deleteApplicationCommand: DeleteApplicationCommand, callback: ((Application) -> Unit))
     fun findApplicationById(applicationId: UUID): Application
     fun findApplicationByUserAndName(user: User, applicationName: String): Optional<Application>
     fun saveApplication(application: Application): Application

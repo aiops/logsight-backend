@@ -28,9 +28,8 @@ class ZeroMQConfiguration(
         val ctx = ZContext()
         val zeroMqPubSocket = ctx.createSocket(socketType)
         val adr = "${logSinkConfig.protocol}://${logSinkConfig.host}:$port"
-        val rc = zeroMqPubSocket.bind(adr)
-        if (!rc)
-            throw ConnectException("ZeroMQ is not able to bind socket to $adr")
+        val rc = zeroMqPubSocket.connect(adr)
+        if (!rc) throw ConnectException("ZeroMQ is not able to bind socket to $adr")
         return zeroMqPubSocket
     }
 }

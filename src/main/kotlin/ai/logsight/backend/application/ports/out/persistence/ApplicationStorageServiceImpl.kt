@@ -14,8 +14,7 @@ import java.util.*
 @Service
 class ApplicationStorageServiceImpl(private val appRepository: ApplicationRepository) : ApplicationStorageService {
 
-    val applicationActiveListener = mutableMapOf<UUID, ((Application)->Unit)>()
-
+    // todo: do not have command pattern here, use raw data
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
         val appEntity = ApplicationEntity(
             name = createApplicationCommand.applicationName,
@@ -25,27 +24,10 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return appRepository.save(appEntity).toApplication()
     }
 
-    override fun createApplicationWithCallback(createApplicationCommand: CreateApplicationCommand, callback: ((Application) -> Unit)): Application {
-        val application = createApplication(createApplicationCommand)
-        applicationActiveListener[application.id] = callback
-        return application
-        TODO("needs to notify logsight backend to create application")
-    }
-
     override fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand) {
         val appEntity = this.findApplicationByIdPrivate(deleteApplicationCommand.applicationId)
         appEntity.status = ApplicationStatus.DELETED
         appRepository.save(appEntity)
-        TODO("needs to notify logsight backend to create application")
-    }
-
-    override fun deleteApplicationWithCallback(
-        deleteApplicationCommand: DeleteApplicationCommand,
-        callback: (Application) -> Unit
-    ) {
-        applicationActiveListener[deleteApplicationCommand.applicationId] = callback
-        deleteApplication(deleteApplicationCommand)
-        TODO("needs to notify logsight backend to create application")
     }
 
     private fun findApplicationByIdPrivate(applicationId: UUID): ApplicationEntity {

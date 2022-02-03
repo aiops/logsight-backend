@@ -1,0 +1,25 @@
+spring:
+  main:
+    banner-mode: off
+
+  jpa:
+    database-platform:
+      org.hibernate.dialect.H2Dialect
+    properties:
+      dialect:
+        org.hibernate.dialect.H2Dialect
+
+  datasource:
+    url: jdbc:h2:mem:logsight;DB_CLOSE_DELAY=-1
+    username: logsight
+    password: logsight
+    driver-class-name: org.h2.Driver
+
+  mail:
+    host: mail.privateemail.com
+    port: 587
+    username: support@logsight.ai
+    password: tel12-5DOS
+  thymeleaf:
+    check-template: true
+    check-template-location: true

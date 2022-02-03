@@ -7,13 +7,14 @@ import ai.logsight.backend.application.extensions.toApplicationDTO
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
-import ai.logsight.backend.elasticsearch.ElasticsearchService
+import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
 class ApplicationLifecycleServiceImpl(
     val applicationStorageService: ApplicationStorageService,
-    val analyticsManagerAppRPC: AnalyticsManagerRPC,
+    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: AnalyticsManagerRPC,
     val elasticsearchService: ElasticsearchService
 
 ) : ApplicationLifecycleService {
