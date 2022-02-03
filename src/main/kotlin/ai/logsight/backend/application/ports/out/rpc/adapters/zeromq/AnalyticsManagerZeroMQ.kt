@@ -15,6 +15,7 @@ class AnalyticsManagerZeroMQ(
     @Qualifier("req") val zeroMQReqSocket: ZMQ.Socket
 ) : AnalyticsManagerRPC {
     override fun createApplication(createApplicationDTO: ApplicationDTO) {
+        createApplicationDTO.action = "CREATE"
         zeroMQReqSocket.send(ObjectMapper().writeValueAsString(createApplicationDTO))
         val message = zeroMQReqSocket.recv()
         println(message)
@@ -27,6 +28,6 @@ class AnalyticsManagerZeroMQ(
         zeroMqPubSocket.bind(adr)
         zeroMqPubSocket.send(deleteApplicationDTO.toString())
         val message = zeroMqPubSocket.recv()
-        TODO("log that app creation is successfull")
+        TODO("log that app creation is successful")
     }
 }
