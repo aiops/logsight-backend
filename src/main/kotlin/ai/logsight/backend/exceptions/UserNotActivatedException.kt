@@ -1,4 +1,4 @@
 package ai.logsight.backend.exceptions
 
-class UserNotActivatedException {
-}
+class UserNotActivatedException(override val message: String? = null) :
+    LogsightApplicationException(message)

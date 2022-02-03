@@ -2,10 +2,14 @@ package ai.logsight.backend.application.ports.out.rpc.adapters.zeromq
 
 import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
+import org.springframework.beans.factory.annotation.Qualifier
 import org.zeromq.SocketType
 import org.zeromq.ZContext
+import org.zeromq.ZMQ
 
-class AnalyticsManagerZeroMQ: AnalyticsManagerRPC {
+class AnalyticsManagerZeroMQ(
+    @Qualifier("req") val zeroMqPubSocket: ZMQ.Socket
+) : AnalyticsManagerRPC {
     override fun createApplication(createApplicationDTO: ApplicationDTO) {
         val ctx = ZContext()
         val zeroMqPubSocket = ctx.createSocket(SocketType.REQ)

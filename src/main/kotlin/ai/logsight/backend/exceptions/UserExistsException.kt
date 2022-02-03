@@ -1,4 +1,4 @@
 package ai.logsight.backend.exceptions
 
-class UserExistsException {
-}
+class UserExistsException(override val message: String? = null) :
+    LogsightApplicationException(message)

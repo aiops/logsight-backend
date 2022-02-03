@@ -1,24 +1,24 @@
 package ai.logsight.backend.logs.ports.out.stream.adapters.zeromq
 
+import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.zeromq.ZMQ
 
 @Component
 class ZeroMQPubStream(
-    val topicBuilder: TopicBuilder
+    @Qualifier("pub") val zeroMqPubSocket: ZMQ.Socket
 ) : LogStream {
-    @Autowired
-    private lateinit var zeroMqPubSocket: ZMQ.Socket
+    val topicBuilder = TopicBuilder()
 
-    override fun send(topic: String, logs: List<Log>) {
+    override fun sendBatch(batch: LogBatchDTO) {
+        val topic = topicBuilder.buildTopic(batch.userKey, batch.applicationName)
         val objectMapper = ObjectMapper()
-        logs.forEach { log ->
+        batch.logs.forEach { log ->
             zeroMqPubSocket.send("$topic ${objectMapper.writeValueAsString(log)}")
-            println("$topic ${objectMapper.writeValueAsString(log)}")
         }
     }
 }

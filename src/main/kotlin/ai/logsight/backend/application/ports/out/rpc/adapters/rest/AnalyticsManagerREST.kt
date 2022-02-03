@@ -17,30 +17,24 @@ class AnalyticsManagerREST(
     private val httpClient: HttpClient = HttpClient.newBuilder().build()
 
     override fun createApplication(createApplicationDTO: ApplicationDTO) {
-        val baseURI = this.createBase()
-        val uri = baseURI.path(analyticsManagerConfig.createPath)
-            .queryParam("app_name", createApplicationDTO.name)
-            .queryParam("app_id", createApplicationDTO.id).build().toUri()
-
-        val request = HttpRequest.newBuilder().uri(uri).build()
-
+        val uri = this.getUriForApplicationEndpoint().build().toUri()
+        val request =
+            HttpRequest.newBuilder().uri(uri).POST(HttpRequest.BodyPublishers.ofString(createApplicationDTO.toString()))
+                .build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
     }
 
     override fun deleteApplication(deleteApplicationDTO: ApplicationDTO) {
-        val baseURI = this.createBase()
-        val uri = baseURI.path(analyticsManagerConfig.deletePath)
-            .queryParam("app_id", deleteApplicationDTO.id).build().toUri()
-
-        val request = HttpRequest.newBuilder().uri(uri).build()
-
+        val uri = this.getUriForApplicationEndpoint().path(deleteApplicationDTO.id.toString()).build().toUri()
+        val request = HttpRequest.newBuilder().uri(uri).DELETE().build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
     }
 
-    private fun createBase() = UriComponentsBuilder.newInstance()
+    private fun getUriForApplicationEndpoint() = UriComponentsBuilder.newInstance()
         .scheme("https")
         .host(analyticsManagerConfig.host)
         .port(analyticsManagerConfig.port)
         .path("api")
         .path(analyticsManagerConfig.apiVersion.toString())
+        .path(analyticsManagerConfig.applicationsPath)
 }

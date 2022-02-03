@@ -1,6 +1,6 @@
 package ai.logsight.backend.users.ports.out.external
 
-import ai.logsight.backend.elasticsearch.ElasticsearchService
+import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.users.domain.User
 import org.springframework.stereotype.Service
 

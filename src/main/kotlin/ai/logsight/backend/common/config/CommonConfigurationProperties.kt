@@ -8,7 +8,7 @@ import javax.validation.constraints.Email
 
 @ConstructorBinding
 @EnableConfigurationProperties
-@ConfigurationProperties(prefix = "common-config")
+@ConfigurationProperties(prefix = "logsight.common-config")
 data class CommonConfigurationProperties(
     @URL val baseURL: java.net.URI,
     @Email val logsightEmail: String,

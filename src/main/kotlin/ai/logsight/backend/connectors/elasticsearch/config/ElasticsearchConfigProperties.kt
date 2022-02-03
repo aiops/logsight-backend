@@ -1,4 +1,4 @@
-package ai.logsight.backend.elasticsearch.config
+package ai.logsight.backend.connectors.elasticsearch.config
 
 import ai.logsight.backend.common.dto.Credentials
 import org.springframework.boot.context.properties.ConfigurationProperties

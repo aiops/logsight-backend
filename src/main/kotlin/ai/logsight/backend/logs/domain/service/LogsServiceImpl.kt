@@ -1,42 +1,36 @@
 package ai.logsight.backend.logs.domain.service
 
-import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
-import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.domain.LogFileTypes
 import ai.logsight.backend.logs.domain.service.command.LogCommand
-import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.logs.domain.service.dto.Log
+import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.ports.out.stream.LogStream
-import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.Log
-import ai.logsight.backend.logs.ports.web.requests.SendFileRequest
-import ai.logsight.backend.users.domain.service.UserService
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.File
 
 @Service
 class LogsServiceImpl(
-    val userService: UserService,
+    val userStorageService: UserStorageService,
     val applicationStorageService: ApplicationStorageService,
-    val topicBuilder: TopicBuilder,
     val logStream: LogStream,
 ) : LogsService {
-    val logger: org.slf4j.Logger = LoggerFactory.getLogger(LogsServiceImpl::class.java)
+
+    val logger: Logger = LoggerFactory.getLogger(LogsServiceImpl::class.java)
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
 
     override fun forwardLogs(logCommand: LogCommand) {
         val app = applicationStorageService.findApplicationById(logCommand.applicationId)
-        val user = userService.findUserByEmail(FindUserByEmailQuery(logCommand.userEmail))
-        val topic = topicBuilder.buildTopic(user.key, app.name)
+        val user = userStorageService.findUserByEmail(logCommand.userEmail)
         val logs = logCommand.logs.map { message ->
             Log(app.name, user.key, logCommand.logFormat.toString(), logCommand.tag, message)
         }
-        logStream.send(topic, logs)
+        val batch = LogBatchDTO(userKey = user.key, applicationName = app.name, logs = logs)
+        logStream.sendBatch(batch)
     }
 
     override fun processFile(logRequest: SendFileRequest, userEmail: String): Application {

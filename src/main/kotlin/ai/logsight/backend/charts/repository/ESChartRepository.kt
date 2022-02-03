@@ -3,8 +3,8 @@ package ai.logsight.backend.charts.repository
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.builders.ESQueryBuilder
 import ai.logsight.backend.common.dto.Credentials
-import ai.logsight.backend.connectors.RestTemplateConnector
-import ai.logsight.backend.elasticsearch.config.ElasticsearchConfigProperties
+import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
+import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import org.springframework.stereotype.Repository
 import org.springframework.web.util.UriComponentsBuilder
 

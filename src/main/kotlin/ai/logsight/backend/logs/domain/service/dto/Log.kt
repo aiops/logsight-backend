@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ports.out.stream.adapters.zeromq
+package ai.logsight.backend.logs.domain.service.dto
 
 data class Log(
     val app_name: String,

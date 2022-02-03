@@ -1,4 +1,4 @@
-package ai.logsight.backend.elasticsearch.config
+package ai.logsight.backend.connectors.elasticsearch.config
 
 import org.elasticsearch.client.RestHighLevelClient
 import org.springframework.context.annotation.Bean

@@ -1,9 +1,11 @@
 package ai.logsight.backend.users.domain.service
 
 import ai.logsight.backend.email.domain.EmailContext
-import ai.logsight.backend.email.domain.service.EmailServiceImpl
+import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.exceptions.InvalidTokenException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
+import ai.logsight.backend.exceptions.UserExistsException
+import ai.logsight.backend.exceptions.UserNotActivatedException
 import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
@@ -17,17 +19,21 @@ import org.springframework.stereotype.Service
 class UserServiceImpl(
     private val userStorageService: UserStorageService,
     private val tokenService: TokenService,
-    private val emailService: EmailServiceImpl,
+    private val emailService: EmailService,
     private val externalServices: ExternalServiceManager
 ) : UserService {
     override fun createUser(createUserCommand: CreateUserCommand): User {
+
+        if (userStorageService.checkEmailExists(createUserCommand.email)) {
+            val user = userStorageService.findUserByEmail(createUserCommand.email)
+            if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
+        }
         // create user
         val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
 
         // send Activation email
         sendActivationEmail(SendActivationEmailCommand(savedUser.email))
-        // initialize external services
-        externalServices.initializeServicesForUser(savedUser)
+
         // return user domain object
         return savedUser
     }
@@ -37,23 +43,29 @@ class UserServiceImpl(
         // generate token
         val activationToken = tokenService.createActivationToken(user.id)
         // generate user activation URL
+        // TODO: 01.02.22 Move title of emailContext to config or templates. Should not be here.
         val emailContext = EmailContext(
             userEmail = user.email, token = activationToken, title = "Activate your account"
         )
         // send email
-//        emailService.sendActivationEmail(emailContext)
+        emailService.sendActivationEmail(emailContext)
     }
 
     /**
      * Activate the user given the activation link.
      */
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
+        val user = userStorageService.findUserByEmail(activateUserCommand.email)
         val activationToken = tokenService.findTokenById(activateUserCommand.activationToken)
         // check activation token
         val validToken = tokenService.checkActivationToken(activationToken)
         // check token validity
         if (!validToken) throw InvalidTokenException()
         // activate user
+
+        // initialize external services
+        externalServices.initializeServicesForUser(user)
+
         return userStorageService.activateUser(activateUserCommand.email)
     }
 
@@ -96,6 +108,7 @@ class UserServiceImpl(
     override fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand) {
         val user = userStorageService.findUserByEmail(createTokenCommand.email)
         val passwordResetToken = tokenService.createPasswordResetToken(user.id)
+        // TODO: 01.02.22 Move title of emailContext to config or templates. Should not be here.
         val emailContext = EmailContext(
             userEmail = user.email, token = passwordResetToken, title = "Reset password | logsight.ai"
         )

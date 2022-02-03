@@ -19,7 +19,7 @@ class UserStorageImpl(
     private val passwordEncoder: PasswordEncoder
 ) : UserStorageService {
     override fun createUser(email: String, password: String): User {
-        if (userRepository.findByEmail(email).isPresent) throw EmailExistsException()
+        if (userRepository.findByEmail(email).isPresent) throw EmailExistsException("User with $email is already registered.")
 
         val userEntity = UserEntity(
             email = email, password = passwordEncoder.encode(password), userType = UserType.ONLINE_USER
@@ -39,6 +39,10 @@ class UserStorageImpl(
             hasPaid = true
         )
         return userRepository.save(userEntity).toLocalUser()
+    }
+
+    override fun checkEmailExists(email: String): Boolean {
+        return userRepository.findByEmail(email).isPresent
     }
 
     override fun activateUser(email: String): User {

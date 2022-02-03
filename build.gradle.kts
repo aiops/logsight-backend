@@ -42,6 +42,8 @@ dependencies {
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation("org.springframework.data:spring-data-elasticsearch:4.3.1")
 //    implementation("org.liquibase:liquibase-core")
+    implementation("com.h2database:h2:2.1.210")
+//    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
     implementation("org.json:json:20160810")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
@@ -52,12 +54,13 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "com.vaadin.external.google", module = "android-json")
+    }
     testImplementation("org.springframework.security:spring-security-test")
     implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.3")
     testImplementation("io.mockk:mockk:1.12.2")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.2")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.3")
     // testing dependencies
     testCompileOnly("org.mockito:mockito-junit-jupiter:2.23.0")
     testImplementation("org.mockito:mockito-inline:2.13.0")

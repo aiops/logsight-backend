@@ -23,5 +23,7 @@ fun Application.toApplicationEntity() = ApplicationEntity(
 )
 
 fun Application.toApplicationDTO() = ApplicationDTO(
-    id = this.id, name = this.name
+    id = this.id,
+    key = this.user.key,
+    name = this.name
 )

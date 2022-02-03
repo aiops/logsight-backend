@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config
+package ai.logsight.backend.connectors.zeromq.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
@@ -8,5 +8,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 class ZeroMQConfigurationProperties(
     val protocol: String = "tcp",
     val host: String = "0.0.0.0",
-    val port: Int = 5555
+    val reqPort: Int = 5555,
+    val pubPort: Int = 5559
 )

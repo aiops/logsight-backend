@@ -11,6 +11,5 @@ class AnalyticsManagerRESTConfigurationProperties {
     val host = "localhost"
     val port = 5000
     val apiVersion = 1.0
-    val createPath = "application/create"
-    val deletePath = "application/delete"
+    val applicationsPath = "applications"
 }

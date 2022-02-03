@@ -1,4 +1,4 @@
-package ai.logsight.backend.connectors
+package ai.logsight.backend.connectors.rest
 
 import org.json.JSONObject
 import org.springframework.http.HttpEntity

@@ -1,8 +1,8 @@
-package ai.logsight.backend.elasticsearch
+package ai.logsight.backend.connectors.elasticsearch
 
-import ai.logsight.backend.connectors.RestTemplateConnector
-import ai.logsight.backend.elasticsearch.config.ElasticsearchConfigProperties
-import ai.logsight.backend.elasticsearch.config.KibanaConfigProperties
+import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
+import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
+import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.security.PutUserRequest
@@ -64,9 +64,5 @@ class ElasticsearchService(
                 headerName = kibanaConfig.header
             )
         }
-    }
-
-    private fun createIndexPatterns(applicationId: String) {
-        return
     }
 }
