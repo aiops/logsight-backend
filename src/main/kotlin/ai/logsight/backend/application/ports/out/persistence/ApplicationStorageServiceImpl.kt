@@ -25,12 +25,11 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return appRepository.save(appEntity).toApplication()
     }
 
-    override fun createApplicationWithCallback(createApplicationCommand: CreateApplicationCommand, callback: ((Application)->Unit)): Application {
-            val application = createApplication(createApplicationCommand)
-            applicationActiveListener[application.id] = callback
-            return application
-            TODO("needs to notify logsight backend to create application")
-
+    override fun createApplicationWithCallback(createApplicationCommand: CreateApplicationCommand, callback: ((Application) -> Unit)): Application {
+        val application = createApplication(createApplicationCommand)
+        applicationActiveListener[application.id] = callback
+        return application
+        TODO("needs to notify logsight backend to create application")
     }
 
     override fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand) {
@@ -43,7 +42,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     override fun deleteApplicationWithCallback(
         deleteApplicationCommand: DeleteApplicationCommand,
         callback: (Application) -> Unit
-    ): Application {
+    ) {
         applicationActiveListener[deleteApplicationCommand.applicationId] = callback
         deleteApplication(deleteApplicationCommand)
         TODO("needs to notify logsight backend to create application")
@@ -57,10 +56,9 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return this.findApplicationByIdPrivate(applicationId).toApplication()
     }
 
-    override fun findApplicationByUserAndName(user: User, applicationName: String): Application {
+    override fun findApplicationByUserAndName(user: User, applicationName: String): Optional<Application> {
         return appRepository.findByUserAndName(user.toUserEntity(), applicationName)
     }
-
 
     override fun saveApplication(application: Application): Application {
         return appRepository.save<ApplicationEntity?>(application.toApplicationEntity()).toApplication()
