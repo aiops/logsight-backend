@@ -204,7 +204,7 @@ class LogMessageController(
         // start to query with a period of 2 years
         val stopTime = "now"
         var startTimeVar = startTime
-        val batchSize = 30000
+        val batchSize = 1000
         var currentSize = 0
         // i set this count as a threshold for how many times we wait without data before exiting the thread. Currently, set to 1 day.
         val waitingCount = if (elasticsearchPeriod > 0) 86400 / elasticsearchPeriod else 86400
