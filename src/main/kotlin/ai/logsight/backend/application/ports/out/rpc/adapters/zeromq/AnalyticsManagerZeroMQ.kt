@@ -22,12 +22,9 @@ class AnalyticsManagerZeroMQ(
     }
 
     override fun deleteApplication(deleteApplicationDTO: ApplicationDTO) {
-        val ctx = ZContext()
-        val zeroMqPubSocket = ctx.createSocket(SocketType.REQ)
-        val adr = "tcp://0.0.0.0:5554"
-        zeroMqPubSocket.bind(adr)
-        zeroMqPubSocket.send(deleteApplicationDTO.toString())
-        val message = zeroMqPubSocket.recv()
-        TODO("log that app creation is successful")
+        deleteApplicationDTO.action = "DELETE"
+        zeroMQReqSocket.send(ObjectMapper().writeValueAsString(deleteApplicationDTO))
+        val message = zeroMQReqSocket.recv()
+        println(message)
     }
 }

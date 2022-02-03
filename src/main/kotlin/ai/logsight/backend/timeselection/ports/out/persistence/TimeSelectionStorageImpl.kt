@@ -6,6 +6,7 @@ import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEnti
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionRepository
 import ai.logsight.backend.users.domain.User
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class TimeSelectionStorageImpl(
@@ -19,7 +20,7 @@ class TimeSelectionStorageImpl(
         return timeSelectionRepository.save(timeSelection).toTimeSelection()
     }
 
-    override fun deleteTimeSelectionById(timeSelectionId: Long) {
+    override fun deleteTimeSelectionById(timeSelectionId: UUID) {
         timeSelectionRepository.deleteById(timeSelectionId)
     }
 

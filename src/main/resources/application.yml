@@ -31,6 +31,10 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
+resources:
+  path: src/main/resources/
+
+
 logsight:
   elasticsearch:
     host: "localhost"

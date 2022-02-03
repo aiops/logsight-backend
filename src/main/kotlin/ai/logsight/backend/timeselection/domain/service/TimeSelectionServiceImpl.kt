@@ -1,7 +1,6 @@
 package ai.logsight.backend.timeselection.domain.service
 
 import ai.logsight.backend.timeselection.domain.TimeSelection
-import ai.logsight.backend.timeselection.extensions.toTimeSelectionEntity
 import ai.logsight.backend.timeselection.ports.out.persistence.DateTimeType
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import ai.logsight.backend.timeselection.ports.web.request.PredefinedTimeRequest
@@ -11,6 +10,7 @@ import ai.logsight.backend.users.ports.out.persistence.TimeSelectionStorageServi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class TimeSelectionServiceImpl(
@@ -22,19 +22,18 @@ class TimeSelectionServiceImpl(
     override fun findAllByUser(user: User): List<TimeSelection> = timeSelectionStorageService.findAllByUser(user)
 
     override fun createTimeSelection(user: User, request: PredefinedTimeRequest): TimeSelection {
-        val timeSelection = TimeSelection(
-            id = 0,
+        val timeSelection = TimeSelectionEntity(
             name = request.name,
             startTime = request.startTime,
             endTime = request.endTime,
             dateTimeType = request.dateTimeType,
             user = user.toUserEntity()
         )
-        logger.info("Saving predefined time [{}] for user with key [{}]", timeSelection, user.key)
-        return timeSelectionStorageService.saveTimeSelection(timeSelection.toTimeSelectionEntity())
+        logger.info("Saving predefined time [{}] for user with email [{}]", timeSelection, user.email)
+        return timeSelectionStorageService.saveTimeSelection(timeSelection)
     }
 
-    override fun deleteTimeSelection(id: Long) {
+    override fun deleteTimeSelection(id: UUID) {
         logger.info("deleting predefined time with id [{}]", id)
         timeSelectionStorageService.deleteTimeSelectionById(id)
     }
@@ -43,7 +42,6 @@ class TimeSelectionServiceImpl(
         logger.info("saving default predefined times for user with id [{}]", user.id)
         val timeSelectionSelections = listOf(
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-60m",
                 endTime = "now",
                 name = "1H",
@@ -51,7 +49,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-180m",
                 endTime = "now",
                 name = "3H",
@@ -59,7 +56,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-720m",
                 endTime = "now",
                 name = "12H",
@@ -67,7 +63,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-1440m",
                 endTime = "now",
                 name = "1D",
@@ -75,7 +70,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-4320m",
                 endTime = "now",
                 name = "3D",
@@ -83,7 +77,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-10080m",
                 endTime = "now",
                 name = "1W",
@@ -91,7 +84,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-20160m",
                 endTime = "now",
                 name = "2W",
@@ -99,7 +91,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-43800m",
                 endTime = "now",
                 name = "1M",
@@ -107,7 +98,6 @@ class TimeSelectionServiceImpl(
                 user = user.toUserEntity()
             ),
             TimeSelectionEntity(
-                id = 0,
                 startTime = "now-525600m",
                 endTime = "now",
                 name = "1Y",

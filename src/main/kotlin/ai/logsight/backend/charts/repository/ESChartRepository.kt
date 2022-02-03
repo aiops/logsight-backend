@@ -18,8 +18,7 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
             startTime = chartConfig.startTime,
             stopTime = chartConfig.stopTime,
             featureType = chartConfig.feature,
-            chartType = chartConfig.type,
-            timeZone = chartConfig.timeZone
+            chartType = chartConfig.type
         )
         val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.protocol).host(elasticsearchConfig.host)
             .port(elasticsearchConfig.port).path(applicationIndices).path("/_search").build().toString()

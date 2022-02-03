@@ -39,6 +39,7 @@ class LogsController(
             logs = logRequest.logs
         )
         logsService.forwardLogs(logCommand)
+        // TODO("Alex needs to have a look at this about the Flush")
         return SendLogsResponse(
             description = "Log batch received successfully",
             applicationId = logRequest.applicationId,
@@ -46,21 +47,23 @@ class LogsController(
         )
     }
 
-    @PostMapping("/upload_file")
+    @PostMapping("/file")
     fun uploadFile(
         authentication: Authentication,
         @RequestBody fileRequest: SendFileRequest
     ): SendFileResponse {
         val application = logsService.processFile(fileRequest, authentication.name)
+        // TODO("Alex needs to have a look at this about the Flush")
         return SendFileResponse("File upload was successful.", applicationId = application.id)
     }
 
-    @PostMapping("/sample_data")
+    @PostMapping("/sample")
     fun sampleData(
         authentication: Authentication
     ): SampleDataResponse {
         // Internal routine to upload data
         logsService.uploadSampleData(authentication.name)
+        // TODO("Alex needs to have a look at this about the Flush")
         return SampleDataResponse("Sample data was loaded successfully.")
     }
 }

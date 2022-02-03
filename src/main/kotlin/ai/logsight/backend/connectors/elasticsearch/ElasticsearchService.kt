@@ -53,7 +53,7 @@ class ElasticsearchService(
         val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/kibana").path("/s").path("/kibana_space_$userKey").path("/api")
             .path("/index_patterns").path("/index_pattern").build().toString()
-
+        println(url)
         indexPatterns.forEach { pattern ->
             val query =
                 "{\"override\": false,\n" + "  \"refresh_fields\": true,\n" + "  \"index_pattern\": {\n" + "     \"title\": \"${applicationKey}_${pattern}\"\n" + "  }\n" + "}"

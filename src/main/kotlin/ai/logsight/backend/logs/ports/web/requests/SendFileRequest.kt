@@ -8,7 +8,8 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
 data class SendFileRequest(
-    val applicationName: String,
+    val applicationName: String, // TODO("Needs to be applicationId")
     val file: MultipartFile,
-    val tag: String?
+    @NotNull
+    val tag: String = "default"
 )

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "2.6.2"
+    id("org.springframework.boot") version "2.5.7"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.spring") version "1.6.10"
@@ -51,6 +51,11 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("junit:junit:4.13.2")
+
+    implementation("io.springfox:springfox-swagger2:2.9.2")
+    implementation("io.springfox:springfox-bean-validators:2.9.2")
+    implementation("io.springfox:springfox-swagger-ui:2.9.2")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

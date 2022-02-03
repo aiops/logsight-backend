@@ -4,6 +4,5 @@ import java.util.*
 
 data class CreateUserResponse(
     val id: UUID,
-    val email: String,
-    val privateKey: String
+    val email: String
 )

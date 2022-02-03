@@ -6,6 +6,7 @@ import ai.logsight.backend.exceptions.InvalidTokenException
 import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.exceptions.UserExistsException
 import ai.logsight.backend.exceptions.UserNotActivatedException
+import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
@@ -20,7 +21,8 @@ class UserServiceImpl(
     private val userStorageService: UserStorageService,
     private val tokenService: TokenService,
     private val emailService: EmailService,
-    private val externalServices: ExternalServiceManager
+    private val externalServices: ExternalServiceManager,
+    private val timeSelectionService: TimeSelectionService
 ) : UserService {
     override fun createUser(createUserCommand: CreateUserCommand): User {
 
@@ -65,6 +67,9 @@ class UserServiceImpl(
 
         // initialize external services
         externalServices.initializeServicesForUser(user)
+
+        // setup predefined timestamps
+        timeSelectionService.createPredefinedTimeSelections(user)
 
         return userStorageService.activateUser(activateUserCommand.email)
     }

@@ -7,8 +7,8 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 
 class ESQueryBuilder {
-    fun buildQuery(startTime: String, stopTime: String, featureType: String, chartType: String, timeZone: String): String {
-        return this.loadJsonQuery(featureType, chartType).modifyTime(startTime, stopTime, timeZone).query
+    fun buildQuery(startTime: String, stopTime: String, featureType: String, chartType: String): String {
+        return this.loadJsonQuery(featureType, chartType).modifyTime(startTime, stopTime).query
     }
 
     private fun loadJsonQuery(featureType: String, chartType: String): ESQuery {

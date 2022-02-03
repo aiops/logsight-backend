@@ -2,7 +2,7 @@ package ai.logsight.backend.users.ports.web.response
 
 import java.util.*
 
-class ChangePasswordResponse(
+data class GetUserResponse(
     val id: UUID,
     val email: String
 )

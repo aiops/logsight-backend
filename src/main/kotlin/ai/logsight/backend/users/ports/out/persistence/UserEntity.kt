@@ -3,15 +3,13 @@ package ai.logsight.backend.users.ports.out.persistence
 import ai.logsight.backend.security.KeyGenerator
 import java.time.LocalDateTime
 import java.util.*
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity
 @Table(name = "users")
 class UserEntity(
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "key", nullable = false)
