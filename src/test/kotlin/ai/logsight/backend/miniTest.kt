@@ -19,7 +19,7 @@ class miniTest {
         // given
         val log = Log("app_name", "pk", "log_type", "tag", "msg")
 
-        logSend.sendBatch(LogBatchDTO("test", "test", listOf(log)))
+        logSend.send(LogBatchDTO("test", "test", listOf(log)))
         // when
         println(ObjectMapper().writeValueAsString(log))
 
