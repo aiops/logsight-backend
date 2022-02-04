@@ -10,6 +10,6 @@ interface ApplicationStorageService {
     fun createApplication(createApplicationCommand: CreateApplicationCommand): Application
     fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand)
     fun findApplicationById(applicationId: UUID): Application
-    fun findApplicationByUserAndName(user: User, applicationName: String): Optional<Application>
+    fun findApplicationByUserAndName(user: User, applicationName: String): Application?
     fun saveApplication(application: Application): Application
 }

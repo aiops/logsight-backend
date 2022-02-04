@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface ApplicationRepository : JpaRepository<ApplicationEntity, UUID> {
-    fun findByUserAndName(user: UserEntity, applicationName: String): Optional<Application>
+    fun findByUserAndName(user: UserEntity, applicationName: String): Application?
 }

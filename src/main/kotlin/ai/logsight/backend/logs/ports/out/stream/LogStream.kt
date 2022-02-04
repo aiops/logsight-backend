@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.ports.out.stream
 
-import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
+import ai.logsight.backend.logs.domain.service.dto.Log
 
 interface LogStream {
-    fun sendBatch(batch: LogBatchDTO)
+    fun send(topic: String, logs: Collection<Log>)
 }

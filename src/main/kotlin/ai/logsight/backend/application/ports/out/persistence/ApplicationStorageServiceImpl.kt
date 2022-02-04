@@ -38,7 +38,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return this.findApplicationByIdPrivate(applicationId).toApplication()
     }
 
-    override fun findApplicationByUserAndName(user: User, applicationName: String): Optional<Application> {
+    override fun findApplicationByUserAndName(user: User, applicationName: String): Application? {
         return appRepository.findByUserAndName(user.toUserEntity(), applicationName)
     }
 
