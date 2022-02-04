@@ -36,7 +36,7 @@ resources:
 
 server:
   error:
-    include-stacktrace=never
+    include-stacktrace: ON_PARAM
 
 logsight:
   elasticsearch:

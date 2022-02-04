@@ -21,7 +21,8 @@ class RestControllerAdvice {
     @ExceptionHandler(BadCredentialsException::class)
     @ResponseStatus(
         value = HttpStatus.UNAUTHORIZED,
-        reason = "Email or password are not correct.")
+        reason = "Email or password are not correct."
+    )
     fun handleBadCredentialsException(logsightApplicationException: BadCredentialsException) {
     }
 
