@@ -1,8 +1,10 @@
 package ai.logsight.backend.connectors.elasticsearch
 
+import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
+import ai.logsight.backend.users.domain.User
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.security.PutUserRequest
@@ -22,7 +24,7 @@ class ElasticsearchService(
 
     fun createESUser(username: String, password: String, roles: String) {
         val esUser = ESUser(username, Collections.singletonList(roles))
-        val request = PutUserRequest.withPassword(esUser, password.toCharArray(), true, RefreshPolicy.NONE)
+        val request = PutUserRequest.withPassword(esUser, roles.toCharArray(), true, RefreshPolicy.NONE)
         client.security().putUser(request, RequestOptions.DEFAULT)
     }
 
@@ -46,6 +48,17 @@ class ElasticsearchService(
         kibanaClient.putRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
         )
+    }
+
+    fun kibanaLogin(user: User): String {
+        val query = "{\"providerType\":\"basic\", \"providerName\":\"basic\", \"currentURL\":\"/\", \"params\":{\"username\":\"${user.email}\", \"password\":\"${user.key}\"}}"
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
+            .port(kibanaConfig.port).path("/kibana").path("/internal").path("/security").path("/login")
+            .build().toString()
+        val response = kibanaClient.sendRequest(
+            url = url, credentials = Credentials(user.email, user.key), query = query, headerName = kibanaConfig.header
+        )
+        return response
     }
 
     fun createKibanaIndexPatterns(userKey: String, applicationKey: String, indexPatterns: List<String>) {

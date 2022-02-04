@@ -56,4 +56,4 @@ logsight:
 
   common-config:
     base-url: http://localhost:4200
-    logsight-email: info@logsight.ai
+    logsight-email: support@logsight.ai

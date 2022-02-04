@@ -8,7 +8,6 @@ import javax.persistence.*
 @Table(name = "time_selection")
 data class TimeSelectionEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "name")

@@ -48,7 +48,7 @@ class UserController(
     @ResponseStatus(HttpStatus.OK)
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
         val activateUserCommand = ActivateUserCommand(
-            email = activateUserRequest.email,
+            id = activateUserRequest.id,
             activationToken = activateUserRequest.activationToken
         )
         val activatedUser = userService.activateUser(activateUserCommand)
@@ -60,18 +60,19 @@ class UserController(
      */
     @PostMapping("/change_password")
     @ResponseStatus(HttpStatus.OK)
-    fun changePassword(@Valid @RequestBody changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse {
+    fun changePassword(authentication: Authentication, @Valid @RequestBody changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse {
+        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
         val changePasswordCommand = ChangePasswordCommand(
-            email = changePasswordRequest.email,
+            email = user.email,
             newPassword = changePasswordRequest.newPassword,
-            confirmNewPassword = changePasswordRequest.confirmNewPassword
+            confirmNewPassword = changePasswordRequest.repeatNewPassword
         )
         val modifiedUser = userService.changePassword(changePasswordCommand)
         return ChangePasswordResponse(id = modifiedUser.id, email = modifiedUser.email)
     }
 
     /**
-     * Generate a password-reset token and send it by email.
+     * Receive the token from the link sent via email and display form to reset password
      */
     @PostMapping("/reset_password")
     @ResponseStatus(HttpStatus.OK)
@@ -80,14 +81,14 @@ class UserController(
             password = resetPasswordRequest.password,
             repeatPassword = resetPasswordRequest.repeatPassword,
             passwordResetToken = resetPasswordRequest.passwordResetToken,
-            email = resetPasswordRequest.email
+            id = resetPasswordRequest.id
         )
         val modifiedUser = userService.resetPasswordWithToken(resetPasswordCommand)
         return ResetPasswordResponse(id = modifiedUser.id, email = modifiedUser.email)
     }
 
     /**
-     * Receive the token from the link sent via email and display form to reset password
+     * Generate a password-reset token and send it by email.
      */
     @PostMapping("/forgot_password")
     @ResponseStatus(HttpStatus.OK)

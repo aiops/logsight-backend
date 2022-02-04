@@ -24,11 +24,11 @@ class AuthController(
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): LoginResponse {
+        val user = userService.findUserByEmail(loginUserRequest.email)
+        if (!user.activated) throw UserNotActivatedException()
         val token = authService.authenticateUser(
             username = loginUserRequest.email, password = loginUserRequest.password
         )
-        val user = userService.findUserByEmail(loginUserRequest.email)
-        if (!user.activated) throw UserNotActivatedException()
         return LoginResponse(token = token.token, user = UserDTO(user.id, user.email))
     }
 }

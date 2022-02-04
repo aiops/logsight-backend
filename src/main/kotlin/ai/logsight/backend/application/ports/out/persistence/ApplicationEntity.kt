@@ -9,7 +9,6 @@ import javax.persistence.*
 @Table(name = "applications")
 class ApplicationEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "application_key", nullable = false)

@@ -12,10 +12,10 @@ class URIResolver(val commonConfig: CommonConfigurationProperties) {
         return URI(
             commonConfig.baseURL.scheme,
             commonConfig.baseURL.authority,
-            commonConfig.baseURL.path,
+            commonConfig.baseURL.path + "/auth/activate",
             "uuid=${token.userId}&token=${token.token}",
             commonConfig.baseURL.fragment
-        ).resolve("/api/v1/users/activate")
+        )
             .toURL() // TODO Can / should be this endpoint retrieved instead of hard-coded?
     }
 
@@ -23,10 +23,10 @@ class URIResolver(val commonConfig: CommonConfigurationProperties) {
         return URI(
             commonConfig.baseURL.scheme,
             commonConfig.baseURL.authority,
-            commonConfig.baseURL.path,
+            commonConfig.baseURL.path + "/auth/reset-password",
             "uuid=${token.userId}&token=${token.token}",
             commonConfig.baseURL.fragment
-        ).resolve("/api/v1/users/activate")
+        )
             .toURL() // TODO Can / should be this endpoint retrieved instead of hard-coded?
     }
 }
