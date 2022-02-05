@@ -3,6 +3,7 @@ package ai.logsight.backend.users.domain.service
 import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.exceptions.EmailExistsException
+import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.token.extensions.toToken
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenType
@@ -27,7 +28,8 @@ internal class UserServiceImplTestUnit {
     private val emailService: EmailService = mockk()
     private val tokenService: TokenService = mockk()
     private val externalService: ExternalServiceManager = mockk()
-    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService)
+    private val timeSelectionService: TimeSelectionService = mockk()
+    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService, timeSelectionService)
 
     @Nested
     @DisplayName("User Creation")

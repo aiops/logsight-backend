@@ -1,6 +1,5 @@
 package ai.logsight.backend.logs.ports.web
 
-import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.service.LogsService
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
@@ -12,11 +11,7 @@ import ai.logsight.backend.logs.ports.web.responses.SendFileResponse
 import ai.logsight.backend.logs.ports.web.responses.SendLogsResponse
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
@@ -38,7 +33,7 @@ class LogsController(
             logFormat = logListRequest.logFormat,
             logs = logListRequest.logs
         )
-        logsService.forwardLogs(logBatchDTO)
+        logsService.processLogBatch(logBatchDTO)
         // TODO("Alex needs to have a look at this about the Flush")
         return SendLogsResponse(
             description = "Log batch received successfully",
@@ -59,7 +54,7 @@ class LogsController(
             logFormat = logFileRequest.logFormat,
             file = logFileRequest.file
         )
-        val application = logsService.processFile(logFileDTO)
+        logsService.processLogFile(logFileDTO)
         // TODO("Alex needs to have a look at this about the Flush")
         return SendFileResponse("File upload was successful.")
     }
@@ -68,10 +63,10 @@ class LogsController(
     fun sampleData(
         authentication: Authentication
     ): SampleDataResponse {
-        val logSampleDTO = LogSampleDTO (
+        val logSampleDTO = LogSampleDTO(
             userEmail = authentication.name
         )
-        logsService.uploadSampleData(logSampleDTO)
+        logsService.processLogSample(logSampleDTO)
         // TODO("Alex needs to have a look at this about the Flush")
         return SampleDataResponse("Sample data was loaded successfully.")
     }

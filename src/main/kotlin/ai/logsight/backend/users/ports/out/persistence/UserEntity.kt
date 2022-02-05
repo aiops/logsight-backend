@@ -9,7 +9,6 @@ import javax.persistence.*
 @Table(name = "users")
 class UserEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "key", nullable = false)
@@ -43,5 +42,5 @@ class UserEntity(
     var activated: Boolean = false,
 
     @Column(name = "user_type")
-    val userType: UserType
+    val userType: UserType = UserType.ONLINE_USER
 )

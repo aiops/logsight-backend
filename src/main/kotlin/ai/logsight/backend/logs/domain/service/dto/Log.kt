@@ -5,5 +5,6 @@ data class Log(
     val private_key: String,
     val log_type: String,
     val tag: String,
+    val receipt_id: Long,
     val message: String
 )

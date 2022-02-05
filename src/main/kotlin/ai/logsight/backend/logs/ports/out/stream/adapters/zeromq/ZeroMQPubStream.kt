@@ -12,14 +12,15 @@ class ZeroMQPubStream(
     @Qualifier("pub") val zeroMqPubSocket: ZMQ.Socket
 ) : LogStream {
 
-    override fun send(topic: String, logs: Collection<Log>) {
-        val objectMapper = ObjectMapper()
-        val logsSerialized: List<String> = logs.map { log ->
-            "$topic ${objectMapper.writeValueAsString(log)}"
-        }
-
-        logsSerialized.forEach { log ->
-            zeroMqPubSocket.send(log)
-        }
+    override fun send(serializedLogs: Collection<String>) = serializedLogs.forEach { log ->
+        zeroMqPubSocket.send(log)
     }
+
+    override fun serialize(topic: String, logs: Collection<Log>): Collection<String> = logs.map { log ->
+        val objectMapper = ObjectMapper()
+        "$topic ${objectMapper.writeValueAsString(log)}"
+    }
+
+    override fun serializeAndSend(topic: String, logs: Collection<Log>) =
+        send(serialize(topic, logs))
 }

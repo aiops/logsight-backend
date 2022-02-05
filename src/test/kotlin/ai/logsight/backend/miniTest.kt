@@ -17,9 +17,10 @@ class miniTest {
     @Test
     fun `should print`() {
         // given
-        val log = Log("app_name", "pk", "log_type", "tag", "msg")
+        val log = Log("app_name", "pk", "log_type", "tag", 0, "msg")
+        val topic = "test"
 
-        logSend.send(LogBatchDTO("test", "test", listOf(log)))
+        logSend.serializeAndSend(topic, listOf(log))
         // when
         println(ObjectMapper().writeValueAsString(log))
 
