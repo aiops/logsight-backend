@@ -27,7 +27,7 @@ class EmailBuilder(
 
     private fun buildEmail(uri: URL, emailContext: EmailContext): Email {
         val emailBody = templateEngine.process(
-            "email_activation",
+            emailContext.template.toString().lowercase(),
             with(Context()) {
                 setVariable("title", emailContext.title)
                 setVariable("url", uri.toString())

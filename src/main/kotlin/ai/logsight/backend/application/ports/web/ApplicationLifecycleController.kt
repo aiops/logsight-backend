@@ -1,5 +1,6 @@
 package ai.logsight.backend.application.ports.web
 
+import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
@@ -7,8 +8,10 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageS
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
+import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -23,6 +26,16 @@ class ApplicationLifecycleController(
     private val applicationService: ApplicationLifecycleService,
     private val applicationStorageService: ApplicationStorageService
 ) {
+
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    fun getApplications(
+        authentication: Authentication,
+    ): GetAllApplicationsResponse {
+        val user = userService.findUserByEmail(authentication.name)
+        return GetAllApplicationsResponse(applicationStorageService.findAllApplicationsByUser(user))
+    }
+
     /**
      * Register a new application in the system.
      */

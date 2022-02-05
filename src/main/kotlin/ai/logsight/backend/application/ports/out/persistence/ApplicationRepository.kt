@@ -8,4 +8,5 @@ import java.util.*
 
 interface ApplicationRepository : JpaRepository<ApplicationEntity, UUID> {
     fun findByUserAndName(user: UserEntity, applicationName: String): Application?
+    fun findAllByUser(user: UserEntity): List<ApplicationEntity>
 }

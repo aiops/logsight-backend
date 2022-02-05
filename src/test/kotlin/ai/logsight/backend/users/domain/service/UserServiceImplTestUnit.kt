@@ -2,6 +2,7 @@ package ai.logsight.backend.users.domain.service
 
 import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.domain.service.EmailService
+import ai.logsight.backend.email.domain.service.helpers.EmailTemplateTypes
 import ai.logsight.backend.exceptions.EmailExistsException
 import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.token.extensions.toToken
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Duration
 
 internal class UserServiceImplTestUnit {
@@ -29,7 +31,8 @@ internal class UserServiceImplTestUnit {
     private val tokenService: TokenService = mockk()
     private val externalService: ExternalServiceManager = mockk()
     private val timeSelectionService: TimeSelectionService = mockk()
-    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService, timeSelectionService)
+    private val passwordEncoder: PasswordEncoder = mockk()
+    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService, timeSelectionService, passwordEncoder)
 
     @Nested
     @DisplayName("User Creation")
@@ -58,7 +61,7 @@ internal class UserServiceImplTestUnit {
             every { userStorage.createUser(createUserCommand.email, createUserCommand.password) } returns user
             every { tokenService.createActivationToken(user.id) } returns token
             val emailContext = EmailContext(
-                userEmail = user.email, token = token, title = "Activate your account"
+                userEmail = user.email, token = token, title = "Activate your account", template = EmailTemplateTypes.ACTIVATION_EMAIL
             )
 
             every { emailService.sendActivationEmail(emailContext) } returns Unit

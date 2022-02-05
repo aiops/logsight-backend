@@ -11,5 +11,6 @@ interface ApplicationStorageService {
     fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand)
     fun findApplicationById(applicationId: UUID): Application
     fun findApplicationByUserAndName(user: User, applicationName: String): Application?
+    fun findAllApplicationsByUser(user: User): List<Application>
     fun saveApplication(application: Application): Application
 }

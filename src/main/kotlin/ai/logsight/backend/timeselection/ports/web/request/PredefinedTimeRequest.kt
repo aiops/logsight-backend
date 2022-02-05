@@ -23,8 +23,6 @@ data class PredefinedTimeRequest(
     )
     @NotEmpty(message = "endTime must not be empty.")
     val endTime: String,
-    @get:Min(0, message = "dateTimeType must be RELATIVE (0) or ABSOLUTE (1).")
-    @get:Max(1, message = "dateTimeType must be RELATIVE (0) or ABSOLUTE (1).")
     @NotEmpty(message = "dateTimeType must not be empty.")
     val dateTimeType: DateTimeType
 )

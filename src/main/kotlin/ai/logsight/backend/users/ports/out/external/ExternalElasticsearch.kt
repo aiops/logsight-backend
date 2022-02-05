@@ -13,7 +13,7 @@ class ExternalElasticsearch(
         elasticsearchService.createESUser(
             username = user.email, password = user.password, roles = user.key
         )
-        elasticsearchService.createKibanaRole(user.key)
         elasticsearchService.createKibanaSpace(user.key)
+        elasticsearchService.createKibanaRole(user.key)
     }
 }

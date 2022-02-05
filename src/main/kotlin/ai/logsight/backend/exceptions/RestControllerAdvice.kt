@@ -3,6 +3,7 @@ package ai.logsight.backend.exceptions
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -34,17 +35,16 @@ class RestControllerAdvice {
     }
 
     @ExceptionHandler(UserExistsException::class)
-    fun handleUserExistsException(userExistsException: UserExistsException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userExistsException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    @ResponseStatus(
+        value = HttpStatus.CONFLICT,
+        reason = "User already exists. Please login."
+    )
+    fun handleUserExistsException(userExistsException: UserExistsException) {
     }
 
     @ExceptionHandler(UserNotActivatedException::class)
-    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, userNotActivatedException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User has not been activated.")
+    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException) {
     }
 
     @ExceptionHandler(EmailExistsException::class)

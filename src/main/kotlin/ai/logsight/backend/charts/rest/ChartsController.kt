@@ -1,5 +1,6 @@
 package ai.logsight.backend.charts.rest
 
+import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.ChartsService
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
@@ -67,7 +68,12 @@ class ChartsController(
 
     fun getChartQuery(authentication: Authentication, createChartRequest: ChartRequest): GetChartDataQuery {
         val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        val application = applicationService.findApplicationById(createChartRequest.applicationId)
+        val application: Application?
+        if (createChartRequest.applicationId != null) {
+            application = applicationService.findApplicationById(createChartRequest.applicationId)
+        } else {
+            application = null
+        }
         return GetChartDataQuery(
             credentials = Credentials(user.email, user.id.toString()),
             chartConfig = createChartRequest.chartConfig,

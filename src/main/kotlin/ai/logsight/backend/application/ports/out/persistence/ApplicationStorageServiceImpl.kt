@@ -42,6 +42,10 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return appRepository.findByUserAndName(user.toUserEntity(), applicationName)
     }
 
+    override fun findAllApplicationsByUser(user: User): List<Application> {
+        return appRepository.findAllByUser(user.toUserEntity()).map { it.toApplication() }
+    }
+
     override fun saveApplication(application: Application): Application {
         return appRepository.save<ApplicationEntity?>(application.toApplicationEntity()).toApplication()
     }

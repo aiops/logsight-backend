@@ -11,6 +11,6 @@ interface UserStorageService {
     fun saveUser(user: User): User
     fun changePassword(email: String, newPassword: String, confirmNewPassword: String): User
     fun activateUser(email: String): User
-    fun createLocalUser(email: String, password: String): LocalUser
+    fun createLocalUser(email: String, password: String): User
     fun checkEmailExists(email: String): Boolean
 }

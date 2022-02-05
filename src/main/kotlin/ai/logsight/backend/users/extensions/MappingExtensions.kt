@@ -39,3 +39,8 @@ fun User.toUserEntity() = UserEntity(
     dateCreated = this.dateCreated,
     userType = this.userType
 )
+
+fun User.toLocalUser() = LocalUser(
+    id = this.id,
+    key = this.key
+)
