@@ -9,10 +9,9 @@ import javax.validation.constraints.Pattern
 data class ChartRequest(
     @NotEmpty(message = "chartConfig must not be empty.")
     val chartConfig: ChartConfig,
-    @NotEmpty(message = "applicationId must not be empty.")
     @Pattern(
         regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
         message = "applicationId must be UUID type."
     )
-    val applicationId: UUID
+    val applicationId: UUID?
 )

@@ -13,6 +13,7 @@ import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.extensions.toLocalUser
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -107,7 +108,12 @@ class UserServiceImpl(
     }
 
     override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {
-        return userStorageService.createLocalUser(createUserCommand.email, createUserCommand.password)
+        val user = userStorageService.createLocalUser(createUserCommand.email, createUserCommand.password)
+        externalServices.initializeServicesForUser(user)
+
+        // setup predefined timestamps
+        timeSelectionService.createPredefinedTimeSelections(user)
+        return user.toLocalUser()
     }
 
     /**

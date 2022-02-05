@@ -28,7 +28,7 @@ class UserStorageImpl(
         return savedEntity.toUser()
     }
 
-    override fun createLocalUser(email: String, password: String): LocalUser {
+    override fun createLocalUser(email: String, password: String): User {
         if (userRepository.findByEmail(email).isPresent) throw EmailExistsException()
         val userEntity = UserEntity(
             email = email,
@@ -38,7 +38,7 @@ class UserStorageImpl(
             activationDate = LocalDateTime.now(),
             hasPaid = true
         )
-        return userRepository.save(userEntity).toLocalUser()
+        return userRepository.save(userEntity).toUser()
     }
 
     override fun checkEmailExists(email: String): Boolean {

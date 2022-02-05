@@ -9,6 +9,7 @@ import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
 import java.util.*
@@ -40,8 +41,19 @@ class ElasticsearchService(
     }
 
     fun createKibanaRole(userKey: String) {
+        //        val givePermissionQuery =
+//            "{ \"metadata\" : { \"version\" : 1 }, " +
+//                    "\"elasticsearch\": { \"cluster\" : [ ], " +
+//                    "\"indices\" : [ {\"names\" : [${getApplicationIndicesForKibana(user)}]," +
+//                    " \"privileges\" : [ \"all\" ]}] }, " +
+//                    "\"kibana\": [ { \"base\": [], " +
+//                    "\"feature\": { \"discover\": [ \"all\" ], \"dashboard\": [ \"all\" ] , \"advancedSettings\": [ \"all\" ], \"visualize\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, \"spaces\": [ \"kibana_space_${user.key}\" ] } ] }"
+
         val query =
-            "{ \"metadata\" : { \"version\" : 1 }," + "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " + "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " + "\"spaces\": [ \"kibana_space_${userKey}\" ] } ] }"
+            "{ \"metadata\" : { \"version\" : 1 }," + "\"elasticsearch\": { \"cluster\" : [ ], " +
+                "\"indices\" : [ {\"names\" : [$userKey*]," +
+                " \"privileges\" : [ \"all\" ]}] }, " +
+                "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " + "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " + "\"spaces\": [ \"kibana_space_${userKey}\" ] } ] }"
         val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/kibana").path("/api").path("/security").path("/role").path("/$userKey")
             .build().toString()
@@ -50,26 +62,24 @@ class ElasticsearchService(
         )
     }
 
-    fun kibanaLogin(user: User): String {
-        val query = "{\"providerType\":\"basic\", \"providerName\":\"basic\", \"currentURL\":\"/\", \"params\":{\"username\":\"${user.email}\", \"password\":\"${user.key}\"}}"
+    fun kibanaLogin(user: User): ResponseEntity<String> {
+        val query =
+            "{\"providerType\":\"basic\", \"providerName\":\"basic\", \"currentURL\":\"/\", \"params\":{\"username\":\"${user.email}\", \"password\":\"${user.key}\"}}"
         val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/kibana").path("/internal").path("/security").path("/login")
             .build().toString()
-        val response = kibanaClient.sendRequest(
+        return kibanaClient.postForEntity(
             url = url, credentials = Credentials(user.email, user.key), query = query, headerName = kibanaConfig.header
         )
-        return response
     }
 
-    fun createKibanaIndexPatterns(userKey: String, applicationKey: String, indexPatterns: List<String>) {
-
+    fun createKibanaIndexPatterns(userKey: String, applicationName: String, indexPatterns: List<String>) {
         val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/kibana").path("/s").path("/kibana_space_$userKey").path("/api")
             .path("/index_patterns").path("/index_pattern").build().toString()
-        println(url)
         indexPatterns.forEach { pattern ->
             val query =
-                "{\"override\": false,\n" + "  \"refresh_fields\": true,\n" + "  \"index_pattern\": {\n" + "     \"title\": \"${applicationKey}_${pattern}\"\n" + "  }\n" + "}"
+                "{\"override\": false,\n" + "  \"refresh_fields\": true,\n" + "  \"index_pattern\": {\n" + "     \"title\": \"${userKey}_${applicationName}_${pattern}\"\n" + "  }\n" + "}"
             kibanaClient.sendRequest(
                 url = url,
                 credentials = elasticsearchConfig.credentials,

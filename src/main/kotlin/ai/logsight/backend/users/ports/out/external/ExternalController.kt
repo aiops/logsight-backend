@@ -10,6 +10,7 @@ import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.*
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.postForEntity
@@ -25,7 +26,7 @@ class ExternalController(
     @ResponseStatus(HttpStatus.OK)
     fun kibanaLogin(
         authentication: Authentication
-    ): String {
+    ): ResponseEntity<String> {
         val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
         return elasticsearchService.kibanaLogin(user)
     }

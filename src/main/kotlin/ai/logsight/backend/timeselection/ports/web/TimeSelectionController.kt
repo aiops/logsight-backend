@@ -27,7 +27,7 @@ class TimeSelectionController(
     fun getTimeSelections(
         authentication: Authentication
     ): TimeSelectionResponse {
-        return TimeSelectionResponse(
+        val response = TimeSelectionResponse(
             timeSelectionService.findAllByUser(
                 userService.findUserByEmail(
                     FindUserByEmailQuery(
@@ -36,6 +36,7 @@ class TimeSelectionController(
                 )
             )
         )
+        return response
     }
 
     @PostMapping("")

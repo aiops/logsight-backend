@@ -1,6 +1,7 @@
 package ai.logsight.backend.charts
 
 import ai.logsight.backend.application.domain.Application
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.domain.charts.BarChart
 import ai.logsight.backend.charts.domain.charts.HeatmapChart
 import ai.logsight.backend.charts.domain.charts.PieChart
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Service
 import kotlin.reflect.full.memberProperties
 
 @Service
-class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : ChartsService {
+class ESChartsServiceImpl(private val chartsRepository: ESChartRepository, private val applicationStorageService: ApplicationStorageService) : ChartsService {
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
@@ -87,5 +88,7 @@ class ESChartsServiceImpl(private val chartsRepository: ESChartRepository) : Cha
     }
 
     fun getApplicationIndexes(user: User, application: Application?, indexType: String) =
-        if (application != null) "${user.key.lowercase()}_${application.name}_$indexType" else "${user.key.lowercase()}_*_$indexType"
+        applicationStorageService.findAllApplicationsByUser(user).filter {
+            application?.let { application -> application.id == it.id } ?: true
+        }.joinToString(",") { "${user.key.lowercase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$indexType" }
 }
