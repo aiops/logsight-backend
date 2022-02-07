@@ -75,7 +75,7 @@ class ChartsController(
             application = null
         }
         return GetChartDataQuery(
-            credentials = Credentials(user.email, user.id.toString()),
+            credentials = Credentials(user.email, user.key),
             chartConfig = createChartRequest.chartConfig,
             user = user,
             application = application

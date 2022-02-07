@@ -18,6 +18,7 @@ class AnalyticsManagerZeroMQ(
         createApplicationDTO.action = "CREATE"
         zeroMQReqSocket.send(ObjectMapper().writeValueAsString(createApplicationDTO))
         val message = zeroMQReqSocket.recv()
+        println("AAAAAAAAAaa")
         println(message)
     }
 

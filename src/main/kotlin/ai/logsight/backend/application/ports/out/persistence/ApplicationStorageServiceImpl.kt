@@ -27,7 +27,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     override fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand) {
         val appEntity = this.findApplicationByIdPrivate(deleteApplicationCommand.applicationId)
         appEntity.status = ApplicationStatus.DELETED
-        appRepository.save(appEntity)
+        appRepository.delete(appEntity)
     }
 
     private fun findApplicationByIdPrivate(applicationId: UUID): ApplicationEntity {

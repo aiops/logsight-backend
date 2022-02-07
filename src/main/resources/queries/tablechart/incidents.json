@@ -1,14 +1,6 @@
 {
   "version": true,
-  "size": 9000,
-  "sort": [
-    {
-      "@timestamp": {
-        "order": "desc",
-        "unmapped_type": "boolean"
-      }
-    }
-  ],
+  "size": 100,
   "_source": {
     "excludes": []
   },
@@ -30,31 +22,28 @@
             "@timestamp": {
               "format": "strict_date_optional_time",
               "gte": "start_time",
-              "lte": "stop_time",
-              "time_zone": "time_zone_parameter"
+              "lte": "stop_time"
             }
           }
         }
       ],
       "filter": [
         {
-          "match_all": {}
+          "exists": {
+            "field": "timestamp_start"
+          }
         }
       ],
       "should": [],
-      "must_not": []
+      "must_not": [
+        {
+          "match_phrase": {
+            "total_score": {
+              "query": "0"
+            }
+          }
+        }
+      ]
     }
-  },
-  "highlight": {
-    "pre_tags": [
-      "@kibana-highlighted-field@"
-    ],
-    "post_tags": [
-      "@/kibana-highlighted-field@"
-    ],
-    "fields": {
-      "*": {}
-    },
-    "fragment_size": 2147483647
   }
 }

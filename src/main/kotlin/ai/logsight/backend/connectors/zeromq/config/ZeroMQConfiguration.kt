@@ -19,7 +19,7 @@ class ZeroMQConfiguration(
     @Bean
     @Qualifier("pub")
     fun zeroMQPubSocket(): ZMQ.Socket {
-        return createSocket(SocketType.PUB, logSinkConfig.pubPort, ConnectionType.CONNECT)
+        return createSocket(SocketType.PUB, logSinkConfig.pubPort, ConnectionType.BIND)
     }
 
     @Bean

@@ -1,6 +1,10 @@
 package ai.logsight.backend.charts.repository.entities.elasticsearch
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonRawValue
+import com.fasterxml.jackson.databind.JsonNode
+import org.json.JSONArray
+import org.json.JSONObject
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class TopKIncidentSource(
@@ -10,16 +14,23 @@ data class TopKIncidentSource(
     val startTimestamp: String,
     @JsonProperty("timestamp_end")
     val stopTimestamp: String,
+    @JsonProperty("application_id")
+    val applicationId: String?,
     @JsonProperty("new_templates")
-    val newTemplates: String,
+    @JsonRawValue
+    val newTemplates: JsonNode,
     @JsonProperty("semantic_ad")
-    val semanticAD: String,
+    @JsonRawValue
+    val semanticAD: JsonNode,
     @JsonProperty("count_ads")
-    val countAD: String,
+    @JsonRawValue
+    val countAD: JsonNode,
+    @JsonRawValue
     @JsonProperty("semantic_count_ads")
-    val scAnomalies: String,
+    val scAnomalies: JsonNode,
     @JsonProperty("logs")
-    val logData: String,
+    @JsonRawValue
+    val logData: JsonNode,
     @JsonProperty("total_score")
     val totalScore: Int
 )

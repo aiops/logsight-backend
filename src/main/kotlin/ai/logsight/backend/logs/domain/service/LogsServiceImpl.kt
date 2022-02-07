@@ -43,7 +43,7 @@ class LogsServiceImpl(
         val app = applicationStorageService.findApplicationById(logBatchDTO.applicationId)
         val user = userStorageService.findUserByEmail(logBatchDTO.userEmail)
         val logs = logBatchDTO.logs.map { message ->
-            Log(app.name, user.key, logBatchDTO.logFormat.toString(), logBatchDTO.tag, message)
+            Log(app.name, app.id.toString(), user.key, logBatchDTO.logFormat.toString(), logBatchDTO.tag, message)
         }
         val topic = topicBuilder.buildTopic(user.key, app.name)
         logStream.send(topic, logs)
@@ -59,7 +59,7 @@ class LogsServiceImpl(
         val fileContent = readFileContent(logFileDTO.file.name, logFileDTO.file.inputStream)
         val logMessages = convertFileContentToStringList(fileContent)
         val logs = logMessages.map { message ->
-            Log(app.name, user.key, logFileDTO.logFormat.toString(), logFileDTO.tag, message)
+            Log(app.name, app.id.toString(), user.key, logFileDTO.logFormat.toString(), logFileDTO.tag, message)
         }
         val topic = topicBuilder.buildTopic(user.key, app.name)
         logStream.send(topic, logs)
@@ -104,7 +104,7 @@ class LogsServiceImpl(
             val fileContent = readFileContent(appName, File(filePath.toUri()).inputStream())
             val logMessages = convertFileContentToStringList(fileContent)
             val logs = logMessages.map { message ->
-                Log(app.name, user.key, LogFormat.UNKNOWN_FORMAT.toString(), "default", message)
+                Log(app.name, app.id.toString(), user.key, LogFormat.UNKNOWN_FORMAT.toString(), "default", message)
             }
             val topic = topicBuilder.buildTopic(user.key, app.name)
             logStream.send(topic, logs)
