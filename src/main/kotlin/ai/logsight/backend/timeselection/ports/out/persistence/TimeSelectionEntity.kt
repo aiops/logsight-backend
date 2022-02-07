@@ -25,8 +25,7 @@ data class TimeSelectionEntity(
     @Column(name = "date_time_type")
     val dateTimeType: DateTimeType,
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     val user: UserEntity
 )

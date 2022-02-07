@@ -1,6 +1,9 @@
 package ai.logsight.backend.users.ports.out.persistence
 
+import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
+import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptEntity
 import ai.logsight.backend.security.KeyGenerator
+import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
@@ -42,5 +45,13 @@ class UserEntity(
     var activated: Boolean = false,
 
     @Column(name = "user_type")
-    val userType: UserType = UserType.ONLINE_USER
+    val userType: UserType = UserType.ONLINE_USER,
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @Column(name = "applications")
+    val applications: List<ApplicationEntity> = listOf(),
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @Column(name = "time_selection_entities")
+    val timeSelectionEntities: List<TimeSelectionEntity> = listOf()
 )

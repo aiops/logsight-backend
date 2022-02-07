@@ -4,54 +4,89 @@ import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStatus
+import ai.logsight.backend.connectors.zeromq.config.ZeroMQConfigurationProperties
 import ai.logsight.backend.logs.domain.LogFormat
+import ai.logsight.backend.logs.domain.LogsReceipt
+import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
+import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.TopicJsonSerializer
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.out.persistence.UserType
+import com.sun.mail.iap.ConnectionException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import org.zeromq.SocketType
+import org.zeromq.ZContext
+import org.zeromq.ZMQ
 
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 class LogsServiceImplTest {
-
-    // TODO: Can this be mocked?
     @Autowired
     lateinit var applicationRepository: ApplicationRepository
 
-    // TODO: Can this be mocked?
     @Autowired
     lateinit var userRepository: UserRepository
 
     @Autowired
+    lateinit var logsReceiptRepository: LogsReceiptRepository
+
+    @Autowired
     lateinit var logsServiceImpl: LogsServiceImpl
 
-    companion object {
-        private const val numMessages = 1000
-        private const val log = "Hello World"
-        private const val source = "test"
+    @Autowired
+    lateinit var topicJsonSerializer: TopicJsonSerializer
 
-        val logMessages = List(numMessages) { log }
+    @Autowired
+    lateinit var topicBuilder: TopicBuilder
+
+    @Autowired
+    lateinit var zeroMqConf: ZeroMQConfigurationProperties
+
+    companion object {
+        private const val numMessages = 100
+        private const val logMessage = "Hello World"
+        private const val source = "test"
+        private const val tag = "default"
+        private val format = LogFormat.UNKNOWN_FORMAT.toString()
+
+        val logMessages = List(numMessages) { logMessage }
 
         val userEntity = UserEntity(
             email = "testemail@mail.com",
             password = "testpassword",
             userType = UserType.ONLINE_USER
+
         )
         val user = userEntity.toUser()
 
-        val applicationEntity = ApplicationEntity(
-            name = "testapp",
+        val applicationEntity1 = ApplicationEntity(
+            name = "testapp1",
             status = ApplicationStatus.READY,
             user = user.toUserEntity()
         )
-        private val application = applicationEntity.toApplication()
+        private val application1 = applicationEntity1.toApplication()
+
+        val applicationEntity2 = ApplicationEntity(
+            name = "testapp2",
+            status = ApplicationStatus.READY,
+            user = user.toUserEntity()
+        )
+        private val application2 = applicationEntity2.toApplication()
+
+        // The IDE warning can be ignored
+        private val threadPoolContext = newFixedThreadPoolContext(20, "Log Process")
     }
 
     @Nested
@@ -60,9 +95,25 @@ class LogsServiceImplTest {
     inner class ProcessLogs {
 
         @BeforeAll
-        fun setup() {
+        fun setupAll() {
             userRepository.save(userEntity)
-            applicationRepository.save(applicationEntity)
+            applicationRepository.save(applicationEntity1)
+            applicationRepository.save(applicationEntity2)
+        }
+
+        @BeforeEach
+        fun setupEach() {
+            logsReceiptRepository.deleteAll()
+        }
+
+        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
+            val ctx = ZContext()
+            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
+            val addr = "${zeroMqConf.protocol}://${zeroMqConf.host}:${zeroMqConf.pubPort}"
+            val status = zeroMQSocket.connect(addr)
+            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
+            zeroMQSocket.subscribe(topic)
+            return zeroMQSocket
         }
 
         @Test
@@ -70,26 +121,141 @@ class LogsServiceImplTest {
             // given
 
             // when
-            val logReceipt = logsServiceImpl.processLogs(
-                user,
-                application,
-                LogFormat.UNKNOWN_FORMAT.toString(),
-                "default",
-                source,
-                logMessages
-            )
+            val logReceipt = logsServiceImpl.processLogs(user, application1, format, tag, source, logMessages)
 
             // then
             Assertions.assertNotNull(logReceipt)
             Assertions.assertEquals(numMessages.toLong(), logReceipt.logsCount)
             Assertions.assertEquals(source, logReceipt.source)
-            Assertions.assertEquals(application.id, logReceipt.application.id)
+            Assertions.assertEquals(application1.id, logReceipt.application.id)
+        }
+
+        @Test
+        fun `should return ordered order counter`() {
+            // given
+            val numBatches = 5
+            val batches = List(numBatches) { logMessages }
+
+            // when
+            val logReceipts = batches.map { batch ->
+                logsServiceImpl.processLogs(user, application1, format, tag, source, batch)
+            }
+
+            // then
+            Assertions.assertEquals(logReceipts.size, numBatches)
+            // assert that values are sorted asc
+            Assertions.assertTrue {
+                logReceipts.map { it.orderCounter }.asSequence().zipWithNext { a, b -> a <= b }.all { it }
+            }
+        }
+
+        @Test
+        fun `should transmit order to zeromq`() {
+            // given
+            val topic = topicBuilder.buildTopic(user.key, application1.name)
+            val zeroMQSocket = getZeroMqTestSocket(topic)
+
+            val numBatches = 5
+            val batches = List(numBatches) { logMessages }
+
+            // when
+            val logsReceipts = batches.map { batch ->
+                logsServiceImpl.processLogs(user, application1, format, tag, source, batch)
+            }
+
+            // then
+            verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
+        }
+
+        @Test
+        fun `should transmit order to zeromq concurrent`() {
+            // given
+            val topic = topicBuilder.buildTopic(user.key, application1.name)
+            val zeroMQSocket = getZeroMqTestSocket(topic)
+
+            val numBatches = 20
+            val batches = List(numBatches) { logMessages }
+
+            // when
+            val logsReceipts = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
+            runBlocking(threadPoolContext) {
+                batches.forEach { batch ->
+                    launch {
+                        val logsReceipt = logsServiceImpl.processLogs(user, application1, format, tag, source, batch)
+                        logsReceipts.add(logsReceipt)
+                    }
+                }
+            }
+
+            // then
+            verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
+        }
+
+        @Test
+        fun `should not block zeromq concurrent transfer for different apps`() {
+            // given
+            val topic1 = topicBuilder.buildTopic(user.key, application1.name)
+            val topic2 = topicBuilder.buildTopic(user.key, application1.name)
+            val zeroMQSocket1 = getZeroMqTestSocket(topic1)
+            val zeroMQSocket2 = getZeroMqTestSocket(topic2)
+
+            val numBatches = 5
+            val batches = List(numBatches) { logMessages }
+
+            // when
+            val logsReceipts1 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
+            val logsReceipts2 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
+            var time1: Long? = null
+            var time2: Long? = null
+            runBlocking(threadPoolContext) {
+                batches.forEach { batch ->
+                    launch {
+                        delay(200L)
+                        val logsReceipt = logsServiceImpl.processLogs(user, application1, format, tag, source, batch)
+                        logsReceipts1.add(logsReceipt)
+                    }
+                    launch {
+                        val logsReceipt = logsServiceImpl.processLogs(user, application2, format, tag, source, batch)
+                        logsReceipts2.add(logsReceipt)
+                    }
+                }
+                launch {
+                    for (i in numBatches * numMessages downTo 1) {
+                        String(zeroMQSocket1.recv())
+                    }
+                    time1 = System.currentTimeMillis()
+                }
+                launch {
+                    for (i in numBatches * numMessages downTo 1) {
+                        String(zeroMQSocket2.recv())
+                    }
+                    time2 = System.currentTimeMillis()
+                }
+            }
+            // then
+            Assertions.assertTrue(time1!! > time2!!)
+        }
+
+        private fun verifyZeroMqOrder(zeroMQSocket: ZMQ.Socket, logsReceipts: List<LogsReceipt>, numBatches: Int) {
+            val receiptIdsExpected = logsReceipts.map { it.orderCounter }
+            val serializedLogs = List(numBatches * numMessages) {
+                String(zeroMQSocket.recv())
+            }
+            val receiptIds = topicJsonSerializer.deserialize(serializedLogs).map { it.receiptId }
+
+            // num. sent logs = num. received logs
+            Assertions.assertEquals(receiptIdsExpected.size, logsReceipts.size)
+            // assert that values are sorted asc
+            Assertions.assertTrue {
+                receiptIds.asSequence().zipWithNext { a, b -> a <= b }.all { it }
+            }
         }
 
         @AfterAll
         fun teardown() {
             userRepository.delete(userEntity)
-            applicationRepository.delete(applicationEntity)
+            applicationRepository.delete(applicationEntity1)
+            applicationRepository.delete(applicationEntity2)
         }
     }
 }

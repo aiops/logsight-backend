@@ -9,7 +9,6 @@ import ai.logsight.backend.exceptions.LogsReceiptException
 import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.domain.service.dto.Log
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO

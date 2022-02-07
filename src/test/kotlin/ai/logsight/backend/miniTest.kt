@@ -1,7 +1,6 @@
 package ai.logsight.backend
 
-import ai.logsight.backend.logs.domain.service.dto.Log
-import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
+import ai.logsight.backend.logs.domain.service.Log
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.ZeroMQPubStream
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
