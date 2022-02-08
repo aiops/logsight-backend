@@ -40,7 +40,7 @@ class UserServiceImplTest(
 
         @AfterAll
         fun teardown() {
-            userStorageService.deleteUser(baseUserEntity.id)
+            //userStorageService.deleteUser(baseUserEntity.id)
         }
 
         @Nested
