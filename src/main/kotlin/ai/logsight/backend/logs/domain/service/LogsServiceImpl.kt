@@ -128,7 +128,7 @@ class LogsServiceImpl(
         xSync!!.execute(app) {
             logsReceipt = logsReceiptStorageService.saveLogReceipt(createLogsReceiptCommand)
             val logs = logMessages.map { message ->
-                Log(app.name, user.key, format, tag, logsReceipt!!.orderCounter, message)
+                Log(app.name, app.id.toString(), user.key, format, tag, logsReceipt!!.orderCounter, message)
             }
             logStream.serializeAndSend(topic, logs)
         }
