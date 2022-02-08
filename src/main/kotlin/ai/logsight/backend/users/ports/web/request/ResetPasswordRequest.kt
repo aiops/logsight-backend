@@ -4,7 +4,7 @@ import java.util.*
 import javax.validation.constraints.*
 
 class ResetPasswordRequest(
-    @get:NotEmpty(message = "id must not be empty.")
+    @get:NotNull(message = "id must not be empty.")
     val id: UUID,
     @get:NotEmpty(message = "password must not be empty.")
     @get:Size(min = 8, message = "password must be at least 8 characters.")
@@ -12,7 +12,7 @@ class ResetPasswordRequest(
     @get:NotEmpty(message = "repeatPassword must not be empty.")
     @get:Size(min = 8, message = "repeatPassword must be at least 8 characters.")
     val repeatPassword: String,
-    @get:NotEmpty(message = "passwordResetToken must not be empty.")
+    @get:NotNull(message = "passwordResetToken must not be empty.")
     val passwordResetToken: UUID
 ) {
     @AssertTrue(message = "newPassword and repeatPassword must be equal")

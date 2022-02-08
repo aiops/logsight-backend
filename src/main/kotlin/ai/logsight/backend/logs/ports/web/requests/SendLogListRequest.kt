@@ -7,10 +7,9 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
 data class SendLogListRequest(
-    @get:NotEmpty
+    @get:NotNull(message = "applicationId must not be empty.")
     val applicationId: UUID,
-    @get:NotNull
-    @get:NotEmpty
+    @get:NotEmpty(message = "applicationId must not be empty.")
     val tag: String = "default",
     val logFormat: LogFormat = LogFormat.UNKNOWN_FORMAT,
     val logs: List<String>

@@ -1,10 +1,7 @@
 package ai.logsight.backend.timeselection.ports.web.request
 
 import ai.logsight.backend.timeselection.ports.out.persistence.DateTimeType
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Pattern
+import javax.validation.constraints.*
 
 data class PredefinedTimeRequest(
     @get:NotEmpty(message = "name must not be empty.")
@@ -23,6 +20,6 @@ data class PredefinedTimeRequest(
     )
     @get:NotEmpty(message = "endTime must not be empty.")
     val endTime: String,
-    @get:NotEmpty(message = "dateTimeType must not be empty.")
+    @get:NotNull(message = "dateTimeType must not be empty.")
     val dateTimeType: DateTimeType
 )
