@@ -32,8 +32,6 @@ internal class UserControllerTest {
     @Autowired
     private lateinit var timeSelectionService: TimeSelectionService
 
-    private val u
-
     @BeforeEach
     fun setUp() {
     }

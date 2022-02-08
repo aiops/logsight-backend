@@ -10,9 +10,9 @@ import javax.persistence.Id
 class TokenEntity(
     val userId: UUID,
     val tokenType: TokenType,
-    tokenDuration: Duration
+    val tokenDuration: Duration
 ) {
     @Id
     val token: UUID = UUID.randomUUID()
-    val expiresAt: LocalDateTime = LocalDateTime.now().plus(Duration.ofMinutes(15))
+    val expiresAt: LocalDateTime = LocalDateTime.now().plus(tokenDuration)
 }

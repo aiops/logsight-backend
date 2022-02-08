@@ -39,7 +39,7 @@ class LogsServiceImpl(
     val logger: Logger = LoggerFactory.getLogger(LogsServiceImpl::class.java)
 
     @Autowired
-    private val xSync: XSync<Application>? = null
+    private val xSync: XSync<String>? = null
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
@@ -74,7 +74,7 @@ class LogsServiceImpl(
             throw LogFileReadingException("Error while reading file content of file $fileName. Reason: ${e.message}")
         }
 
-    // TODO (This must be extensively tested)
+    // TODO (This must be tested)
     private fun convertFileContentToStringList(fileContent: String): List<String> {
         val logMessages = mutableListOf<String>()
         val stringBuilder = StringBuilder()
@@ -92,9 +92,9 @@ class LogsServiceImpl(
         return logMessages
     }
 
-    override fun processLogSample(logSampleDTO: LogSampleDTO) {
+    override fun processLogSample(logSampleDTO: LogSampleDTO): LogsReceipt {
         val user = userStorageService.findUserByEmail(logSampleDTO.userEmail)
-        SampleLogConstants.SAMPLE_LOGS_APP_NAMES.forEach { appName ->
+        val logsReceipts = SampleLogConstants.SAMPLE_LOGS_APP_NAMES.map { appName ->
             // TODO Recreation might be required if time mapping of sample logs is implemented
             val app = applicationLifecycleService.createApplication(
                 CreateApplicationCommand(appName, user)
@@ -102,11 +102,15 @@ class LogsServiceImpl(
             // App lifecycle service might alter the name of the app. Therefore, the original appName is used as
             // argument here.
             val filePath = Paths.get(resourcesPath, SampleLogConstants.SAMPLE_LOG_DIR, appName)
-            // TODO: exception handling
-            val fileContent = readFileContent(appName, File(filePath.toUri()).inputStream())
+            val fileContent = try {
+                readFileContent(appName, File(filePath.toUri()).inputStream())
+            } catch (e: Exception) {
+                throw LogFileReadingException("Error while reading sample log file $filePath. Reason: ${e.message}")
+            }
             val logMessages = convertFileContentToStringList(fileContent)
             processLogs(user, app, LogFormat.UNKNOWN_FORMAT.toString(), "default", "file", logMessages)
         }
+        return logsReceipts.last()
     }
 
     fun processLogs(
@@ -125,7 +129,7 @@ class LogsServiceImpl(
         val topic = topicBuilder.buildTopic(user.key, app.name)
 
         var logsReceipt: LogsReceipt? = null
-        xSync!!.execute(app) {
+        xSync!!.execute("logs-stream") {
             logsReceipt = logsReceiptStorageService.saveLogReceipt(createLogsReceiptCommand)
             val logs = logMessages.map { message ->
                 Log(app.name, app.id.toString(), user.key, format, tag, logsReceipt!!.orderCounter, message)

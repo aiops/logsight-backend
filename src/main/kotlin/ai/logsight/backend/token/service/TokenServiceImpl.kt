@@ -19,7 +19,8 @@ class TokenServiceImpl(
     private val tokenConfig: TokenConfigurationProperties,
 ) : TokenService {
     override fun findTokenById(tokenId: UUID): Token {
-        return tokenRepository.findById(tokenId).orElseThrow { TokenNotFoundException() }.toToken()
+        return tokenRepository.findById(tokenId)
+            .orElseThrow { TokenNotFoundException("Token with id $id does not exist.") }.toToken()
     }
 
     override fun createActivationToken(userId: UUID): Token {
@@ -49,11 +50,11 @@ class TokenServiceImpl(
     private fun checkToken(token: Token, tokenType: TokenType): Boolean {
         // validateAndDelete token
         if (token.tokenType != tokenType) {
-            throw InvalidTokenTypeException()
+            throw InvalidTokenTypeException("Token is invalid. Please request a new token.")
         }
         if (token.expiresAt.isBefore(LocalDateTime.now())) {
             tokenRepository.deleteById(token.token)
-            throw TokenExpiredException()
+            throw TokenExpiredException("Token has expired. Please request a new token.")
         }
 
         tokenRepository.deleteById(token.token)

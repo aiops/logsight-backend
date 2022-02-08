@@ -1,6 +1,5 @@
 package ai.logsight.backend.application.ports.web
 
-import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
@@ -11,7 +10,6 @@ import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResp
 import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -67,6 +65,7 @@ class ApplicationLifecycleController(
     ): DeleteApplicationResponse {
         val deleteApplicationCommand = DeleteApplicationCommand(
             applicationId = applicationId,
+            user = userService.findUserByEmail(authentication.name)
         )
         val application = applicationStorageService.findApplicationById(applicationId)
         applicationService.deleteApplication(deleteApplicationCommand)

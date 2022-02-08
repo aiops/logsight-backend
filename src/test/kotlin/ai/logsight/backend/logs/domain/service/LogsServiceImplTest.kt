@@ -16,7 +16,6 @@ import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import com.sun.mail.iap.ConnectionException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
@@ -55,7 +54,7 @@ class LogsServiceImplTest {
     lateinit var zeroMqConf: ZeroMQConfigurationProperties
 
     companion object {
-        private const val numMessages = 100
+        private const val numMessages = 1000
         private const val logMessage = "Hello World"
         private const val source = "test"
         private const val tag = "default"
@@ -165,6 +164,7 @@ class LogsServiceImplTest {
 
             // then
             verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
+            zeroMQSocket.close()
         }
 
         @Test
@@ -189,13 +189,14 @@ class LogsServiceImplTest {
 
             // then
             verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
+            zeroMQSocket.close()
         }
 
         @Test
         fun `should not block zeromq concurrent transfer for different apps`() {
             // given
             val topic1 = topicBuilder.buildTopic(user.key, application1.name)
-            val topic2 = topicBuilder.buildTopic(user.key, application1.name)
+            val topic2 = topicBuilder.buildTopic(user.key, application2.name)
             val zeroMQSocket1 = getZeroMqTestSocket(topic1)
             val zeroMQSocket2 = getZeroMqTestSocket(topic2)
 
@@ -205,12 +206,9 @@ class LogsServiceImplTest {
             // when
             val logsReceipts1 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
             val logsReceipts2 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
-            var time1: Long? = null
-            var time2: Long? = null
             runBlocking(threadPoolContext) {
                 batches.forEach { batch ->
                     launch {
-                        delay(200L)
                         val logsReceipt = logsServiceImpl.processLogs(user, application1, format, tag, source, batch)
                         logsReceipts1.add(logsReceipt)
                     }
@@ -219,21 +217,11 @@ class LogsServiceImplTest {
                         logsReceipts2.add(logsReceipt)
                     }
                 }
-                launch {
-                    for (i in numBatches * numMessages downTo 1) {
-                        String(zeroMQSocket1.recv())
-                    }
-                    time1 = System.currentTimeMillis()
-                }
-                launch {
-                    for (i in numBatches * numMessages downTo 1) {
-                        String(zeroMQSocket2.recv())
-                    }
-                    time2 = System.currentTimeMillis()
-                }
             }
+
             // then
-            Assertions.assertTrue(time1!! > time2!!)
+            verifyZeroMqOrder(zeroMQSocket1, logsReceipts1, numBatches)
+            verifyZeroMqOrder(zeroMQSocket2, logsReceipts2, numBatches)
         }
 
         private fun verifyZeroMqOrder(zeroMQSocket: ZMQ.Socket, logsReceipts: List<LogsReceipt>, numBatches: Int) {
