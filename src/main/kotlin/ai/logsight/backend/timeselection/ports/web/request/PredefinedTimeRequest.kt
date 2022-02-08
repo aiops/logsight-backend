@@ -1,7 +1,6 @@
 package ai.logsight.backend.timeselection.ports.web.request
 
 import ai.logsight.backend.timeselection.ports.out.persistence.DateTimeType
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Validate
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotEmpty

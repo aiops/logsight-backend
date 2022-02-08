@@ -38,6 +38,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation("org.springframework.data:spring-data-elasticsearch:4.3.1")
@@ -50,11 +52,17 @@ dependencies {
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    implementation("junit:junit:4.13.2")
-
+    implementation("org.junit.vintage:junit-vintage-engine:5.8.2")
+    implementation("com.antkorwin:xsync:1.3")
     implementation("io.springfox:springfox-swagger2:2.9.2")
     implementation("io.springfox:springfox-bean-validators:2.9.2")
     implementation("io.springfox:springfox-swagger-ui:2.9.2")
+
+    implementation("org.springframework:spring-test")
+    implementation("org.springframework.data:spring-data-jpa")
+    implementation("com.h2database:h2")
+    implementation("org.hibernate:hibernate-core")
+
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
@@ -67,14 +75,15 @@ dependencies {
     testImplementation("io.mockk:mockk:1.12.2")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.3")
     // testing dependencies
-    testCompileOnly("org.mockito:mockito-junit-jupiter:2.23.0")
-    testImplementation("org.mockito:mockito-inline:2.13.0")
-    testCompileOnly("org.assertj:assertj-core:3.11.1")
+    testCompileOnly("org.mockito:mockito-junit-jupiter:4.3.1")
+    testImplementation("org.mockito:mockito-inline:4.3.1")
+    testCompileOnly("org.assertj:assertj-core:3.22.0")
+    testImplementation(kotlin("test"))
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi")
         jvmTarget = "11"
     }
 }

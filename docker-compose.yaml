@@ -12,6 +12,15 @@ services:
     ports:
       - "5432:5432"
 
+  postgres-test:
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=logsight
+      - POSTGRES_PASSWORD=logsight
+      - POSTGRES_DB=logsight_test
+    ports:
+      - "5431:5432"
+
 volumes:
   pg-data:
     driver: local

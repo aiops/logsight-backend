@@ -1,33 +1,38 @@
-//package ai.logsight.backend.users.domain.service
+// package ai.logsight.backend.users.domain.service
 //
-//import ai.logsight.backend.email.domain.EmailContext
-//import ai.logsight.backend.email.domain.service.EmailService
-//import ai.logsight.backend.exceptions.EmailExistsException
-//import ai.logsight.backend.token.extensions.toToken
-//import ai.logsight.backend.token.persistence.TokenEntity
-//import ai.logsight.backend.token.persistence.TokenType
-//import ai.logsight.backend.token.service.TokenService
-//import ai.logsight.backend.users.domain.service.command.CreateUserCommand
-//import ai.logsight.backend.users.extensions.toUser
-//import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
-//import ai.logsight.backend.users.ports.out.persistence.UserEntity
-//import ai.logsight.backend.users.ports.out.persistence.UserStorageService
-//import ai.logsight.backend.users.ports.out.persistence.UserType
-//import io.mockk.every
-//import io.mockk.mockk
-//import org.junit.jupiter.api.Assertions
-//import org.junit.jupiter.api.DisplayName
-//import org.junit.jupiter.api.Nested
-//import org.junit.jupiter.api.Test
-//import org.junit.jupiter.api.TestInstance
-//import java.time.Duration
+// import ai.logsight.backend.email.domain.EmailContext
+// import ai.logsight.backend.email.domain.service.EmailService
+// import ai.logsight.backend.email.domain.service.helpers.EmailTemplateTypes
+// import ai.logsight.backend.exceptions.EmailExistsException
+// import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
+// import ai.logsight.backend.token.extensions.toToken
+// import ai.logsight.backend.token.persistence.TokenEntity
+// import ai.logsight.backend.token.persistence.TokenType
+// import ai.logsight.backend.token.service.TokenService
+// import ai.logsight.backend.users.domain.service.command.CreateUserCommand
+// import ai.logsight.backend.users.extensions.toUser
+// import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
+// import ai.logsight.backend.users.ports.out.persistence.UserEntity
+// import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+// import ai.logsight.backend.users.ports.out.persistence.UserType
+// import io.mockk.every
+// import io.mockk.mockk
+// import org.junit.jupiter.api.Assertions
+// import org.junit.jupiter.api.DisplayName
+// import org.junit.jupiter.api.Nested
+// import org.junit.jupiter.api.Test
+// import org.junit.jupiter.api.TestInstance
+// import org.springframework.security.crypto.password.PasswordEncoder
+// import java.time.Duration
 //
-//internal class UserServiceImplTestUnit {
+// internal class UserServiceImplTestUnit {
 //    private val userStorage: UserStorageService = mockk()
 //    private val emailService: EmailService = mockk()
 //    private val tokenService: TokenService = mockk()
 //    private val externalService: ExternalServiceManager = mockk()
-//    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService)
+//    private val timeSelectionService: TimeSelectionService = mockk()
+//    private val passwordEncoder: PasswordEncoder = mockk()
+//    val userService = UserServiceImpl(userStorage, tokenService, emailService, externalService, timeSelectionService)
 //
 //    @Nested
 //    @DisplayName("User Creation")
@@ -56,7 +61,10 @@
 //            every { userStorage.createUser(createUserCommand.email, createUserCommand.password) } returns user
 //            every { tokenService.createActivationToken(user.id) } returns token
 //            val emailContext = EmailContext(
-//                userEmail = user.email, token = token, title = "Activate your account"
+//                userEmail = user.email,
+//                token = token,
+//                title = "Activate your account",
+//                template = EmailTemplateTypes.ACTIVATION_EMAIL
 //            )
 //
 //            every { emailService.sendActivationEmail(emailContext) } returns Unit
@@ -80,4 +88,4 @@
 //            Assertions.assertThrows(EmailExistsException::class.java) { userService.createUser(createUserCommand) }
 //        }
 //    }
-//}
+// }

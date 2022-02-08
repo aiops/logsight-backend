@@ -1,6 +1,8 @@
 package ai.logsight.backend.timeselection.ports.out.persistence
 
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.util.*
 import javax.persistence.*
 
@@ -23,7 +25,7 @@ data class TimeSelectionEntity(
     @Column(name = "date_time_type")
     val dateTimeType: DateTimeType,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     val user: UserEntity
 )

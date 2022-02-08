@@ -11,10 +11,6 @@ import java.net.URI
 @ContextConfiguration
 internal class CommonConfigurationPropertiesTest {
 
-    // TODO: This is not optimal. The whole application context is generated to just test whether
-    //  CommonConfigurationProperties are assigned correctly. Also the default application properties are used instead
-    //  of dedicated testing properties
-
     @Autowired
     lateinit var commonConfigurationProperties: CommonConfigurationProperties
 
