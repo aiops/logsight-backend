@@ -45,7 +45,7 @@ class LogsController(
     @PostMapping("/file")
     fun uploadFile(
         authentication: Authentication,
-        @RequestBody logFileRequest: SendLogFileRequest
+        @Valid @RequestBody logFileRequest: SendLogFileRequest
     ): SendFileResponse {
         val logFileDTO = LogFileDTO(
             userEmail = authentication.name,

@@ -18,14 +18,13 @@ class AnalyticsManagerZeroMQ(
         createApplicationDTO.action = "CREATE"
         zeroMQReqSocket.send(ObjectMapper().writeValueAsString(createApplicationDTO))
         val message = zeroMQReqSocket.recv()
-        println("AAAAAAAAAaa")
-        println(message)
+        println(message.toString())
     }
 
     override fun deleteApplication(deleteApplicationDTO: ApplicationDTO) {
         deleteApplicationDTO.action = "DELETE"
         zeroMQReqSocket.send(ObjectMapper().writeValueAsString(deleteApplicationDTO))
         val message = zeroMQReqSocket.recv()
-        println(message)
+        println(message.toString())
     }
 }

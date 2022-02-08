@@ -26,7 +26,7 @@ class ChartsController(
     @ResponseStatus(HttpStatus.OK)
     fun createHeatmap(
         authentication: Authentication,
-        @RequestBody createChartRequest: ChartRequest
+        @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         val query = getChartQuery(authentication, createChartRequest)
         // Create charts command
@@ -37,7 +37,7 @@ class ChartsController(
     @ResponseStatus(HttpStatus.OK)
     fun createBarchart(
         authentication: Authentication,
-        @RequestBody createChartRequest: ChartRequest
+        @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         val query = getChartQuery(authentication, createChartRequest)
         // Create charts command

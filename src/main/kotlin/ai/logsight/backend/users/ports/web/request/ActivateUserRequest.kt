@@ -6,14 +6,14 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
 class ActivateUserRequest(
-    @NotEmpty(message = "id must not be empty.")
-    @Pattern(
+    @get:NotEmpty(message = "id must not be empty.")
+    @get:Pattern(
         regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
         message = "id must be UUID type."
     )
     val id: UUID,
-    @NotEmpty(message = "activationToken must not be empty.")
-    @Pattern(
+    @get:NotEmpty(message = "activationToken must not be empty.")
+    @get:Pattern(
         regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
         message = "activationToken must be UUID type."
     )
