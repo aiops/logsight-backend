@@ -31,6 +31,9 @@ class ZeroMQConfiguration(
     private fun createSocket(socketType: SocketType, port: Int, connectionType: ConnectionType): ZMQ.Socket {
         val ctx = ZContext()
         val zeroMQSocket = ctx.createSocket(socketType)
+        if (socketType == SocketType.REQ) {
+            zeroMQSocket.receiveTimeOut = 5 * 1000 // seconds
+        }
         val addr = "${logSinkConfig.protocol}://${logSinkConfig.host}:$port"
 
         if (connectionType == ConnectionType.CONNECT) {
