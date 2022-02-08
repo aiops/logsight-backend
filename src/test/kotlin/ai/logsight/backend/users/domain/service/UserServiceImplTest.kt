@@ -1,47 +1,68 @@
 package ai.logsight.backend.users.domain.service
 
 import ai.logsight.backend.users.domain.service.command.CreateUserCommand
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.TestInstance
+import ai.logsight.backend.users.extensions.toUser
+import ai.logsight.backend.users.ports.out.persistence.UserEntity
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import ai.logsight.backend.users.ports.out.persistence.UserType
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 
-@SpringBootTest
 @ActiveProfiles("test")
-internal class UserServiceImplTest {
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
+class UserServiceImplTest(
+    @Autowired val userService: UserService
+) {
+
     @Autowired
-    lateinit var userService: UserService
+    private lateinit var userStorageService: UserStorageService
+
+    companion object {
+        val baseUserEntity = UserEntity(
+            email = "testemail@mail.com", password = "testpassword", userType = UserType.ONLINE_USER
+        )
+        val baseUser = baseUserEntity.toUser()
+    }
 
     @Nested
     @DisplayName("Create user")
-    @TestInstance(TestInstance.Lifecycle.PER_METHOD)
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class CreateUser {
-        private val createUserCommand = CreateUserCommand(
-            email = "testemail@mail.com",
-            password = "testpassword"
-        )
 
-//        @Test
-//        @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-//        fun `should create user successfully`() {
-//            // given
-//            // when
-//            val savedUser = userService.createUser(createUserCommand)
-//
-//            // then
-//        }
+        @BeforeAll
+        fun setup() {
+            userStorageService.saveUser(baseUser)
+        }
 
-//        @Test
-//        @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-//        fun `should throw email exists`() {
-//            // given
-//
-//            // when
-//            val savedUser = userService.createUser(createUserCommand)
-//
-//            // then
-//        }
+        @AfterAll
+        fun teardown() {
+            userStorageService.deleteUser(baseUserEntity.id)
+        }
+
+        @Nested
+        @DisplayName("Create User")
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+        inner class CreateUserTests {
+
+            @Test
+            fun `should Create user sucessfully `() {
+                // given
+                val createUserCommand = CreateUserCommand(
+                    email = "user1@mail.com", password = "testpassword"
+                )
+//                every { emailService.sendActivationEmail(any()) } returns Unit
+                // when
+
+                val user = userService.createUser(createUserCommand)
+                // then
+
+                Assertions.assertEquals(user.email, createUserCommand.email)
+                Assertions.assertEquals(userStorageService.findUserById(user.id), user)
+            }
+        }
     }
 }
