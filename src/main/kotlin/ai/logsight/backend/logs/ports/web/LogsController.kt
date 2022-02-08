@@ -6,9 +6,7 @@ import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
 import ai.logsight.backend.logs.ports.web.requests.SendLogFileRequest
 import ai.logsight.backend.logs.ports.web.requests.SendLogListRequest
-import ai.logsight.backend.logs.ports.web.responses.SampleDataResponse
-import ai.logsight.backend.logs.ports.web.responses.SendFileResponse
-import ai.logsight.backend.logs.ports.web.responses.SendLogsResponse
+import ai.logsight.backend.logs.ports.web.responses.LogsReceiptResponse
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -25,7 +23,7 @@ class LogsController(
     fun sendLogList(
         authentication: Authentication,
         @Valid @RequestBody logListRequest: SendLogListRequest
-    ): SendLogsResponse {
+    ): LogsReceiptResponse {
         val logBatchDTO = LogBatchDTO(
             userEmail = authentication.name,
             applicationId = logListRequest.applicationId,
@@ -33,12 +31,9 @@ class LogsController(
             logFormat = logListRequest.logFormat,
             logs = logListRequest.logs
         )
-        logsService.processLogBatch(logBatchDTO)
-        // TODO("Alex needs to have a look at this about the Flush")
-        return SendLogsResponse(
-            description = "Log batch received successfully",
-            applicationId = logListRequest.applicationId,
-            tag = logListRequest.tag
+        val logsReceipt = logsService.processLogBatch(logBatchDTO)
+        return LogsReceiptResponse(
+            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
         )
     }
 
@@ -46,7 +41,7 @@ class LogsController(
     fun uploadFile(
         authentication: Authentication,
         @Valid @RequestBody logFileRequest: SendLogFileRequest
-    ): SendFileResponse {
+    ): LogsReceiptResponse {
         val logFileDTO = LogFileDTO(
             userEmail = authentication.name,
             applicationName = logFileRequest.applicationName,
@@ -54,20 +49,20 @@ class LogsController(
             logFormat = logFileRequest.logFormat,
             file = logFileRequest.file
         )
-        logsService.processLogFile(logFileDTO)
-        // TODO("Alex needs to have a look at this about the Flush")
-        return SendFileResponse("File upload was successful.")
+        val logsReceipt = logsService.processLogFile(logFileDTO)
+        return LogsReceiptResponse(
+            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
+        )
     }
 
     @PostMapping("/sample")
-    fun sampleData(
-        authentication: Authentication
-    ): SampleDataResponse {
+    fun sampleData(authentication: Authentication): LogsReceiptResponse {
         val logSampleDTO = LogSampleDTO(
             userEmail = authentication.name
         )
-        logsService.processLogSample(logSampleDTO)
-        // TODO("Alex needs to have a look at this about the Flush")
-        return SampleDataResponse("Sample data was loaded successfully.")
+        val logsReceipt = logsService.processLogSample(logSampleDTO)
+        return LogsReceiptResponse(
+            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
+        )
     }
 }
