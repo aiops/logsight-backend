@@ -24,6 +24,6 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
             .port(elasticsearchConfig.port).path(applicationIndices).path("/_search").build().toString()
         return connector.sendRequest(
             url, Credentials(getDataQuery.credentials.username, getDataQuery.credentials.password), query
-        )
+        ).body!!
     }
 }

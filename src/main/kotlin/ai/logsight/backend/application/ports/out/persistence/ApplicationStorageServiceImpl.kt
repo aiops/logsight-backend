@@ -5,6 +5,7 @@ import ai.logsight.backend.application.domain.service.command.CreateApplicationC
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
+import ai.logsight.backend.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -14,12 +15,14 @@ import java.util.*
 @Service
 class ApplicationStorageServiceImpl(private val appRepository: ApplicationRepository) : ApplicationStorageService {
 
-    // todo: do not have command pattern here, use raw data
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
+        val userEntity = createApplicationCommand.user.toUserEntity()
+
+        if (appRepository.findByUserAndName(userEntity, createApplicationCommand.applicationName).isPresent) {
+            throw ApplicationAlreadyCreatedException("Application with name ${createApplicationCommand.applicationName} already exists for user.")
+        }
         val appEntity = ApplicationEntity(
-            name = createApplicationCommand.applicationName,
-            status = ApplicationStatus.CREATING,
-            user = createApplicationCommand.user.toUserEntity()
+            name = createApplicationCommand.applicationName, status = ApplicationStatus.CREATING, user = userEntity
         )
         return appRepository.save(appEntity).toApplication()
     }
@@ -31,7 +34,8 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     }
 
     private fun findApplicationByIdPrivate(applicationId: UUID): ApplicationEntity {
-        return appRepository.findById(applicationId).orElseThrow { ApplicationNotFoundException() }
+        return appRepository.findById(applicationId)
+            .orElseThrow { ApplicationNotFoundException("Application $applicationId does not exist for user.") }
     }
 
     override fun findApplicationById(applicationId: UUID): Application {
@@ -40,6 +44,8 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
 
     override fun findApplicationByUserAndName(user: User, applicationName: String): Application? {
         return appRepository.findByUserAndName(user.toUserEntity(), applicationName)
+            .orElseThrow { ApplicationNotFoundException("Application $applicationName does not exist for user.") }
+            .toApplication()
     }
 
     override fun findAllApplicationsByUser(user: User): List<Application> {

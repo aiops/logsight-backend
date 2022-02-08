@@ -4,7 +4,6 @@ import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.email.domain.service.helpers.EmailTemplateTypes
 import ai.logsight.backend.exceptions.InvalidTokenException
-import ai.logsight.backend.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.exceptions.UserExistsException
 import ai.logsight.backend.exceptions.UserNotActivatedException
 import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
@@ -16,7 +15,6 @@ import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.extensions.toLocalUser
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
@@ -26,7 +24,6 @@ class UserServiceImpl(
     private val emailService: EmailService,
     private val externalServices: ExternalServiceManager,
     private val timeSelectionService: TimeSelectionService,
-    private val passwordEncoder: PasswordEncoder
 ) : UserService {
     override fun createUser(createUserCommand: CreateUserCommand): User {
 
@@ -51,7 +48,10 @@ class UserServiceImpl(
         // generate user activation URL
         // TODO: 01.02.22 Move title of emailContext to config or templates. Should not be here.
         val emailContext = EmailContext(
-            userEmail = user.email, token = activationToken, title = "Activate your account", template = sendActivationEmailCommand.template
+            userEmail = user.email,
+            token = activationToken,
+            title = "Activate your account",
+            template = sendActivationEmailCommand.template
         )
         // send email
         emailService.sendActivationEmail(emailContext)
@@ -79,8 +79,9 @@ class UserServiceImpl(
     }
 
     override fun changePassword(changePasswordCommand: ChangePasswordCommand): User {
+        val user = userStorageService.findUserByEmail(changePasswordCommand.email)
         return userStorageService.changePassword(
-            changePasswordCommand.email, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword
+            user.id, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword
         )
     }
 
@@ -94,13 +95,9 @@ class UserServiceImpl(
         val validToken = tokenService.checkPasswordResetToken(passwordResetToken)
         if (!validToken) throw InvalidTokenException()
 
-        // Validate password
-        if (resetPasswordCommand.password == resetPasswordCommand.repeatPassword) {
-            val user = userStorageService.findUserById(resetPasswordCommand.id)
-            user.password = passwordEncoder.encode(resetPasswordCommand.password)
-            return userStorageService.saveUser(user)
-        }
-        throw PasswordsNotMatchException()
+        return userStorageService.changePassword(
+            resetPasswordCommand.id, resetPasswordCommand.password, resetPasswordCommand.repeatPassword
+        )
     }
 
     override fun findUserByEmail(findUserByEmailQuery: FindUserByEmailQuery): User {
@@ -124,7 +121,10 @@ class UserServiceImpl(
         val passwordResetToken = tokenService.createPasswordResetToken(user.id)
         // TODO: 01.02.22 Move title of emailContext to config or templates. Should not be here.
         val emailContext = EmailContext(
-            userEmail = user.email, token = passwordResetToken, title = "Reset your password", template = EmailTemplateTypes.RESET_PASSWORD_EMAIL
+            userEmail = user.email,
+            token = passwordResetToken,
+            title = "Reset your password",
+            template = EmailTemplateTypes.RESET_PASSWORD_EMAIL
         )
         emailService.sendPasswordResetEmail(emailContext)
     }
