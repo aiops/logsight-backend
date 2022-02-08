@@ -14,7 +14,6 @@ data class SendLogFileRequest(
     val file: MultipartFile,
     @get:NotEmpty(message = "tag must not be empty")
     val tag: String = "default",
-    @get:Pattern(regexp = "UNKNOWN_FORMAT", message = "logFormat must either be in [UNKNOWN_FORMAT,]")
     @get:NotNull(message = "logFormat must not be empty.")
     val logFormat: LogFormat = LogFormat.UNKNOWN_FORMAT
 )
