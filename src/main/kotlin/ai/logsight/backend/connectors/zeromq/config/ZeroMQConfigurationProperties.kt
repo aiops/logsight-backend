@@ -9,5 +9,6 @@ class ZeroMQConfigurationProperties(
     val protocol: String = "tcp",
     val host: String = "0.0.0.0",
     val reqPort: Int = 5555,
-    val pubPort: Int = 5559
+    val pubPort: Int = 5559,
+    val reqTimeout: Int = 5 * 1000 // seconds
 )
