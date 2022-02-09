@@ -6,5 +6,14 @@ data class ApplicationDTO(
     val id: UUID,
     val name: String,
     val userKey: String,
-    var action: String = "",
+    var action: ApplicationDTOActions? = null,
 )
+
+enum class ApplicationDTOActions(val action: String) {
+    CREATE("CREATE"), DELETE("DELETE");
+
+    override fun toString(): String {
+        return action
+    }
+}
+

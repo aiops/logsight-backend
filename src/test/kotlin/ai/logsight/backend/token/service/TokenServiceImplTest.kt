@@ -1,21 +1,20 @@
 package ai.logsight.backend.token.service
 
-import ai.logsight.backend.exceptions.InvalidTokenTypeException
-import ai.logsight.backend.exceptions.TokenExpiredException
 import ai.logsight.backend.token.config.TokenConfigurationProperties
 import ai.logsight.backend.token.domain.Token
+import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
+import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
 import ai.logsight.backend.token.persistence.TokenType
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*

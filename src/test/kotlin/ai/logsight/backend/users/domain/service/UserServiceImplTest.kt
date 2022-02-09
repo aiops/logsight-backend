@@ -1,5 +1,6 @@
 package ai.logsight.backend.users.domain.service
 
+import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.CreateUserCommand
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
@@ -22,10 +23,9 @@ class UserServiceImplTest(
     private lateinit var userStorageService: UserStorageService
 
     companion object {
-        val baseUserEntity = UserEntity(
-            email = "testemail@mail.com", password = "testpassword", userType = UserType.ONLINE_USER
-        )
-        val baseUser = baseUserEntity.toUser()
+        val email = "testemail@mail.com"
+        val password = "testpassword"
+        var baseUser: User? = null
     }
 
     @Nested
@@ -35,7 +35,7 @@ class UserServiceImplTest(
 
         @BeforeAll
         fun setup() {
-            userStorageService.saveUser(baseUser)
+            baseUser = userStorageService.createUser(email, password)
         }
 
         @AfterAll

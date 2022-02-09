@@ -1,9 +1,9 @@
 package ai.logsight.backend.logs.domain.service
 
+import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStatus
 import ai.logsight.backend.connectors.zeromq.config.ZeroMQConfigurationProperties
 import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.LogsReceipt

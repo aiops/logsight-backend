@@ -14,27 +14,27 @@ enum class ConnectionType {
 
 @Configuration
 class ZeroMQConfiguration(
-    private val logSinkConfig: ZeroMQConfigurationProperties
+    private val zeroMqConfig: ZeroMQConfigurationProperties
 ) {
     @Bean
     @Qualifier("pub")
     fun zeroMQPubSocket(): ZMQ.Socket {
-        return createSocket(SocketType.PUB, logSinkConfig.pubPort, ConnectionType.BIND)
+        return createSocket(SocketType.PUB, zeroMqConfig.pubPort, ConnectionType.BIND)
     }
 
     @Bean
     @Qualifier("req")
     fun zeroMQReqSocket(): ZMQ.Socket {
-        return createSocket(SocketType.REQ, logSinkConfig.reqPort, ConnectionType.CONNECT)
+        return createSocket(SocketType.REQ, zeroMqConfig.reqPort, ConnectionType.CONNECT)
     }
 
     private fun createSocket(socketType: SocketType, port: Int, connectionType: ConnectionType): ZMQ.Socket {
         val ctx = ZContext()
         val zeroMQSocket = ctx.createSocket(socketType)
         if (socketType == SocketType.REQ) {
-            zeroMQSocket.receiveTimeOut = 5 * 1000 // seconds
+            zeroMQSocket.receiveTimeOut = zeroMqConfig.reqTimeout // seconds
         }
-        val addr = "${logSinkConfig.protocol}://${logSinkConfig.host}:$port"
+        val addr = "${zeroMqConfig.protocol}://${zeroMqConfig.host}:$port"
 
         if (connectionType == ConnectionType.CONNECT) {
             val status = zeroMQSocket.connect(addr)
