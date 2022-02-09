@@ -37,7 +37,6 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-        println(chartsRepository.getData(getChartDataQuery, applicationIndices))
         val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
         // map the HeatMapDataObject into HeatMapChart Object
         val heatMapSeries = mutableListOf<ChartSeries>()

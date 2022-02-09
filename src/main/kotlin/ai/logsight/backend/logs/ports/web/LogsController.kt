@@ -44,7 +44,7 @@ class LogsController(
     ): LogsReceiptResponse {
         val logFileDTO = LogFileDTO(
             userEmail = authentication.name,
-            applicationName = logFileRequest.applicationName,
+            applicationId = logFileRequest.applicationId,
             tag = logFileRequest.tag,
             logFormat = logFileRequest.logFormat,
             file = logFileRequest.file

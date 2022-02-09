@@ -58,10 +58,7 @@ class LogsServiceImpl(
     @Throws(LogFileReadingException::class)
     override fun processLogFile(logFileDTO: LogFileDTO): LogsReceipt {
         val user = userStorageService.findUserByEmail(logFileDTO.userEmail)
-        // Auto-create app if it is not present
-        val app = applicationLifecycleService.createApplication(
-            CreateApplicationCommand(logFileDTO.applicationName, user)
-        )
+        val app = applicationStorageService.findApplicationById(logFileDTO.applicationId)
         val fileContent = readFileContent(logFileDTO.file.name, logFileDTO.file.inputStream)
         val logMessages = convertFileContentToStringList(fileContent)
         return processLogs(user, app, logFileDTO.logFormat.toString(), logFileDTO.tag, "file", logMessages)

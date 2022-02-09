@@ -6,7 +6,7 @@ import java.util.*
 
 data class LogFileDTO(
     val userEmail: String,
-    val applicationName: String,
+    val applicationId: UUID,
     val tag: String,
     val logFormat: LogFormat,
     val file: MultipartFile

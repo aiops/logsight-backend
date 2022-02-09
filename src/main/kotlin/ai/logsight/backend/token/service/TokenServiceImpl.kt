@@ -20,7 +20,7 @@ class TokenServiceImpl(
 ) : TokenService {
     override fun findTokenById(tokenId: UUID): Token {
         return tokenRepository.findById(tokenId)
-            .orElseThrow { TokenNotFoundException("Token with id $id does not exist.") }.toToken()
+            .orElseThrow { TokenNotFoundException("Token with id $tokenId does not exist.") }.toToken()
     }
 
     override fun createActivationToken(userId: UUID): Token {
