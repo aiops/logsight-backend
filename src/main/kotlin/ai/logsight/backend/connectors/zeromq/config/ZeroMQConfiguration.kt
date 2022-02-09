@@ -3,6 +3,7 @@ package ai.logsight.backend.connectors.zeromq.config
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
@@ -12,15 +13,18 @@ enum class ConnectionType {
     BIND, CONNECT
 }
 
+@Profile("!test")
 @Configuration
 class ZeroMQConfiguration(
     private val zeroMqConfig: ZeroMQConfigurationProperties
 ) {
+
     @Bean
     @Qualifier("pub")
     fun zeroMQPubSocket(): ZMQ.Socket {
         return createSocket(SocketType.PUB, zeroMqConfig.pubPort, ConnectionType.BIND)
     }
+
 
     @Bean
     @Qualifier("req")

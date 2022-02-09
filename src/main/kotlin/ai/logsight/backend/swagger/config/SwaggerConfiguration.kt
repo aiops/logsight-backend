@@ -56,6 +56,6 @@ class SwaggerConfiguration {
         val authorizationScope = AuthorizationScope("global", "accessEverything")
         val authorizationScopes: Array<AuthorizationScope?> = arrayOfNulls<AuthorizationScope>(1)
         authorizationScopes[0] = authorizationScope
-        return Arrays.asList(SecurityReference("JWT", authorizationScopes), SecurityReference("Basic Auth", authorizationScopes))
+        return Arrays.asList(SecurityReference("JWT", authorizationScopes))
     }
 }
