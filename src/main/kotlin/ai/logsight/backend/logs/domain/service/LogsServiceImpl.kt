@@ -34,12 +34,10 @@ class LogsServiceImpl(
     val applicationLifecycleService: ApplicationLifecycleService,
     val applicationStorageService: ApplicationStorageService,
     val logStream: LogStream,
-    val topicBuilder: TopicBuilder
+    val topicBuilder: TopicBuilder,
+    val xSync: XSync<String>
 ) : LogsService {
     val logger: Logger = LoggerFactory.getLogger(LogsServiceImpl::class.java)
-
-    @Autowired
-    private val xSync: XSync<String>? = null
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
@@ -129,7 +127,7 @@ class LogsServiceImpl(
         val topic = topicBuilder.buildTopic(user.key, app.name)
 
         var logsReceipt: LogsReceipt? = null
-        xSync!!.execute("logs-stream") {
+        xSync.execute("logs-stream") {
             logsReceipt = logsReceiptStorageService.saveLogReceipt(createLogsReceiptCommand)
             val logs = logMessages.map { message ->
                 Log(app.name, app.id.toString(), user.key, format, tag, logsReceipt!!.orderCounter, message)

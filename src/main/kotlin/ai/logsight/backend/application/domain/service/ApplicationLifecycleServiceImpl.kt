@@ -36,7 +36,6 @@ class ApplicationLifecycleServiceImpl(
                     applicationId = application.id, user = createApplicationCommand.user
                 )
             )
-
             val msg = response?.message ?: "No response from logsight."
             throw LogsightApplicationException("Logsight failed to create application. Reason: $msg")
         }
