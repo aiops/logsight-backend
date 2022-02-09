@@ -13,6 +13,7 @@ import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsRes
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
