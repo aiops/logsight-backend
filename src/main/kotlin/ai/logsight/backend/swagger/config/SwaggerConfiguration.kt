@@ -2,14 +2,19 @@ package ai.logsight.backend.swagger.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.core.Authentication
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
 import springfox.documentation.builders.RequestHandlerSelectors
+import springfox.documentation.service.*
 import springfox.documentation.service.ApiInfo
 import springfox.documentation.service.ApiKey
+import springfox.documentation.service.SecurityReference
 import springfox.documentation.service.SecurityScheme
 import springfox.documentation.spi.DocumentationType
+import springfox.documentation.spi.service.contexts.SecurityContext
 import springfox.documentation.spring.web.plugins.Docket
+import springfox.documentation.swagger.web.SecurityConfigurationBuilder.builder
 import springfox.documentation.swagger2.annotations.EnableSwagger2
 import java.util.*
 
@@ -17,33 +22,40 @@ import java.util.*
 @EnableSwagger2
 class SwaggerConfiguration {
 
-//    @Bean
-//    fun api(): Docket = Docket(DocumentationType.SWAGGER_2)
-//        .select()
-//        .apis(RequestHandlerSelectors.any())
-//        .paths(PathSelectors.ant("/api/v1/**"))
-//        .build()
-
     @Bean
     fun api(): Docket? {
         return Docket(DocumentationType.SWAGGER_2)
+            .ignoredParameterTypes(
+                Authentication::class.java
+            )
             .select()
             .apis(RequestHandlerSelectors.any())
             .paths(PathSelectors.ant("/api/v1/**"))
             .build()
             .apiInfo(apiInfo())
             .securitySchemes(Arrays.asList(apiKey()) as List<SecurityScheme>?)
+            .securityContexts(Arrays.asList(securityContext()))
     }
 
     private fun apiInfo(): ApiInfo? {
         return ApiInfoBuilder()
             .title("logsight.ai REST API")
-            .termsOfServiceUrl("localhost")
             .version("1.0")
             .build()
     }
 
     private fun apiKey(): ApiKey? {
-        return ApiKey("jwtToken", "Authorization", "header")
+        return ApiKey("JWT", "Authorization", "header")
+    }
+
+    private fun securityContext(): SecurityContext? {
+        return SecurityContext.builder().securityReferences(defaultAuth()).build()
+    }
+
+    private fun defaultAuth(): List<SecurityReference?>? {
+        val authorizationScope = AuthorizationScope("global", "accessEverything")
+        val authorizationScopes: Array<AuthorizationScope?> = arrayOfNulls<AuthorizationScope>(1)
+        authorizationScopes[0] = authorizationScope
+        return Arrays.asList(SecurityReference("JWT", authorizationScopes), SecurityReference("Basic Auth", authorizationScopes))
     }
 }

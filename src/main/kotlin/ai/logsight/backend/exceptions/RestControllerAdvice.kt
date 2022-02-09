@@ -73,9 +73,10 @@ import javax.servlet.http.HttpServletRequest
         request: HttpServletRequest,
         e: MethodArgumentNotValidException
     ): ResponseEntity<ErrorRepsonse> {
-        val messages = e.fieldErrors.map { x -> x.defaultMessage }.joinToString(separator = ",", prefix = "Errors: ")
+//        val messages = e.fieldErrors.map { x -> x.defaultMessage }.joinToString(separator = ",", prefix = "Errors: ")
+        val message = e.fieldErrors[0].defaultMessage
         return generateErrorResponse(
-            HttpStatus.BAD_REQUEST, request, e, messages
+            HttpStatus.BAD_REQUEST, request, e, message.toString()
         )
     }
 
