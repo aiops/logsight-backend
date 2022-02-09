@@ -3,6 +3,8 @@ package ai.logsight.backend.application.ports.web
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
+import ai.logsight.backend.application.extensions.toApplicationDTO
+import ai.logsight.backend.application.extensions.toApplicationResponse
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
@@ -31,7 +33,7 @@ class ApplicationLifecycleController(
         authentication: Authentication,
     ): GetAllApplicationsResponse {
         val user = userService.findUserByEmail(authentication.name)
-        return GetAllApplicationsResponse(applicationStorageService.findAllApplicationsByUser(user))
+        return GetAllApplicationsResponse(applicationStorageService.findAllApplicationsByUser(user).map { it.toApplicationResponse() })
     }
 
     /**

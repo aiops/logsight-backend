@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     id("org.springframework.boot") version "2.5.7"
@@ -54,9 +55,12 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.8.2")
     implementation("org.junit.vintage:junit-vintage-engine:5.8.2")
     implementation("com.antkorwin:xsync:1.3")
-    implementation("io.springfox:springfox-swagger2:2.9.2")
-    implementation("io.springfox:springfox-bean-validators:2.9.2")
-    implementation("io.springfox:springfox-swagger-ui:2.9.2")
+
+    implementation("io.springfox:springfox-boot-starter:3.0.0")
+    implementation("io.springfox:springfox-swagger-ui:3.0.0")
+//    implementation("io.springfox:springfox-swagger2:2.9.2")
+//    implementation("io.springfox:springfox-bean-validators:2.9.2")
+//    implementation("io.springfox:springfox-swagger-ui:2.9.2")
 
     implementation("org.springframework:spring-test")
     implementation("org.springframework.data:spring-data-jpa")

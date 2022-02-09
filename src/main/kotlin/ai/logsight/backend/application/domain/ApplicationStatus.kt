@@ -1,4 +1,4 @@
-package ai.logsight.backend.application.ports.out.persistence
+package ai.logsight.backend.application.domain
 
 enum class ApplicationStatus {
     CREATING,

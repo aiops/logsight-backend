@@ -38,14 +38,12 @@ class ESChartsServiceImpl(
             getChartDataQuery.chartConfig.indexType
         )
         val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-
         // map the HeatMapDataObject into HeatMapChart Object
         val heatMapSeries = mutableListOf<ChartSeries>()
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
-                val name = i.key.toString().split("_")
-                    .subList(1, i.key.toString().split("_").size - 2).joinToString("  ")
+                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString(" ")
                 heatMapListPoints.add(
                     ChartSeriesPoint(
                         name = name,
@@ -117,6 +115,7 @@ class ESChartsServiceImpl(
                     semanticAD = it.source.semanticAD.toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
                     countAD = it.source.countAD.toString(),
                     scAnomalies = it.source.scAnomalies.toString(),
+                    logs = it.source.logData.toString(),
                     totalScore = it.source.totalScore
                 )
             }

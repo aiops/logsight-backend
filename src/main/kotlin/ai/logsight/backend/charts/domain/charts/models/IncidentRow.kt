@@ -14,5 +14,6 @@ data class IncidentRow(
     val semanticAD: String,
     val countAD: String,
     val scAnomalies: String,
+    val logs: String,
     val totalScore: Int // incident severities
 )

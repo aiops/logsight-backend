@@ -3,15 +3,14 @@ package ai.logsight.backend.users.domain.service
 import ai.logsight.backend.email.domain.EmailContext
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.email.domain.service.helpers.EmailTemplateTypes
-import ai.logsight.backend.exceptions.InvalidTokenException
-import ai.logsight.backend.exceptions.UserExistsException
-import ai.logsight.backend.exceptions.UserNotActivatedException
 import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.exceptions.UserExistsException
+import ai.logsight.backend.users.exceptions.UserNotActivatedException
 import ai.logsight.backend.users.extensions.toLocalUser
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
@@ -64,17 +63,14 @@ class UserServiceImpl(
         val user = userStorageService.findUserById(activateUserCommand.id)
         val activationToken = tokenService.findTokenById(activateUserCommand.activationToken)
         // check activation token
-        val validToken = tokenService.checkActivationToken(activationToken)
-        // check token validity
-        if (!validToken) throw InvalidTokenException()
-        // activate user
+        tokenService.checkActivationToken(activationToken)
 
         // initialize external services
         externalServices.initializeServicesForUser(user)
 
         // setup predefined timestamps
         timeSelectionService.createPredefinedTimeSelections(user)
-
+        // activate user
         return userStorageService.activateUser(user.email)
     }
 
@@ -92,8 +88,7 @@ class UserServiceImpl(
         // check if token exists in DB
         val passwordResetToken = tokenService.findTokenById(resetPasswordCommand.passwordResetToken)
         // Check if matches user and not expired
-        val validToken = tokenService.checkPasswordResetToken(passwordResetToken)
-        if (!validToken) throw InvalidTokenException()
+        tokenService.checkPasswordResetToken(passwordResetToken)
 
         return userStorageService.changePassword(
             resetPasswordCommand.id, resetPasswordCommand.password, resetPasswordCommand.repeatPassword

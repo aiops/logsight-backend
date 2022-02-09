@@ -1,10 +1,10 @@
 package ai.logsight.backend.token.service
 
-import ai.logsight.backend.exceptions.InvalidTokenTypeException
-import ai.logsight.backend.exceptions.TokenExpiredException
-import ai.logsight.backend.exceptions.TokenNotFoundException
 import ai.logsight.backend.token.config.TokenConfigurationProperties
 import ai.logsight.backend.token.domain.Token
+import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
+import ai.logsight.backend.token.exceptions.TokenExpiredException
+import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.token.extensions.toToken
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
@@ -20,7 +20,7 @@ class TokenServiceImpl(
 ) : TokenService {
     override fun findTokenById(tokenId: UUID): Token {
         return tokenRepository.findById(tokenId)
-            .orElseThrow { TokenNotFoundException("Token with id $id does not exist.") }.toToken()
+            .orElseThrow { TokenNotFoundException("Token with id $tokenId does not exist.") }.toToken()
     }
 
     override fun createActivationToken(userId: UUID): Token {
@@ -50,11 +50,11 @@ class TokenServiceImpl(
     private fun checkToken(token: Token, tokenType: TokenType): Boolean {
         // validateAndDelete token
         if (token.tokenType != tokenType) {
-            throw InvalidTokenTypeException("Token is invalid. Please request a new token.")
+            throw InvalidTokenTypeException()
         }
         if (token.expiresAt.isBefore(LocalDateTime.now())) {
             tokenRepository.deleteById(token.token)
-            throw TokenExpiredException("Token has expired. Please request a new token.")
+            throw TokenExpiredException()
         }
 
         tokenRepository.deleteById(token.token)

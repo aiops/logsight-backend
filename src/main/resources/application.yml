@@ -52,7 +52,7 @@ logsight:
     port: "5601"
 
   token:
-    duration: 15
+    minutes: 15
 
   common-config:
     base-url: http://localhost:4200

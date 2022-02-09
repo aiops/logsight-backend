@@ -1,15 +1,13 @@
 package ai.logsight.backend.application.domain.service
 
 import ai.logsight.backend.application.domain.Application
+import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
+import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.extensions.toApplicationDTO
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
-import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
-import ai.logsight.backend.exceptions.ElasticsearchException
-import ai.logsight.backend.exceptions.LogsightApplicationException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -17,56 +15,39 @@ import org.springframework.stereotype.Service
 @Service
 class ApplicationLifecycleServiceImpl(
     val applicationStorageService: ApplicationStorageService,
-    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: AnalyticsManagerRPC,
-    val elasticsearchService: ElasticsearchService
-
+    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: AnalyticsManagerRPC
 ) : ApplicationLifecycleService {
-
-    val indexPatters = listOf("log_ad", "count_ad", "incidents", "log_agg", "log_quality") // TODO: EXTRACT in config.
 
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
         // Create application
-        val application = applicationStorageService.createApplication(createApplicationCommand)
+        val application = applicationStorageService.createApplication(
+            createApplicationCommand.applicationName, createApplicationCommand.user
+        )
         // create application in backend
         val response = analyticsManagerAppRPC.createApplication(application.toApplicationDTO())
         if (response == null || response.status != HttpStatus.OK) {
             // rollback changes
-            applicationStorageService.deleteApplication(
-                DeleteApplicationCommand(
-                    applicationId = application.id, user = createApplicationCommand.user
-                )
-            )
+            applicationStorageService.deleteApplication(applicationId = application.id)
+
             val msg = response?.message ?: "No response from logsight."
-            throw LogsightApplicationException("Logsight failed to create application. Reason: $msg")
+            throw RuntimeException("Logsight failed to create application. Reason: $msg")
         }
 
-        // create index patterns
-        try {
-            elasticsearchService.createKibanaIndexPatterns(
-                createApplicationCommand.user.key, application.name, indexPatters
-            )
-        } catch (e: ElasticsearchException) {
-            // rollback changes
-            applicationStorageService.deleteApplication(
-                DeleteApplicationCommand(
-                    applicationId = application.id, user = createApplicationCommand.user
-                )
-            )
-            throw ElasticsearchException(e.message)
-        }
-        //
-        application.status = ApplicationStatus.READY
-        return applicationStorageService.saveApplication(application)
+        return applicationStorageService.setApplicationStatus(application, ApplicationStatus.READY)
     }
 
     override fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand) {
         val application = applicationStorageService.findApplicationById(deleteApplicationCommand.applicationId)
-        application.status = ApplicationStatus.DELETING
-        applicationStorageService.saveApplication(application)
-        analyticsManagerAppRPC.deleteApplication(application.toApplicationDTO())
-        elasticsearchService.deleteKibanaIndexPatterns(
-            deleteApplicationCommand.user.key, application.name, indexPatters
-        )
-        return applicationStorageService.deleteApplication(deleteApplicationCommand)
+        if (application.status == ApplicationStatus.CREATING) {
+            throw ApplicationStatusException("Application is still creating. Please wait for the application creation process to finish first.")
+        }
+        applicationStorageService.setApplicationStatus(application, ApplicationStatus.DELETING)
+        val response = analyticsManagerAppRPC.deleteApplication(application.toApplicationDTO())
+        if (response == null || response.status != HttpStatus.OK) {
+            val msg = response?.message ?: "No response from logsight."
+            throw RuntimeException("Logsight failed to create application. Reason: $msg")
+        }
+
+        return applicationStorageService.deleteApplication(applicationId = application.id)
     }
 }

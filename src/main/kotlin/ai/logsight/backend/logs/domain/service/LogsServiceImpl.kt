@@ -4,8 +4,6 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.exceptions.LogFileReadingException
-import ai.logsight.backend.exceptions.LogsReceiptException
 import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
@@ -13,6 +11,8 @@ import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.logs.exceptions.LogFileReadingException
+import ai.logsight.backend.logs.exceptions.LogsReceiptException
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
@@ -56,10 +56,7 @@ class LogsServiceImpl(
     @Throws(LogFileReadingException::class)
     override fun processLogFile(logFileDTO: LogFileDTO): LogsReceipt {
         val user = userStorageService.findUserByEmail(logFileDTO.userEmail)
-        // Auto-create app if it is not present
-        val app = applicationLifecycleService.createApplication(
-            CreateApplicationCommand(logFileDTO.applicationName, user)
-        )
+        val app = applicationStorageService.findApplicationById(logFileDTO.applicationId)
         val fileContent = readFileContent(logFileDTO.file.name, logFileDTO.file.inputStream)
         val logMessages = convertFileContentToStringList(fileContent)
         return processLogs(user, app, logFileDTO.logFormat.toString(), logFileDTO.tag, "file", logMessages)

@@ -47,6 +47,7 @@ class UserController(
     @PostMapping("/activate")
     @ResponseStatus(HttpStatus.OK)
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
+
         val activateUserCommand = ActivateUserCommand(
             id = activateUserRequest.id,
             activationToken = activateUserRequest.activationToken

@@ -22,20 +22,15 @@ class AnalyticsManagerZeroMQ(
 
     override fun createApplication(createApplicationDTO: ApplicationDTO): RPCResponse? {
         createApplicationDTO.action = "CREATE"
-        return transmitRPC(createApplicationDTO)
+        zeroMQReqSocket.send(mapper.writeValueAsString(createApplicationDTO))
+        val message = zeroMQReqSocket.recv()
+        return message?.let { mapper.readValue<RPCResponse>(message.decodeToString()) }
     }
 
     override fun deleteApplication(deleteApplicationDTO: ApplicationDTO): RPCResponse? {
         deleteApplicationDTO.action = "DELETE"
-        return transmitRPC(deleteApplicationDTO)
-    }
-
-    fun transmitRPC(applicationDTO: ApplicationDTO): RPCResponse? {
-        var message: ByteArray? = null
-        xSync.execute("analytics-rpc") {
-            zeroMQReqSocket.send(ObjectMapper().writeValueAsString(applicationDTO))
-            message = zeroMQReqSocket.recv()
-        }
-        return message?.let { mapper.readValue<RPCResponse>(it.decodeToString()) }
+        zeroMQReqSocket.send(ObjectMapper().writeValueAsString(deleteApplicationDTO))
+        val message = zeroMQReqSocket.recv()
+        return message?.let { mapper.readValue<RPCResponse>(message.decodeToString()) }
     }
 }

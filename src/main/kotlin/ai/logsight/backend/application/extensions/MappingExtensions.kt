@@ -3,6 +3,7 @@ package ai.logsight.backend.application.extensions
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
+import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationResponse
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
 
@@ -25,5 +26,10 @@ fun Application.toApplicationEntity() = ApplicationEntity(
 fun Application.toApplicationDTO() = ApplicationDTO(
     id = this.id,
     userKey = this.user.key,
+    name = this.name
+)
+
+fun Application.toApplicationResponse() = ApplicationResponse(
+    applicationId = this.id,
     name = this.name
 )

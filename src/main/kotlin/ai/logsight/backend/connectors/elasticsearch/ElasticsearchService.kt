@@ -3,8 +3,8 @@ package ai.logsight.backend.connectors.elasticsearch
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
+import ai.logsight.backend.connectors.exceptions.ElasticsearchException
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.exceptions.ElasticsearchException
 import ai.logsight.backend.users.domain.User
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient

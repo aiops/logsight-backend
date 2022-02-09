@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
 data class SendLogFileRequest(
-    @get:NotEmpty(message = "applicationName must not be empty.")
-    val applicationName: String,
+    @get:NotNull(message = "applicationId must not be empty.")
+    val applicationId: UUID,
     @get:NotNull(message = "file must not be empty")
     val file: MultipartFile,
     @get:NotEmpty(message = "tag must not be empty")
