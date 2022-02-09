@@ -4,12 +4,13 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.connectors.zeromq.config.ZeroMQConfigurationProperties
 import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.TopicJsonSerializer
+import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfig
+import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
@@ -51,7 +52,7 @@ class LogsServiceImplTest {
     lateinit var topicBuilder: TopicBuilder
 
     @Autowired
-    lateinit var zeroMqConf: ZeroMQConfigurationProperties
+    lateinit var zeroMqConf: LogStreamZeroMqConfigProperties
 
     companion object {
         private const val numMessages = 1000
@@ -108,7 +109,7 @@ class LogsServiceImplTest {
         private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
             val ctx = ZContext()
             val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://${zeroMqConf.host}:${zeroMqConf.pubPort}"
+            val addr = "${zeroMqConf.protocol}://${zeroMqConf.host}:${zeroMqConf.port}"
             val status = zeroMQSocket.connect(addr)
             if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
             zeroMQSocket.subscribe(topic)
