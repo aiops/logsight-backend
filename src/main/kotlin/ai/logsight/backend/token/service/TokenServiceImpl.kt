@@ -50,11 +50,11 @@ class TokenServiceImpl(
     private fun checkToken(token: Token, tokenType: TokenType): Boolean {
         // validateAndDelete token
         if (token.tokenType != tokenType) {
-            throw InvalidTokenTypeException("Token is invalid. Please request a new token.")
+            throw InvalidTokenTypeException()
         }
         if (token.expiresAt.isBefore(LocalDateTime.now())) {
             tokenRepository.deleteById(token.token)
-            throw TokenExpiredException("Token has expired. Please request a new token.")
+            throw TokenExpiredException()
         }
 
         tokenRepository.deleteById(token.token)
