@@ -1,12 +1,11 @@
 package ai.logsight.backend.application.ports.out.persistence
 
 import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
-import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
+import ai.logsight.backend.application.domain.ApplicationStatus
+import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
+import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.exceptions.ApplicationAlreadyCreatedException
-import ai.logsight.backend.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
@@ -15,20 +14,20 @@ import java.util.*
 @Service
 class ApplicationStorageServiceImpl(private val appRepository: ApplicationRepository) : ApplicationStorageService {
 
-    override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
-        val userEntity = createApplicationCommand.user.toUserEntity()
+    override fun createApplication(applicationName: String, user: User): Application {
+        val userEntity = user.toUserEntity()
 
-        if (appRepository.findByUserAndName(userEntity, createApplicationCommand.applicationName).isPresent) {
-            throw ApplicationAlreadyCreatedException("Application with name ${createApplicationCommand.applicationName} already exists for user.")
+        if (appRepository.findByUserAndName(userEntity, applicationName).isPresent) {
+            throw ApplicationAlreadyCreatedException("Application with name $applicationName already exists for user.")
         }
         val appEntity = ApplicationEntity(
-            name = createApplicationCommand.applicationName, status = ApplicationStatus.CREATING, user = userEntity
+            name = applicationName, status = ApplicationStatus.CREATING, user = userEntity
         )
         return appRepository.save(appEntity).toApplication()
     }
 
-    override fun deleteApplication(deleteApplicationCommand: DeleteApplicationCommand) {
-        val appEntity = this.findApplicationByIdPrivate(deleteApplicationCommand.applicationId)
+    override fun deleteApplication(applicationId: UUID) {
+        val appEntity = this.findApplicationByIdPrivate(applicationId)
         appEntity.status = ApplicationStatus.DELETED
         appRepository.delete(appEntity)
     }
@@ -54,5 +53,12 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
 
     override fun saveApplication(application: Application): Application {
         return appRepository.save<ApplicationEntity?>(application.toApplicationEntity()).toApplication()
+    }
+
+    override fun setApplicationStatus(application: Application, applicationStatus: ApplicationStatus): Application {
+        val appEntity = application.toApplicationEntity()
+        appEntity.status = applicationStatus
+        appRepository.save(appEntity)
+        return appEntity.toApplication()
     }
 }

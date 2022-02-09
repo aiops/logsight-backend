@@ -1,70 +1,103 @@
 package ai.logsight.backend.exceptions
 
+import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
+import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
+import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.charts.exceptions.InvalidFeatureException
+import ai.logsight.backend.token.exceptions.InvalidTokenException
+import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
+import ai.logsight.backend.token.exceptions.TokenExpiredException
+import ai.logsight.backend.token.exceptions.TokenNotFoundException
+import ai.logsight.backend.users.exceptions.EmailExistsException
+import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
+import ai.logsight.backend.users.exceptions.UserExistsException
+import ai.logsight.backend.users.exceptions.UserNotActivatedException
+import ai.logsight.backend.users.exceptions.UserNotFoundException
+import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import org.springframework.web.bind.annotation.ResponseStatus
 import javax.naming.AuthenticationException
+import javax.servlet.http.HttpServletRequest
 
-@ControllerAdvice
-class RestControllerAdvice {
-    @ExceptionHandler(LogsightApplicationException::class)
-    fun handleLogsightApplicationException(logsightApplicationException: LogsightApplicationException): ResponseEntity<ErrorResponse> {
-        val errorResponse =
-            ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, logsightApplicationException.message.toString())
+@ControllerAdvice class RestControllerAdvice {
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
-    }
-
-    @ExceptionHandler(BadCredentialsException::class)
-    @ResponseStatus(
-        value = HttpStatus.UNAUTHORIZED,
-        reason = "Email or password are not correct."
+    @ExceptionHandler(
+        BadCredentialsException::class, AuthenticationException::class
     )
-    fun handleBadCredentialsException(logsightApplicationException: BadCredentialsException) {
+    fun handleUnauthorizedException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+        return generateErrorResponse(HttpStatus.UNAUTHORIZED, request, e)
     }
 
-    @ExceptionHandler(AuthenticationException::class)
-    fun handleAuthenticationException(authenticationException: AuthenticationException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.UNAUTHORIZED, authenticationException.message.toString())
+    @ExceptionHandler(
+        UserNotActivatedException::class,
+        UserExistsException::class,
+        EmailExistsException::class,
+        TokenExpiredException::class,
+        EmailExistsException::class,
+        ApplicationAlreadyCreatedException::class,
+        ApplicationStatusException::class
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
-    }
-
-    @ExceptionHandler(UserExistsException::class)
-    @ResponseStatus(
-        value = HttpStatus.CONFLICT,
-        reason = "User already exists. Please login."
     )
-    fun handleUserExistsException(userExistsException: UserExistsException) {
+    fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+        return generateErrorResponse(HttpStatus.CONFLICT, request, e)
     }
 
-    @ExceptionHandler(UserNotActivatedException::class)
-    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User has not been activated.")
-    fun handleUserNotActivated(userNotActivatedException: UserNotActivatedException) {
+    @ExceptionHandler(
+        RuntimeException::class, ElasticsearchException::class
+    )
+    fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+        return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
     }
 
-    @ExceptionHandler(EmailExistsException::class)
-    fun handleEmailExistsException(emailExistsException: EmailExistsException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.CONFLICT, emailExistsException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse)
+    @ExceptionHandler(
+        InvalidFeatureException::class,
+        PasswordsNotMatchException::class,
+        UserNotFoundException::class,
+        InvalidTokenException::class,
+        InvalidTokenTypeException::class,
+        TokenNotFoundException::class,
+        ApplicationNotFoundException::class,
+    )
+    fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+        return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)
     }
 
-    @ExceptionHandler(InvalidFeatureException::class)
-    fun handleInvalidFeature(invalidFeatureException: InvalidFeatureException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, invalidFeatureException.message.toString())
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    @ExceptionHandler(
+        MethodArgumentNotValidException::class
+    )
+    fun handleValidationException(
+        request: HttpServletRequest,
+        e: MethodArgumentNotValidException
+    ): ResponseEntity<ErrorRepsonse> {
+        val messages = e.fieldErrors.map { x -> x.defaultMessage }.joinToString(separator = ",", prefix = "Errors: ")
+        return generateErrorResponse(
+            HttpStatus.BAD_REQUEST, request, e, messages
+        )
     }
 
-    @ExceptionHandler(PasswordsNotMatchException::class)
-    fun handlePasswordsNotMatch(passwordsNotMatchException: PasswordsNotMatchException): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(HttpStatus.BAD_REQUEST, passwordsNotMatchException.message.toString())
+    private fun generateErrorResponse(
+        status: HttpStatus,
+        request: HttpServletRequest,
+        e: Exception,
+        message: String = e.message.toString()
+    ): ResponseEntity<ErrorRepsonse> {
+        // converting the exception stack trace to a string
+        val stackTrace = e.stackTraceToString()
+        val requestPath = request.requestURI
+        // example: logging the stack trace
+        // log.debug(stackTrace)
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+//        environment - based logic
+//        val stackTraceMessage = when (System.getenv("ENV").toUpperCase()) {
+//            "STAGING" -> stackTrace // returning the stack trace
+//            "PRODUCTION" -> null // returning no stack trace
+//            else -> stackTrace // default behavior
+//        }
+
+        return ResponseEntity(ErrorRepsonse(status, message, requestPath, stackTrace), status)
     }
 }

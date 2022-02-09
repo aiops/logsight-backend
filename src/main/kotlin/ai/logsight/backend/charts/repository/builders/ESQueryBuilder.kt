@@ -1,7 +1,7 @@
 package ai.logsight.backend.charts.repository.builders
 
 import ai.logsight.backend.charts.repository.ESQuery
-import ai.logsight.backend.exceptions.InvalidFeatureException
+import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.exists

@@ -1,9 +1,9 @@
 package ai.logsight.backend.logs.ports.out.persistence
 
 import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.extensions.toLogsReceipt
 import org.springframework.stereotype.Service
 

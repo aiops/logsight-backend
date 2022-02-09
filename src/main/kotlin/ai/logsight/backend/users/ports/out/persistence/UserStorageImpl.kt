@@ -1,9 +1,9 @@
 package ai.logsight.backend.users.ports.out.persistence
 
-import ai.logsight.backend.exceptions.EmailExistsException
-import ai.logsight.backend.exceptions.PasswordsNotMatchException
-import ai.logsight.backend.exceptions.UserNotFoundException
 import ai.logsight.backend.users.domain.User
+import ai.logsight.backend.users.exceptions.EmailExistsException
+import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
+import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.extensions.toUser
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service

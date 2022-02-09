@@ -4,8 +4,6 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.exceptions.LogFileReadingException
-import ai.logsight.backend.exceptions.LogsReceiptException
 import ai.logsight.backend.logs.domain.LogFormat
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
@@ -13,6 +11,8 @@ import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.logs.exceptions.LogFileReadingException
+import ai.logsight.backend.logs.exceptions.LogsReceiptException
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
