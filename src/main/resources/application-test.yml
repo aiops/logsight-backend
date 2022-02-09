@@ -7,3 +7,5 @@ spring:
     url: jdbc:postgresql://localhost:5431/logsight_test
     username: logsight
     password: logsight
+
+logsight.application-rpc.zeromq.timeout: 200
