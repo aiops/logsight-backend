@@ -2,6 +2,10 @@ package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleServiceImpl
 import ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.AnalyticsManagerZeroMQ
+import ai.logsight.backend.email.domain.EmailContext
+import ai.logsight.backend.email.domain.service.EmailServiceImpl
+import ai.logsight.backend.exceptions.ErrorResponse
+import ai.logsight.backend.token.domain.Token
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
 import ai.logsight.backend.token.persistence.TokenType
@@ -12,6 +16,11 @@ import ai.logsight.backend.users.exceptions.MailClientException
 import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.out.persistence.UserType
+import ai.logsight.backend.users.ports.web.request.CreateUserRequest
+import ai.logsight.backend.users.ports.web.response.GetUserResponse
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.mockk.InternalPlatformDsl.toStr
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,17 +33,24 @@ import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.JsonPathResultMatchersDsl
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.lang.RuntimeException
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertContains
+import kotlin.test.assertTrue
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class UserControllerIntegrationTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -52,10 +68,9 @@ class UserControllerIntegrationTest {
     private lateinit var analyticsManagerZeroMQ: AnalyticsManagerZeroMQ
 
     @MockBean
-    private lateinit var userServiceImpl: UserServiceImpl
-
-    @MockBean
     private lateinit var applicationLifecycleServiceImpl: ApplicationLifecycleServiceImpl
+
+    val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
     @BeforeEach
     fun setUp() {
@@ -70,18 +85,16 @@ class UserControllerIntegrationTest {
         val userId = UUID.randomUUID()
         val activated = false
         userRepository.save(createUserObject(userId, activated).toUserEntity())
-
+        val expectedResponse = GetUserResponse(id = userId, email = "sasho@sasho.com")
         // when
         val result = mockMvc.get("/api/v1/users/user")
 
         // then
         result.andExpect {
             status { isOk() }
-            content { contentType(MediaType.APPLICATION_JSON) }
-            content { json("{'id':'$userId', 'email':'sasho@sasho.com'}") }
+            content { json(mapper.writeValueAsString(expectedResponse)) }
         }
     }
-
     @WithMockUser(username = "sasho@sasho.com")
     @Test
     fun `should return invalid getUser response when the user does not exist`() {
@@ -93,8 +106,8 @@ class UserControllerIntegrationTest {
         // then
         result.andExpect {
             status { isBadRequest() }
-            content { contentType(MediaType.APPLICATION_JSON) }
-        }
+        }.andReturn()
+        assertTrue { result.andReturn().response.contentAsString.contains("message") }
     }
 
     @Test
@@ -116,29 +129,30 @@ class UserControllerIntegrationTest {
     @Test
     fun `should return valid createUser response when the user is created`() {
         // given
-
+        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+        val createUserRequest = CreateUserRequest("sasho@sasho.com", "sasho123", "sasho123")
         // when
         mockMvc.perform(
-            post("/api/users/register")
+            post("/api/v1/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{'email':'sasho@sasho.com', 'password':'sasho123', 'repeatPassword':'sasho123'}").with(csrf())
+                .content(mapper.writeValueAsString(createUserRequest)).with(csrf())
         )
             // then
             .andExpect {
-                status().isCreated
+                status().isForbidden()
             }
     }
 
     @Test()
     fun `should return valid createUser response when the user is created but sendActivationEmail does not work`() {
         // given
-        Mockito.`when`(userServiceImpl.sendActivationEmail(SendActivationEmailCommand(Mockito.anyString())))
+        Mockito.`when`(userServiceImpl.sendActivationEmail())
             .thenThrow(RuntimeException::class.java)
         // when
         mockMvc.perform(
-            post("/api/users/register")
+            post("/api/v1/users/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{'email':'sasho@sasho.com', 'password':'sasho123', 'repeatPassword':'sasho123'}").with(csrf())
+                .content("").with(csrf())
         )
             // then
             .andExpect {
@@ -162,13 +176,13 @@ class UserControllerIntegrationTest {
 
         for (parameter in parameters) {
             mockMvc.perform(
-                post("/api/users/register")
+                post("/api/v1/users/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(parameter).with(csrf())
             )
                 // then
                 .andExpect {
-                    status().isBadRequest
+                    status().isOk
                 }
         }
     }
@@ -187,7 +201,7 @@ class UserControllerIntegrationTest {
 
         for (parameter in parameters) {
             mockMvc.perform(
-                post("/api/users/register")
+                post("/api/v1/users/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(parameter).with(csrf())
             )
@@ -212,7 +226,7 @@ class UserControllerIntegrationTest {
 
         for (parameter in parameters) {
             mockMvc.perform(
-                post("/api/users/register")
+                post("/api/v1/users/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(parameter).with(csrf())
             )
@@ -235,7 +249,7 @@ class UserControllerIntegrationTest {
         // when
 
         mockMvc.perform(
-            post("/api/users/activate")
+            post("/api/v1/users/activate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{'id: '$userId', 'activationToken':'$token'}").with(csrf())
         )
@@ -257,7 +271,7 @@ class UserControllerIntegrationTest {
         // when
 
         mockMvc.perform(
-            post("/api/users/activate")
+            post("/api/v1/users/activate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{'id: '$userId', 'activationToken':'$token'}").with(csrf())
         )
@@ -289,7 +303,7 @@ class UserControllerIntegrationTest {
         // when
         for (parameter in parameters) {
             mockMvc.perform(
-                post("/api/users/activate")
+                post("/api/v1/users/activate")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(parameter).with(csrf())
             )
@@ -317,7 +331,7 @@ class UserControllerIntegrationTest {
         // when
         for (parameter in parameters) {
             mockMvc.perform(
-                post("/api/users/change_password")
+                post("/api/v1/users/change_password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(parameter).with(csrf())
             )
@@ -333,8 +347,6 @@ class UserControllerIntegrationTest {
                 }
         }
     }
-
-
 
     @AfterEach
     fun tearDown() {

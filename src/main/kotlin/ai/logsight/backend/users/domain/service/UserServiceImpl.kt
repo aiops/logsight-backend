@@ -38,13 +38,14 @@ class UserServiceImpl(
         }
         // create user
         val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
-
-        // send Activation email
         sendActivationEmail(SendActivationEmailCommand(savedUser.email))
 
-//        } catch (e: MailException) {
-//            logger.error("Mail was not sent. Communication to mail client failed. Try again.")
-//        }
+        // send Activation email
+        try {
+            sendActivationEmail(SendActivationEmailCommand(savedUser.email))
+        } catch (e: MailException) {
+            logger.error("Mail was not sent. Communication to mail client failed. Try again.")
+        }
 
         // return user domain object
         return savedUser

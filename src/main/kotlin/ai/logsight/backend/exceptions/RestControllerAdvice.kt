@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest
     @ExceptionHandler(
         BadCredentialsException::class, AuthenticationException::class
     )
-    fun handleUnauthorizedException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+    fun handleUnauthorizedException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.UNAUTHORIZED, request, e)
     }
 
@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletRequest
         ApplicationStatusException::class
 
     )
-    fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+    fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
     }
 
@@ -51,7 +51,7 @@ import javax.servlet.http.HttpServletRequest
         ElasticsearchException::class,
         MailException::class
     )
-    fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+    fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
     }
 
@@ -64,7 +64,7 @@ import javax.servlet.http.HttpServletRequest
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
     )
-    fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
+    fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)
     }
 
@@ -74,7 +74,7 @@ import javax.servlet.http.HttpServletRequest
     fun handleValidationException(
         request: HttpServletRequest,
         e: MethodArgumentNotValidException
-    ): ResponseEntity<ErrorRepsonse> {
+    ): ResponseEntity<ErrorResponse> {
 //        val messages = e.fieldErrors.map { x -> x.defaultMessage }.joinToString(separator = ",", prefix = "Errors: ")
         val message = e.fieldErrors[0].defaultMessage
         return generateErrorResponse(
@@ -87,7 +87,7 @@ import javax.servlet.http.HttpServletRequest
         request: HttpServletRequest,
         e: Exception,
         message: String = e.message.toString()
-    ): ResponseEntity<ErrorRepsonse> {
+    ): ResponseEntity<ErrorResponse> {
         // converting the exception stack trace to a string
         val stackTrace = e.stackTraceToString()
         val requestPath = request.requestURI
@@ -101,6 +101,6 @@ import javax.servlet.http.HttpServletRequest
 //            else -> stackTrace // default behavior
 //        }
 
-        return ResponseEntity(ErrorRepsonse(status, message, requestPath, stackTrace), status)
+        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTrace), status)
     }
 }

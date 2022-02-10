@@ -1,5 +1,6 @@
 package ai.logsight.backend.users.ports.web
 
+import ai.logsight.backend.exceptions.ErrorResponse
 import ai.logsight.backend.users.domain.service.UserService
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
@@ -7,6 +8,9 @@ import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.*
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiResponse
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
@@ -20,8 +24,7 @@ import javax.validation.Valid
 class UserController(
     private val userService: UserService
 ) {
-
-    @ApiOperation("Get logged in user")
+    @ApiOperation("Get authenticated user")
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
     fun getUser(

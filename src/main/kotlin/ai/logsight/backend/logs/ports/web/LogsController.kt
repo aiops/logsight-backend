@@ -7,17 +7,21 @@ import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
 import ai.logsight.backend.logs.ports.web.requests.SendLogFileRequest
 import ai.logsight.backend.logs.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ports.web.responses.LogsReceiptResponse
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
+@Api(tags = ["Logs"], description = " ")
 @RestController
 @RequestMapping("/api/v1/logs")
 class LogsController(
     val logsService: LogsService,
 ) {
 
+    @ApiOperation("Send list of log messages for analysis")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun sendLogList(
@@ -37,6 +41,7 @@ class LogsController(
         )
     }
 
+    @ApiOperation("Send log file for analysis")
     @PostMapping("/file")
     fun uploadFile(
         authentication: Authentication,
@@ -55,6 +60,7 @@ class LogsController(
         )
     }
 
+    @ApiOperation("Load sample log data")
     @PostMapping("/sample")
     fun sampleData(authentication: Authentication): LogsReceiptResponse {
         val logSampleDTO = LogSampleDTO(

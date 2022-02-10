@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import org.springframework.http.HttpStatus
 import java.util.*
 
-data class ErrorRepsonse(
+data class ErrorResponse(
     private val httpStatus: HttpStatus,
     val message: String,
     val path: String,

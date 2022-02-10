@@ -1,6 +1,7 @@
 spring:
   security:
 
+
   elasticsearch:
     username: "elastic"
     password: "elasticsearchpassword"
