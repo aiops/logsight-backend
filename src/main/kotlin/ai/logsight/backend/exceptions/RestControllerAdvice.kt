@@ -16,6 +16,7 @@ import ai.logsight.backend.users.exceptions.UserNotFoundException
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.mail.MailException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -37,7 +38,6 @@ import javax.servlet.http.HttpServletRequest
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
-        EmailExistsException::class,
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class
 
@@ -47,7 +47,9 @@ import javax.servlet.http.HttpServletRequest
     }
 
     @ExceptionHandler(
-        RuntimeException::class, ElasticsearchException::class
+        RuntimeException::class,
+        ElasticsearchException::class,
+        MailException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorRepsonse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

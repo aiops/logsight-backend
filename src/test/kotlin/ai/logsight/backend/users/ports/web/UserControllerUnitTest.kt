@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertEquals
 
 @WithMockUser(username = "sasho@sasho.com")
 @WebMvcTest(UserController::class)
@@ -56,9 +57,22 @@ class UserControllerUnitTest {
         // then
         result.andExpect {
             status { isOk() }
-//            content {
-//                  jsonPath
-//            }
+        }
+    }
+
+    @Test
+    fun `should return invalid get user response when the user does not exists`() {
+        // given
+        val userId = UUID.randomUUID()
+        Mockito.`when`(userService.findUserByEmail(FindUserByEmailQuery("k@sasho.com")))
+            .thenReturn(createUserObject(id = userId))
+
+        // when
+        val result = mockMvc.get("/api/v1/users/user")
+
+        // then
+        result.andExpect {
+            status { isOk() }
         }
     }
 

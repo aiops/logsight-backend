@@ -11,6 +11,9 @@ import ai.logsight.backend.application.ports.web.responses.CreateApplicationResp
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
+import org.junit.jupiter.api.DisplayName
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,6 +23,7 @@ import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
+@Api(tags = ["Applications"], description = " ")
 @RestController
 @RequestMapping("/api/v1/applications")
 class ApplicationLifecycleController(
@@ -28,6 +32,7 @@ class ApplicationLifecycleController(
     private val applicationStorageService: ApplicationStorageService
 ) {
 
+    @ApiOperation("Get all application of the authenticated user")
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
@@ -40,6 +45,7 @@ class ApplicationLifecycleController(
     /**
      * Register a new application in the system.
      */
+    @ApiOperation("Create application")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createApplication(
@@ -57,6 +63,7 @@ class ApplicationLifecycleController(
     /**
      * Delete an existing application.
      */
+    @ApiOperation("Delete application")
     @DeleteMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(

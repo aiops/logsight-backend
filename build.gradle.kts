@@ -1,5 +1,8 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.*
+import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.ir.backend.js.compile
+
 
 plugins {
     id("org.springframework.boot") version "2.5.7"
@@ -68,7 +71,6 @@ dependencies {
     implementation("com.h2database:h2")
     implementation("org.hibernate:hibernate-core")
 
-
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -95,4 +97,11 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    testLogging {
+        events(FAILED, STANDARD_ERROR, SKIPPED)
+        exceptionFormat = FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
 }

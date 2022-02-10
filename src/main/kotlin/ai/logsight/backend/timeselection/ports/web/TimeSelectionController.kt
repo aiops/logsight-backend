@@ -7,14 +7,17 @@ import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.web.response.CreateTimeSelectionResponse
 import ai.logsight.backend.users.ports.web.response.DeleteTimeSelectionResponse
 import ai.logsight.backend.users.ports.web.response.TimeSelectionResponse
+import io.swagger.v3.oas.annotations.Hidden
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import springfox.documentation.annotations.ApiIgnore
 import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
+@ApiIgnore
 @RestController
 @RequestMapping("/api/v1/time_ranges")
 class TimeSelectionController(

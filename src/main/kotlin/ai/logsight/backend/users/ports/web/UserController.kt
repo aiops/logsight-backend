@@ -5,6 +5,8 @@ import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.*
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
@@ -12,12 +14,14 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
+@Api(tags = ["Users"], description = " ")
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService
 ) {
 
+    @ApiOperation("Get logged in user")
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
     fun getUser(
@@ -30,6 +34,7 @@ class UserController(
     /**
      * Register a new user in the system.
      */
+    @ApiOperation("Register new user")
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
@@ -44,6 +49,7 @@ class UserController(
     /**
      * Verify the email of the user and activate the user.
      */
+    @ApiOperation("Activate registered user")
     @PostMapping("/activate")
     @ResponseStatus(HttpStatus.OK)
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
@@ -59,6 +65,7 @@ class UserController(
     /**
      * Change the user password.
      */
+    @ApiOperation("Change password to existing and logged in user")
     @PostMapping("/change_password")
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(authentication: Authentication, @Valid @RequestBody changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse {
@@ -75,6 +82,7 @@ class UserController(
     /**
      * Receive the token from the link sent via email and display form to reset password
      */
+    @ApiOperation("Reset password, when the user forgets it.")
     @PostMapping("/reset_password")
     @ResponseStatus(HttpStatus.OK)
     fun resetPassword(@Valid @RequestBody resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse {
@@ -91,6 +99,7 @@ class UserController(
     /**
      * Generate a password-reset token and send it by email.
      */
+    @ApiOperation("Send reset password link")
     @PostMapping("/forgot_password")
     @ResponseStatus(HttpStatus.OK)
     fun resetUserPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
@@ -100,6 +109,7 @@ class UserController(
     /**
      * Resend activation email.
      */
+    @ApiOperation("Send activation email")
     @PostMapping("/resend_activation")
     @ResponseStatus(HttpStatus.OK)
     fun resetUserPassword(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {

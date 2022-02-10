@@ -14,6 +14,9 @@ import ai.logsight.backend.users.exceptions.UserNotActivatedException
 import ai.logsight.backend.users.extensions.toLocalUser
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.mail.MailException
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,6 +27,9 @@ class UserServiceImpl(
     private val externalServices: ExternalServiceManager,
     private val timeSelectionService: TimeSelectionService,
 ) : UserService {
+
+    val logger: Logger = LoggerFactory.getLogger(UserServiceImpl::class.java)
+
     override fun createUser(createUserCommand: CreateUserCommand): User {
 
         if (userStorageService.checkEmailExists(createUserCommand.email)) {
@@ -35,6 +41,10 @@ class UserServiceImpl(
 
         // send Activation email
         sendActivationEmail(SendActivationEmailCommand(savedUser.email))
+
+//        } catch (e: MailException) {
+//            logger.error("Mail was not sent. Communication to mail client failed. Try again.")
+//        }
 
         // return user domain object
         return savedUser
