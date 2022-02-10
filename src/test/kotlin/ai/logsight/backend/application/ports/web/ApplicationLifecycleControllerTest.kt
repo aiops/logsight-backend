@@ -29,7 +29,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") class ApplicationLifecycleControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+class ApplicationLifecycleControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -53,8 +56,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
     }
 
-    @Nested @DisplayName("POST /api/v1/applications") @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    @WithMockUser(username = "testemail@gmail.com") inner class GetApplications {
+    @Nested
+    @DisplayName("POST /api/v1/applications")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @WithMockUser(username = "testemail@gmail.com")
+    inner class GetApplications {
 
         @BeforeAll
         fun setup() {
@@ -79,7 +85,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
                         SecurityMockMvcRequestPostProcessors.csrf()
                     )
             )
-            val applicationId = appRepository.findByUserAndName(userEntity, request.applicationName).get().id
+            val applicationId = appRepository.findByUserAndName(userEntity, request.applicationName)?.id
             // then
             result.andExpect {
                 status().isCreated
@@ -87,7 +93,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
                 content().json(
                     mapper.writeValueAsString(
                         CreateApplicationResponse(
-                            request.applicationName, applicationId
+                            request.applicationName, applicationId!!
                         )
                     )
                 )

@@ -17,7 +17,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     override fun createApplication(applicationName: String, user: User): Application {
         val userEntity = user.toUserEntity()
 
-        if (appRepository.findByUserAndName(userEntity, applicationName).isPresent) {
+        if (appRepository.findByUserAndName(userEntity, applicationName) == null) {
             throw ApplicationAlreadyCreatedException("Application with name $applicationName already exists for user.")
         }
         val appEntity = ApplicationEntity(
@@ -42,9 +42,8 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     }
 
     override fun findApplicationByUserAndName(user: User, applicationName: String): Application? {
-        return appRepository.findByUserAndName(user.toUserEntity(), applicationName)
-            .orElseThrow { ApplicationNotFoundException("Application $applicationName does not exist for user.") }
-            .toApplication()
+        return appRepository.findByUserAndName(user.toUserEntity(), applicationName)?.toApplication()
+            ?: throw ApplicationNotFoundException("Application $applicationName does not exist for user.")
     }
 
     override fun findAllApplicationsByUser(user: User): List<Application> {

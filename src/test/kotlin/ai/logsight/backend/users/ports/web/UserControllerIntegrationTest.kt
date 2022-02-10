@@ -327,7 +327,7 @@ class UserControllerIntegrationTest {
                     assert(
                         passwordEncoder.matches(
                             "sasho123",
-                            userRepository.findByEmail("sasho@sasho.com").get().password
+                            userRepository.findByEmail("sasho@sasho.com")?.password
                         )
                     )
                 }
