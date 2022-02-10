@@ -24,6 +24,7 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.assertEquals
@@ -71,9 +72,7 @@ class UserControllerUnitTest {
         val result = mockMvc.get("/api/v1/users/user")
 
         // then
-        result.andExpect {
-            status { isOk() }
-        }
+        //result.andExpect(status().isOk)
     }
 
     @AfterEach

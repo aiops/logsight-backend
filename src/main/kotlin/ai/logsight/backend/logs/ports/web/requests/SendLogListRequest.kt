@@ -1,16 +1,15 @@
 package ai.logsight.backend.logs.ports.web.requests
 
-import ai.logsight.backend.logs.domain.LogFormat
+import ai.logsight.backend.logs.domain.LogFormats
 import java.util.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
 
 data class SendLogListRequest(
-    @get:NotNull(message = "applicationId must not be empty.")
+    @get:NotNull(message = "applicationId must be defined")
     val applicationId: UUID,
-    @get:NotEmpty(message = "applicationId must not be empty.")
+    @get:NotEmpty(message = "tag must not be empty")
     val tag: String = "default",
-    val logFormat: LogFormat = LogFormat.UNKNOWN_FORMAT,
-    val logs: List<String>
+    val logFormats: LogFormats = LogFormats.UNKNOWN_FORMAT,
+    val logs: List<String> = listOf()
 )
