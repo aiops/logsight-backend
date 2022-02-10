@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface ApplicationRepository : JpaRepository<ApplicationEntity, UUID> {
-    fun findByUserAndName(user: UserEntity, applicationName: String): Optional<ApplicationEntity>
+    fun findByUserAndName(user: UserEntity, applicationName: String): ApplicationEntity?
     fun findAllByUser(user: UserEntity): List<ApplicationEntity>
 }

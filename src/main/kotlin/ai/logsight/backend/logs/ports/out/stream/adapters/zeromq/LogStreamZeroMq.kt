@@ -12,11 +12,11 @@ class LogStreamZeroMq(
     val serializer: TopicJsonSerializer,
 ) : LogStream {
 
-    override fun send(serializedLogs: Collection<String>) = serializedLogs.forEach { log ->
-        logStreamZeroMqSocket.send(log)
-    }
+    override fun send(serializedLogs: Collection<String>): Int = serializedLogs.map { log ->
+        if (logStreamZeroMqSocket.send(log)) 1 else 0
+    }.sum()
 
-    override fun serializeAndSend(topic: String, logs: Collection<Log>) =
+    override fun serializeAndSend(topic: String, logs: Collection<Log>): Int =
         send(serializer.serialize(topic, logs))
 }
 

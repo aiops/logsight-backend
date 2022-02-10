@@ -1,5 +1,6 @@
 package ai.logsight.backend.logs.ports.web
 
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.domain.service.LogsService
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
@@ -9,6 +10,7 @@ import ai.logsight.backend.logs.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ports.web.responses.LogsReceiptResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -19,6 +21,8 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/logs")
 class LogsController(
     val logsService: LogsService,
+    val userStorageService: UserStorageService,
+    val applicationStorageService: ApplicationStorageService
 ) {
 
     @ApiOperation("Send list of log messages for analysis")
@@ -29,8 +33,8 @@ class LogsController(
         @Valid @RequestBody logListRequest: SendLogListRequest
     ): LogsReceiptResponse {
         val logBatchDTO = LogBatchDTO(
-            userEmail = authentication.name,
-            applicationId = logListRequest.applicationId,
+            user = userStorageService.findUserByEmail(authentication.name),
+            application = applicationStorageService.findApplicationById(logListRequest.applicationId),
             tag = logListRequest.tag,
             logFormat = logListRequest.logFormat,
             logs = logListRequest.logs
@@ -48,8 +52,8 @@ class LogsController(
         @Valid @RequestBody logFileRequest: SendLogFileRequest
     ): LogsReceiptResponse {
         val logFileDTO = LogFileDTO(
-            userEmail = authentication.name,
-            applicationId = logFileRequest.applicationId,
+            user = userStorageService.findUserByEmail(authentication.name),
+            application = applicationStorageService.findApplicationById(logFileRequest.applicationId),
             tag = logFileRequest.tag,
             logFormat = logFileRequest.logFormat,
             file = logFileRequest.file
@@ -64,7 +68,7 @@ class LogsController(
     @PostMapping("/sample")
     fun sampleData(authentication: Authentication): LogsReceiptResponse {
         val logSampleDTO = LogSampleDTO(
-            userEmail = authentication.name
+            user = userStorageService.findUserByEmail(authentication.name)
         )
         val logsReceipt = logsService.processLogSample(logSampleDTO)
         return LogsReceiptResponse(

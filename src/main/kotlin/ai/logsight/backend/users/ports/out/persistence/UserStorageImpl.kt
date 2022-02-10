@@ -16,7 +16,7 @@ class UserStorageImpl(
     private val passwordEncoder: PasswordEncoder
 ) : UserStorageService {
     override fun createUser(email: String, password: String): User {
-        if (userRepository.findByEmail(email).isPresent) throw EmailExistsException("User with $email is already registered.")
+        if (userRepository.findByEmail(email) != null) throw EmailExistsException("User with $email is already registered.")
 
         val userEntity = UserEntity(
             email = email, password = passwordEncoder.encode(password), userType = UserType.ONLINE_USER
@@ -26,7 +26,7 @@ class UserStorageImpl(
     }
 
     override fun createLocalUser(email: String, password: String): User {
-        if (userRepository.findByEmail(email).isPresent) throw EmailExistsException("User with email $email is already registered.")
+        if (userRepository.findByEmail(email) != null) throw EmailExistsException("User with email $email is already registered.")
         val userEntity = UserEntity(
             email = email,
             password = passwordEncoder.encode(password),
@@ -39,12 +39,12 @@ class UserStorageImpl(
     }
 
     override fun checkEmailExists(email: String): Boolean {
-        return userRepository.findByEmail(email).isPresent
+        return userRepository.findByEmail(email) != null
     }
 
     override fun activateUser(email: String): User {
         val userEntity = userRepository.findByEmail(email)
-            .orElseThrow { UserNotFoundException("User with email $email doesn't exist in database.") }
+            ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
         userEntity.activated = true
         return userRepository.save(userEntity).toUser()
     }
@@ -66,8 +66,8 @@ class UserStorageImpl(
             .orElseThrow { UserNotFoundException("User with email $userId doesn't exist in database.") }.toUser()
 
     override fun findUserByEmail(email: String): User =
-        userRepository.findByEmail(email)
-            .orElseThrow { UserNotFoundException("User with email $email doesn't exist in database.") }.toUser()
+        userRepository.findByEmail(email)?.toUser()
+            ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
 
     override fun deleteUser(id: UUID) {
         return userRepository.deleteById(id)

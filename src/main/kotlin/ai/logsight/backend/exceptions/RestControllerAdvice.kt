@@ -4,6 +4,7 @@ import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedExcep
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
+import ai.logsight.backend.logs.exceptions.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -49,7 +50,8 @@ import javax.servlet.http.HttpServletRequest
     @ExceptionHandler(
         RuntimeException::class,
         ElasticsearchException::class,
-        MailException::class
+        MailException::class,
+        LogFileIOException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

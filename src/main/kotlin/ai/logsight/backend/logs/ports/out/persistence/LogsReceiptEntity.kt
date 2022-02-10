@@ -18,7 +18,7 @@ class LogsReceiptEntity(
     val orderCounter: Long = -1,
 
     @Column(name = "logs_count", nullable = false)
-    var logsCount: Long,
+    var logsCount: Int,
 
     @Column(name = "source")
     val source: String,
