@@ -1,5 +1,8 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     id("org.springframework.boot") version "2.5.7"
@@ -58,7 +61,7 @@ dependencies {
 
     implementation("io.springfox:springfox-boot-starter:3.0.0")
     implementation("io.springfox:springfox-swagger-ui:3.0.0")
-
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.1.0")
 //    implementation("io.springfox:springfox-swagger2:2.9.2")
 //    implementation("io.springfox:springfox-bean-validators:2.9.2")
 //    implementation("io.springfox:springfox-swagger-ui:2.9.2")
@@ -67,7 +70,6 @@ dependencies {
     implementation("org.springframework.data:spring-data-jpa")
     implementation("com.h2database:h2")
     implementation("org.hibernate:hibernate-core")
-
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
@@ -95,4 +97,11 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    testLogging {
+        events(FAILED, STANDARD_ERROR, SKIPPED)
+        exceptionFormat = FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
 }
