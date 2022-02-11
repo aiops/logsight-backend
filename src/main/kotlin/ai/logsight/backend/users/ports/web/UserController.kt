@@ -105,7 +105,7 @@ class UserController(
     @ApiOperation("Send reset password link")
     @PostMapping("/forgot_password")
     @ResponseStatus(HttpStatus.OK)
-    fun resetUserPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
+    fun forgotUserPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
         userService.generateForgotPasswordTokenAndSendEmail(CreateTokenCommand(forgotPasswordRequest.email))
     }
 
@@ -115,7 +115,7 @@ class UserController(
     @ApiOperation("Send activation email")
     @PostMapping("/resend_activation")
     @ResponseStatus(HttpStatus.OK)
-    fun resetUserPassword(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
+    fun resendActivationLink(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
         userService.sendActivationEmail(SendActivationEmailCommand(resendActivationEmailRequest.email))
     }
 
