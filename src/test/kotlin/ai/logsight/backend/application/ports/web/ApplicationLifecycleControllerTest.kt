@@ -98,7 +98,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
                         SecurityMockMvcRequestPostProcessors.csrf()
                     )
             )
-            val applicationId = appRepository.findByUserAndName(userEntity, request.applicationName).get().id
+            val applicationId = appRepository.findByUserAndName(userEntity, request.applicationName)!!.id
             // then
             result.andExpect {
                 status().isCreated
@@ -192,7 +192,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
             }.andDo(MockMvcResultHandlers.print())
             // is deleted from database
             val app = appRepository.findByUserAndName(userEntity, appName)
-            Assertions.assertTrue(app.isEmpty)
+            Assertions.assertNull(app)
         }
     }
 }
