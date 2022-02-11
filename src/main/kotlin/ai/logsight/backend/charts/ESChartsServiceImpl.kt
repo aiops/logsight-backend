@@ -1,6 +1,7 @@
 package ai.logsight.backend.charts
 
 import ai.logsight.backend.application.domain.Application
+import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.domain.charts.BarChart
 import ai.logsight.backend.charts.domain.charts.HeatmapChart
@@ -11,21 +12,25 @@ import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
+import ai.logsight.backend.charts.rest.request.ChartRequest
+import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.users.domain.User
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.loxbear.logsight.charts.data.IncidentRow
-import org.json.JSONObject
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import kotlin.reflect.full.memberProperties
 
 @Service
 class ESChartsServiceImpl(
     private val chartsRepository: ESChartRepository,
-    private val applicationStorageService: ApplicationStorageService
+    private val applicationStorageService: ApplicationStorageService,
+    private val userStorageService: UserStorageService
 ) : ChartsService {
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -90,7 +95,12 @@ class ESChartsServiceImpl(
             mapper.readValue<PieChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
         val pieChartSeries = mutableListOf<ChartSeriesPoint>()
         pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
-            pieChartSeries.add(ChartSeriesPoint(name = it.name.uppercase(), (it.get(pieChartData.aggregations) as ValueResultBucket).value))
+            pieChartSeries.add(
+                ChartSeriesPoint(
+                    name = it.name.uppercase(),
+                    (it.get(pieChartData.aggregations) as ValueResultBucket).value
+                )
+            )
         }
         return PieChart(data = pieChartSeries)
     }
@@ -119,6 +129,21 @@ class ESChartsServiceImpl(
                     totalScore = it.source.totalScore
                 )
             }
+        )
+    }
+
+    override fun getChartQuery(authentication: Authentication, createChartRequest: ChartRequest): GetChartDataQuery {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        val application: Application? = try {
+            createChartRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
+        } catch (e: ApplicationNotFoundException) {
+            null
+        }
+        return GetChartDataQuery(
+            credentials = Credentials(user.email, user.key),
+            chartConfig = createChartRequest.chartConfig,
+            user = user,
+            application = application
         )
     }
 
