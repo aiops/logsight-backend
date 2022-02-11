@@ -1,6 +1,6 @@
 package ai.logsight.backend.application.ports.out.rpc.adapters.rest
 
-import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
+import ai.logsight.backend.application.ports.out.rpc.RPCService
 import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.application.ports.out.rpc.adapters.rest.config.AnalyticsManagerRESTConfigurationProperties
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
@@ -15,7 +15,7 @@ import java.net.http.HttpResponse
 @Qualifier("REST")
 class AnalyticsManagerREST(
     private val analyticsManagerConfig: AnalyticsManagerRESTConfigurationProperties
-) : AnalyticsManagerRPC {
+) : RPCService {
 
     private val httpClient: HttpClient = HttpClient.newBuilder().build()
 

@@ -3,7 +3,7 @@ package ai.logsight.backend.application.ports.web
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
+import ai.logsight.backend.application.ports.out.rpc.RPCService
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
@@ -48,7 +48,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
     @SpyK
     @Autowired
     @Qualifier("ZeroMQ")
-    private lateinit var analyticsManagerRPC: AnalyticsManagerRPC
+    private lateinit var RPCService: RPCService
 
     @MockBean
     private lateinit var logStreamZeroMq: LogStreamZeroMq

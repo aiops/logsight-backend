@@ -1,18 +1,11 @@
 package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleServiceImpl
-import ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.AnalyticsManagerZeroMQ
-import ai.logsight.backend.email.domain.EmailContext
-import ai.logsight.backend.email.domain.service.EmailServiceImpl
-import ai.logsight.backend.exceptions.ErrorResponse
-import ai.logsight.backend.token.domain.Token
+import ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.RPCServiceZeroMq
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
 import ai.logsight.backend.token.persistence.TokenType
 import ai.logsight.backend.users.domain.User
-import ai.logsight.backend.users.domain.service.UserServiceImpl
-import ai.logsight.backend.users.domain.service.command.SendActivationEmailCommand
-import ai.logsight.backend.users.exceptions.MailClientException
 import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.out.persistence.UserType
@@ -20,11 +13,9 @@ import ai.logsight.backend.users.ports.web.request.CreateUserRequest
 import ai.logsight.backend.users.ports.web.response.GetUserResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import io.mockk.InternalPlatformDsl.toStr
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -35,17 +26,12 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.MockMvcResultMatchersDsl
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.JsonPathResultMatchersDsl
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.lang.RuntimeException
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.test.assertContains
 import kotlin.test.assertTrue
 
 @SpringBootTest
@@ -65,7 +51,7 @@ class UserControllerIntegrationTest {
     private lateinit var tokenRepository: TokenRepository
 
     @MockBean
-    private lateinit var analyticsManagerZeroMQ: AnalyticsManagerZeroMQ
+    private lateinit var RPCServiceZeroMq: RPCServiceZeroMq
 
     @MockBean
     private lateinit var applicationLifecycleServiceImpl: ApplicationLifecycleServiceImpl

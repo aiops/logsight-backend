@@ -1,7 +1,7 @@
 package ai.logsight.backend.application.ports.out.rpc.adapters.zeromq
 
 import ai.logsight.backend.application.exceptions.ApplicationRemoteException
-import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
+import ai.logsight.backend.application.ports.out.rpc.RPCService
 import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
@@ -15,10 +15,10 @@ import org.zeromq.ZMQ
 
 @Service
 @Qualifier("ZeroMQ")
-class AnalyticsManagerZeroMQ(
+class RPCServiceZeroMq(
     val zeroMqRPCSocket: ZMQ.Socket,
     val xSync: XSync<String>
-) : AnalyticsManagerRPC {
+) : RPCService {
 
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
 

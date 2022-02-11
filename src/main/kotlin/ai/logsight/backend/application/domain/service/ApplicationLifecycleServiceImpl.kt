@@ -7,7 +7,7 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.extensions.toApplicationDTO
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.application.ports.out.rpc.AnalyticsManagerRPC
+import ai.logsight.backend.application.ports.out.rpc.RPCService
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 @Service
 class ApplicationLifecycleServiceImpl(
     val applicationStorageService: ApplicationStorageService,
-    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: AnalyticsManagerRPC
+    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: RPCService
 ) : ApplicationLifecycleService {
 
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
