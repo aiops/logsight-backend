@@ -41,7 +41,6 @@ import javax.servlet.http.HttpServletRequest
         TokenExpiredException::class,
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class
-
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -51,7 +50,8 @@ import javax.servlet.http.HttpServletRequest
         RuntimeException::class,
         ElasticsearchException::class,
         MailException::class,
-        LogFileIOException::class
+        LogFileIOException::class,
+        Exception::class // Wildcard
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

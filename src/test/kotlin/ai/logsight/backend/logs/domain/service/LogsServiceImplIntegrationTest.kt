@@ -31,7 +31,7 @@ import org.zeromq.ZMQ
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
-class LogsServiceImplTest {
+class LogsServiceImplIntegrationTest {
     @Autowired
     lateinit var applicationRepository: ApplicationRepository
 
