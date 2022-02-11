@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 
 @ConfigurationProperties(prefix = "logsight.application-rpc.zeromq")
 @ConstructorBinding
-class ZeroMqRPCConfigProperties(
+class RPCConfigPropertiesZeroMq(
     val protocol: String = "tcp",
     val host: String = "0.0.0.0",
     val port: Int = 5555,

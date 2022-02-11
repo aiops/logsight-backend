@@ -1,7 +1,7 @@
 package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleServiceImpl
-import ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.AnalyticsManagerZeroMQ
+import ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.RPCServiceZeroMq
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
@@ -61,7 +61,7 @@ class UserControllerIntegrationTest {
     private lateinit var emailService: EmailService
 
     @MockBean
-    private lateinit var analyticsManagerZeroMQ: AnalyticsManagerZeroMQ
+    private lateinit var RPCServiceZeroMq: RPCServiceZeroMq
 
     @MockBean
     private lateinit var applicationLifecycleServiceImpl: ApplicationLifecycleServiceImpl

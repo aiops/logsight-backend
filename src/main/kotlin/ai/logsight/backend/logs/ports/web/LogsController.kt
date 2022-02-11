@@ -36,7 +36,7 @@ class LogsController(
             user = userStorageService.findUserByEmail(authentication.name),
             application = applicationStorageService.findApplicationById(logListRequest.applicationId),
             tag = logListRequest.tag,
-            logFormat = logListRequest.logFormat,
+            logFormat = logListRequest.logFormats,
             logs = logListRequest.logs
         )
         val logsReceipt = logsService.processLogBatch(logBatchDTO)
@@ -55,7 +55,7 @@ class LogsController(
             user = userStorageService.findUserByEmail(authentication.name),
             application = applicationStorageService.findApplicationById(logFileRequest.applicationId),
             tag = logFileRequest.tag,
-            logFormat = logFileRequest.logFormat,
+            logFormats = logFileRequest.logFormats,
             file = logFileRequest.file
         )
         val logsReceipt = logsService.processLogFile(logFileDTO)

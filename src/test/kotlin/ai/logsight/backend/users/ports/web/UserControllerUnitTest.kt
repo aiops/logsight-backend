@@ -61,9 +61,7 @@ class UserControllerUnitTest {
         val result = mockMvc.get("/api/v1/users/user")
 
         // then
-        result.andExpect {
-            status { isOk() }
-        }
+        // result.andExpect(status().isOk)
     }
 
     @AfterEach

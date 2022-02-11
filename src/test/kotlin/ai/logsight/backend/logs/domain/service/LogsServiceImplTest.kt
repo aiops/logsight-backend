@@ -4,12 +4,11 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.logs.domain.LogFormat
+import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.TopicJsonSerializer
-import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfig
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -59,7 +58,7 @@ class LogsServiceImplTest {
         private const val logMessage = "Hello World"
         private const val source = "test"
         private const val tag = "default"
-        private val format = LogFormat.UNKNOWN_FORMAT.toString()
+        private val format = LogFormats.UNKNOWN_FORMAT.toString()
 
         val logMessages = List(numMessages) { logMessage }
 

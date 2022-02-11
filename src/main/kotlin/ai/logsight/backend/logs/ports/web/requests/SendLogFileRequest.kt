@@ -1,11 +1,10 @@
 package ai.logsight.backend.logs.ports.web.requests
 
-import ai.logsight.backend.logs.domain.LogFormat
+import ai.logsight.backend.logs.domain.LogFormats
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
 
 data class SendLogFileRequest(
     @get:NotNull(message = "applicationId must not be empty.")
@@ -15,5 +14,5 @@ data class SendLogFileRequest(
     @get:NotEmpty(message = "tag must not be empty")
     val tag: String = "default",
     @get:NotNull(message = "logFormat must not be empty.")
-    val logFormat: LogFormat = LogFormat.UNKNOWN_FORMAT
+    val logFormats: LogFormats = LogFormats.UNKNOWN_FORMAT
 )
