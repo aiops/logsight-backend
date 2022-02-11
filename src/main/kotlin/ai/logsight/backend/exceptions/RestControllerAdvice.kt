@@ -9,11 +9,7 @@ import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.exceptions.TokenNotFoundException
-import ai.logsight.backend.users.exceptions.EmailExistsException
-import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
-import ai.logsight.backend.users.exceptions.UserExistsException
-import ai.logsight.backend.users.exceptions.UserNotActivatedException
-import ai.logsight.backend.users.exceptions.UserNotFoundException
+import ai.logsight.backend.users.exceptions.*
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -40,8 +36,8 @@ import javax.servlet.http.HttpServletRequest
         EmailExistsException::class,
         TokenExpiredException::class,
         ApplicationAlreadyCreatedException::class,
-        ApplicationStatusException::class
-
+        ApplicationStatusException::class,
+        UserAlreadyActivatedException::class
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
