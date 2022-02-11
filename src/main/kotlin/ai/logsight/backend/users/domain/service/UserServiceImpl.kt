@@ -9,6 +9,7 @@ import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
 import ai.logsight.backend.users.exceptions.UserNotActivatedException
 import ai.logsight.backend.users.extensions.toLocalUser
@@ -16,8 +17,10 @@ import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.mail.MailException
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 
 @Service
 class UserServiceImpl(
@@ -38,8 +41,6 @@ class UserServiceImpl(
         }
         // create user
         val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
-        sendActivationEmail(SendActivationEmailCommand(savedUser.email))
-
         // send Activation email
         try {
             sendActivationEmail(SendActivationEmailCommand(savedUser.email))
@@ -53,6 +54,9 @@ class UserServiceImpl(
 
     override fun sendActivationEmail(sendActivationEmailCommand: SendActivationEmailCommand) {
         val user = userStorageService.findUserByEmail(sendActivationEmailCommand.email)
+        if (user.activated){
+            throw UserAlreadyActivatedException()
+        }
         // generate token
         val activationToken = tokenService.createActivationToken(user.id)
         // generate user activation URL
@@ -72,12 +76,22 @@ class UserServiceImpl(
      */
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
         val user = userStorageService.findUserById(activateUserCommand.id)
+        if (user.activated) {
+            throw UserAlreadyActivatedException()
+        }
         val activationToken = tokenService.findTokenById(activateUserCommand.activationToken)
         // check activation token
         tokenService.checkActivationToken(activationToken)
 
         // initialize external services
-        externalServices.initializeServicesForUser(user)
+        // TODO("This can produce an error, what then? @Petar Check if implemented right")
+        try {
+            externalServices.initializeServicesForUser(user)
+        } catch (e: HttpClientErrorException) {
+            if (e.statusCode.value() != HttpStatus.CONFLICT.value()) {
+                throw RuntimeException("External services (kibana, elasticsearch) are not reachable.")
+            }
+        }
 
         // setup predefined timestamps
         timeSelectionService.createPredefinedTimeSelections(user)
@@ -87,6 +101,9 @@ class UserServiceImpl(
 
     override fun changePassword(changePasswordCommand: ChangePasswordCommand): User {
         val user = userStorageService.findUserByEmail(changePasswordCommand.email)
+        if (!user.activated) {
+            throw UserNotActivatedException()
+        }
         return userStorageService.changePassword(
             user.id, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword
         )
@@ -124,6 +141,9 @@ class UserServiceImpl(
      */
     override fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand) {
         val user = userStorageService.findUserByEmail(createTokenCommand.email)
+        if (!user.activated) {
+            throw UserNotActivatedException()
+        }
         val passwordResetToken = tokenService.createPasswordResetToken(user.id)
         // TODO: 01.02.22 Move title of emailContext to config or templates. Should not be here.
         val emailContext = EmailContext(

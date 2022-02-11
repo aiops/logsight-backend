@@ -3,6 +3,7 @@ package ai.logsight.backend.users.ports.out.persistence
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.EmailExistsException
 import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
+import ai.logsight.backend.users.exceptions.UserNotActivatedException
 import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.extensions.toUser
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -52,6 +53,9 @@ class UserStorageImpl(
     override fun changePassword(id: UUID, newPassword: String, confirmNewPassword: String): User {
         val userEntity = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with id $id doesn't exist in database.") }
+        if(!userEntity.activated){
+            throw UserNotActivatedException()
+        }
 
         if (newPassword != confirmNewPassword) throw PasswordsNotMatchException("Provided passwords do not match. Please retype your password correctly.")
 

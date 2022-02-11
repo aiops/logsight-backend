@@ -80,6 +80,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.3")
     // testing dependencies
     testCompileOnly("org.mockito:mockito-junit-jupiter:4.3.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-inline:4.3.1")
     testCompileOnly("org.assertj:assertj-core:3.22.0")
     testImplementation(kotlin("test"))
