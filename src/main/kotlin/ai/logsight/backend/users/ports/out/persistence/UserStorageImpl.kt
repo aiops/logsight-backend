@@ -36,7 +36,8 @@ class UserStorageImpl(
             activationDate = LocalDateTime.now(),
             hasPaid = true
         )
-        return userRepository.save(userEntity).toUser()
+        return userRepository.save(userEntity)
+            .toUser()
     }
 
     override fun checkEmailExists(email: String): Boolean {
@@ -47,13 +48,14 @@ class UserStorageImpl(
         val userEntity = userRepository.findByEmail(email)
             ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
         userEntity.activated = true
-        return userRepository.save(userEntity).toUser()
+        return userRepository.save(userEntity)
+            .toUser()
     }
 
     override fun changePassword(id: UUID, newPassword: String, confirmNewPassword: String): User {
         val userEntity = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with id $id doesn't exist in database.") }
-        if(!userEntity.activated){
+        if (!userEntity.activated) {
             throw UserNotActivatedException()
         }
 
@@ -62,15 +64,18 @@ class UserStorageImpl(
         // change password
         userEntity.password = passwordEncoder.encode(newPassword)
         // save changes
-        return userRepository.save(userEntity).toUser()
+        return userRepository.save(userEntity)
+            .toUser()
     }
 
     override fun findUserById(userId: UUID): User =
         userRepository.findById(userId)
-            .orElseThrow { UserNotFoundException("User with email $userId doesn't exist in database.") }.toUser()
+            .orElseThrow { UserNotFoundException("User with email $userId doesn't exist in database.") }
+            .toUser()
 
     override fun findUserByEmail(email: String): User =
-        userRepository.findByEmail(email)?.toUser()
+        userRepository.findByEmail(email)
+            ?.toUser()
             ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
 
     override fun deleteUser(id: UUID) {

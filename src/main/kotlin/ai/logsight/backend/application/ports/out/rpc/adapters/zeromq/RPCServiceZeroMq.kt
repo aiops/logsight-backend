@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
 
-@Service
-@Qualifier("ZeroMQ")
-class RPCServiceZeroMq(
+@Service @Qualifier("ZeroMQ") class RPCServiceZeroMq(
     val zeroMqRPCSocket: ZMQ.Socket,
     val xSync: XSync<String>
 ) : RPCService {
@@ -37,14 +35,13 @@ class RPCServiceZeroMq(
         xSync.execute("logsight-rpc") { // TODO Move mutex definitions to somewhere else
             zeroMqRPCSocket.send(mapper.writeValueAsString(applicationDTO))
             var respId = ""
-            while(applicationDTO.id.toString() != respId) {
+            while (applicationDTO.id.toString() != respId) {
                 message = zeroMqRPCSocket.recv()
                 respId = message?.let { mapper.readValue<RPCResponse>(it.decodeToString()).id } ?: break
             }
         }
-        return message?.let { mapper.readValue<RPCResponse>(it.decodeToString()) }
-            ?: throw ApplicationRemoteException(
-                "Timeout while waiting for RPC reply to ${applicationDTO.action} application ${applicationDTO.name}."
-            )
+        return message?.let { mapper.readValue<RPCResponse>(it.decodeToString()) } ?: throw ApplicationRemoteException(
+            "Timeout while waiting for RPC reply to ${applicationDTO.action} application ${applicationDTO.name}."
+        )
     }
 }

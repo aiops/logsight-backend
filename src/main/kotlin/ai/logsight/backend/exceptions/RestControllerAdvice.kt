@@ -2,6 +2,7 @@ package ai.logsight.backend.exceptions
 
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
+import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.logs.exceptions.LogFileIOException
@@ -10,6 +11,7 @@ import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.users.exceptions.*
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,7 +23,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import javax.naming.AuthenticationException
 import javax.servlet.http.HttpServletRequest
 
-@ControllerAdvice class RestControllerAdvice {
+@ControllerAdvice
+class RestControllerAdvice {
 
     @ExceptionHandler(
         BadCredentialsException::class, AuthenticationException::class
@@ -35,6 +38,7 @@ import javax.servlet.http.HttpServletRequest
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
+        EmailExistsException::class,
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class
@@ -47,7 +51,8 @@ import javax.servlet.http.HttpServletRequest
         RuntimeException::class,
         ElasticsearchException::class,
         MailException::class,
-        LogFileIOException::class
+        LogFileIOException::class,
+        ApplicationRemoteException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
@@ -61,13 +66,14 @@ import javax.servlet.http.HttpServletRequest
         InvalidTokenTypeException::class,
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
+        MissingKotlinParameterException::class,
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)
     }
 
     @ExceptionHandler(
-        MethodArgumentNotValidException::class
+        MethodArgumentNotValidException::class,
     )
     fun handleValidationException(
         request: HttpServletRequest,

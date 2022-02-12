@@ -1,16 +1,16 @@
 package ai.logsight.backend.users.ports.web
 
-import ai.logsight.backend.exceptions.ErrorResponse
 import ai.logsight.backend.users.domain.service.UserService
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.web.request.*
-import ai.logsight.backend.users.ports.web.response.*
+import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
+import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
+import ai.logsight.backend.users.ports.web.response.CreateUserResponse
+import ai.logsight.backend.users.ports.web.response.GetUserResponse
+import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
-import io.swagger.annotations.ApiResponse
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
@@ -38,7 +38,7 @@ class UserController(
      * Register a new user in the system.
      */
     @ApiOperation("Register new user")
-    @PostMapping("/register")
+    @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
         val createUserCommand = CreateUserCommand(
@@ -71,10 +71,14 @@ class UserController(
     @ApiOperation("Change password to existing and logged in user")
     @PostMapping("/change_password")
     @ResponseStatus(HttpStatus.OK)
-    fun changePassword(authentication: Authentication, @Valid @RequestBody changePasswordRequest: ChangePasswordRequest): ChangePasswordResponse {
+    fun changePassword(
+        authentication: Authentication,
+        @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
+    ): ChangePasswordResponse {
         val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
         val changePasswordCommand = ChangePasswordCommand(
             email = user.email,
+            oldPassword = changePasswordRequest.oldPassword,
             newPassword = changePasswordRequest.newPassword,
             confirmNewPassword = changePasswordRequest.repeatNewPassword
         )
@@ -105,7 +109,7 @@ class UserController(
     @ApiOperation("Send reset password link")
     @PostMapping("/forgot_password")
     @ResponseStatus(HttpStatus.OK)
-    fun resetUserPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
+    fun forgotPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
         userService.generateForgotPasswordTokenAndSendEmail(CreateTokenCommand(forgotPasswordRequest.email))
     }
 
@@ -115,7 +119,7 @@ class UserController(
     @ApiOperation("Send activation email")
     @PostMapping("/resend_activation")
     @ResponseStatus(HttpStatus.OK)
-    fun resetUserPassword(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
+    fun resendActivationEmail(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
         userService.sendActivationEmail(SendActivationEmailCommand(resendActivationEmailRequest.email))
     }
 

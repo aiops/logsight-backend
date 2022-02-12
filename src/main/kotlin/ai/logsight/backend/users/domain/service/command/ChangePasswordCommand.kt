@@ -8,6 +8,9 @@ data class ChangePasswordCommand(
     val email: String,
 
     @get:Size(min = 8)
+    val oldPassword: String,
+
+    @get:Size(min = 8)
     val newPassword: String,
 
     @get:Size(min = 8)

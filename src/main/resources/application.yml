@@ -1,11 +1,4 @@
 spring:
-  security:
-
-
-  elasticsearch:
-    username: "elastic"
-    password: "elasticsearchpassword"
-    uris: "localhost:9200"
   main:
     banner-mode: "off"
   jpa:

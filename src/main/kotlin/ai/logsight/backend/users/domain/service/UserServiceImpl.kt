@@ -9,6 +9,7 @@ import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
 import ai.logsight.backend.users.exceptions.UserNotActivatedException
@@ -54,7 +55,7 @@ class UserServiceImpl(
 
     override fun sendActivationEmail(sendActivationEmailCommand: SendActivationEmailCommand) {
         val user = userStorageService.findUserByEmail(sendActivationEmailCommand.email)
-        if (user.activated){
+        if (user.activated) {
             throw UserAlreadyActivatedException()
         }
         // generate token
@@ -103,6 +104,9 @@ class UserServiceImpl(
         val user = userStorageService.findUserByEmail(changePasswordCommand.email)
         if (!user.activated) {
             throw UserNotActivatedException()
+        }
+        if (user.password != changePasswordCommand.oldPassword) {
+            throw PasswordsNotMatchException("Invalid password. Please retype your old password correctly.")
         }
         return userStorageService.changePassword(
             user.id, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword

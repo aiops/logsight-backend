@@ -1,41 +1,50 @@
 package ai.logsight.backend.application.ports.web
 
+import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
+import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
+import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
+import ai.logsight.backend.application.exceptions.ApplicationRemoteException
+import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.out.rpc.RPCService
-import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
-import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
+import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
-import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.LogStreamZeroMq
-import ai.logsight.backend.users.extensions.toUser
-import ai.logsight.backend.users.ports.out.persistence.UserEntity
+import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
+import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
-import ai.logsight.backend.users.ports.out.persistence.UserType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import io.mockk.impl.annotations.SpyK
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.delete
+import org.springframework.test.web.servlet.post
+import org.springframework.web.bind.MethodArgumentNotValidException
+import java.util.*
 
-@SpringBootTest @AutoConfigureMockMvc @ActiveProfiles("test") class ApplicationLifecycleControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class ApplicationLifecycleControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -45,34 +54,27 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
     @Autowired
     private lateinit var appRepository: ApplicationRepository
 
-    @SpyK
-    @Autowired
-    @Qualifier("ZeroMQ")
-    private lateinit var RPCService: RPCService
-
     @MockBean
-    private lateinit var logStreamZeroMq: LogStreamZeroMq
+    @Qualifier("ZeroMQ")
+    private lateinit var analyticsManagerAppRPC: RPCService
 
     companion object {
-        const val baseEmail = "testemail@gmail.com"
         const val endpoint = "/api/v1/applications"
-        const val appName = "testApp"
-        val userEntity = UserEntity(
-            email = baseEmail, password = "testpassword", userType = UserType.ONLINE_USER, activated = true
-        )
-        val user = userEntity.toUser()
-
-        val baseApp = ApplicationEntity(name = appName, user = userEntity, status = ApplicationStatus.CREATING)
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
     }
 
-    @Nested @DisplayName("POST /api/v1/applications") @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    @WithMockUser(username = baseEmail) inner class GetApplications {
+    @Nested
+    @DisplayName("POST /api/v1/applications")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @WithMockUser(username = TestInputConfig.baseEmail)
+    inner class CreateApplication {
 
         @BeforeAll
         fun setup() {
-            userRepository.save(userEntity)
-            appRepository.save(baseApp)
+            userRepository.deleteAll()
+            appRepository.deleteAll()
+            userRepository.save(TestInputConfig.baseUserEntity)
+            appRepository.save(TestInputConfig.baseAppEntity)
         }
 
         @AfterAll
@@ -85,89 +87,117 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
         fun `should create a new Application successfully`() {
             // given
             val request = CreateApplicationRequest("application")
-            val appDto = ApplicationDTO(user.id, appName, user.key, action = ApplicationDTOActions.CREATE)
-//            every { analyticsManagerRPC.createApplication(any()) } returns RPCResponse(
-//                "UUID",
-//                "message",
-//                200
-//            )
-            // when
-            val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(request)).with(
-                        SecurityMockMvcRequestPostProcessors.csrf()
-                    )
+
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
             )
-            val applicationId = appRepository.findByUserAndName(userEntity, request.applicationName)!!.id
+            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+                .thenReturn(response)
+            // when\
+            val result = mockMvc.post(endpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+
             // then
+            Assertions.assertNotNull(
+                appRepository.findByUserAndName(
+                    TestInputConfig.baseUserEntity, request.applicationName
+                )
+            )
+            val applicationId =
+                appRepository.findByUserAndName(TestInputConfig.baseUserEntity, request.applicationName)!!.id
+            Assertions.assertEquals(
+                appRepository.findById(applicationId)
+                    .get().status,
+                ApplicationStatus.READY
+            )
             result.andExpect {
-                status().isCreated
-            }.andExpect {
-                content().json(
-                    mapper.writeValueAsString(
-                        CreateApplicationResponse(
-                            request.applicationName, applicationId
+                status { isCreated() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            CreateApplicationResponse(
+                                request.applicationName, applicationId
+                            )
                         )
                     )
-                )
-            }.andDo(MockMvcResultHandlers.print())
+                }
+            }
+                .andReturn().response.contentAsString
         }
 
         private fun getInvalidNames(): List<Arguments> {
-            return listOf("", "application!", "Application", "application-32").map { x -> Arguments.of(x) }
+            return mapOf(
+                "Empty String" to "",
+                "Invalid symbol '!'" to "application!",
+                "uppercase letter" to "Application",
+                "dash in name" to "application-32"
+            ).map { x -> Arguments.of(x.key, x.value) }
         }
 
-        @ParameterizedTest(name = "Bad request for name: {0}")
+        @ParameterizedTest(name = "Bad request for {0}. Value: \"{1}\"")
         @MethodSource("getInvalidNames")
-        fun `should return bad request for invalid input`(name: String) {
+        fun `should return bad request for invalid input`(
+            reason: String,
+            name: String
+        ) {
             // given
             val request = CreateApplicationRequest(name)
             // when
-            val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(request)).with(
-                        SecurityMockMvcRequestPostProcessors.csrf()
-                    )
-            )
+            val result = mockMvc.post(endpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
             // then
-            result.andExpect {
-                status().isBadRequest
-            }.andDo(MockMvcResultHandlers.print())
+            val exception = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exception is MethodArgumentNotValidException)
         }
 
         @Test
         @WithMockUser(username = "invalidUser@gmail.com")
         fun `should return error if user is not created`() {
             // given
-            val request = CreateApplicationRequest(appName)
+            val request = CreateApplicationRequest("app_name")
             // when
-            val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(request)).with(
-                        SecurityMockMvcRequestPostProcessors.csrf()
-                    )
-            )
+            val result = mockMvc.post(endpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
             // then
-            result.andExpect {
-                status().isBadRequest
-            }.andDo(MockMvcResultHandlers.print())
+            val exc = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is UserNotFoundException)
         }
 
         @Test
         fun `should return conflict if App already exists in database`() {
             // given
-            val request = CreateApplicationRequest(appName)
+            val request = CreateApplicationRequest(TestInputConfig.baseAppName)
             // when
-            val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(request)).with(
-                        SecurityMockMvcRequestPostProcessors.csrf()
-                    )
-            )
+            val result = mockMvc.post(endpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
             // then
-            result.andExpect {
-                status().isConflict
-            }.andDo(MockMvcResultHandlers.print())
+            val exc = result.andExpect {
+                status { isConflict() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is ApplicationAlreadyCreatedException)
         }
 
         @Test
@@ -175,24 +205,205 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
             // given
             val appName = "valid_app"
             val request = CreateApplicationRequest(appName)
-            val appDto = ApplicationDTO(user.id, appName, user.key, action = ApplicationDTOActions.CREATE)
 
             // when
-//            every { analyticsManagerRPC.createApplication(appDto) } throws ApplicationRemoteException("msg")
-            val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(endpoint).contentType(MediaType.APPLICATION_JSON)
-                    .content(mapper.writeValueAsString(request)).with(
-                        SecurityMockMvcRequestPostProcessors.csrf()
-                    )
-            )
+            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+                .thenThrow(ApplicationRemoteException())
+
+            val result = mockMvc.post(endpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
 
             // then
+            val exc = result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is ApplicationRemoteException)
+            // check if it is deleted
+            Assertions.assertNull(appRepository.findByUserAndName(TestInputConfig.baseUserEntity, appName))
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE /api/v1/applications/<appId>")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @WithMockUser(username = TestInputConfig.baseEmail)
+    inner class DeleteApplication {
+
+        @BeforeAll
+        fun setup() {
+            userRepository.deleteAll()
+            appRepository.deleteAll()
+            userRepository.save(TestInputConfig.baseUserEntity)
+            appRepository.save(TestInputConfig.baseAppEntity)
+        }
+
+        @AfterAll
+        fun teardown() {
+            userRepository.deleteAll()
+            appRepository.deleteAll()
+        }
+
+        @BeforeEach
+        fun initApp() {
+            appRepository.deleteAll()
+            appRepository.save(TestInputConfig.baseAppEntity)
+        }
+
+        @Test
+        fun `should delete an Application successfully`() {
+            // given
+            val appId = TestInputConfig.baseApp.id
+            val deleteEndpoint = "$endpoint/$appId"
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
+            )
+            Mockito.`when`(analyticsManagerAppRPC.deleteApplication(any()))
+                .thenReturn(response)
+            // when\
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+
+            // then
+            Assertions.assertNull(
+                appRepository.findByIdOrNull(appId)
+            ) // check if is deleted from db
+
             result.andExpect {
-                status().isInternalServerError
-            }.andDo(MockMvcResultHandlers.print())
-            // is deleted from database
-            val app = appRepository.findByUserAndName(userEntity, appName)
-            Assertions.assertNull(app)
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            DeleteApplicationResponse(
+                                TestInputConfig.baseApp.name, TestInputConfig.baseApp.id
+                            )
+                        )
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `should return bad request for invalid input`() {
+            // given
+            val invalidId = "application"
+            val deleteEndpoint = "$endpoint/$invalidId"
+            // when
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
+            )
+            Mockito.`when`(analyticsManagerAppRPC.deleteApplication(any()))
+                .thenReturn(response)
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            val exception = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exception is MethodArgumentNotValidException)
+        }
+
+        @Test
+        @WithMockUser(username = "invalidUser@gmail.com")
+        fun `should return error if user is not created`() {
+            // given
+            val appId = TestInputConfig.baseApp.id
+            val deleteEndpoint = "$endpoint/$appId"
+            // when
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            val exception = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exception is UserNotFoundException)
+        }
+
+        @Test
+        fun `should return conflict if App doesn't exist in database`() {
+            // given
+            val appId = UUID.randomUUID()
+            val deleteEndpoint = "$endpoint/$appId"
+            // when
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            val exc = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is ApplicationNotFoundException)
+        }
+
+        @Test
+        fun `should delete application and throw error if backend fails`() {
+            // given
+            val appId = TestInputConfig.baseApp.id
+            val deleteEndpoint = "$endpoint/$appId"
+
+            // when
+            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+                .thenThrow(ApplicationRemoteException())
+
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+
+            // then
+            val exc = result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is ApplicationRemoteException)
+            // check if it is deleted
+            Assertions.assertNull(appRepository.findByIdOrNull(appId))
+        }
+
+        @Test
+        fun `should throw error if application is still CREATING`() {
+            // given
+            val appId = TestInputConfig.baseApp.id
+            val deleteEndpoint = "$endpoint/$appId"
+            val appCreating = TestInputConfig.baseApp.toApplicationEntity()
+            appCreating.status = ApplicationStatus.CREATING
+            appRepository.save(appCreating)
+
+            // when
+            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+                .thenThrow(ApplicationRemoteException())
+
+            val result = mockMvc.delete(deleteEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+
+            // then
+            val exc = result.andExpect {
+                status { isConflict() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            assertThat(exc is ApplicationStatusException)
         }
     }
 }
