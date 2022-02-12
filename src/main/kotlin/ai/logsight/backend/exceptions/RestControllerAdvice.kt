@@ -52,6 +52,8 @@ class RestControllerAdvice {
         ElasticsearchException::class,
         MailException::class,
         LogFileIOException::class,
+        Exception::class // Wildcard
+        LogFileIOException::class,
         ApplicationRemoteException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
@@ -73,7 +75,7 @@ class RestControllerAdvice {
     }
 
     @ExceptionHandler(
-        MethodArgumentNotValidException::class,
+        MethodArgumentNotValidException::class
     )
     fun handleValidationException(
         request: HttpServletRequest,
