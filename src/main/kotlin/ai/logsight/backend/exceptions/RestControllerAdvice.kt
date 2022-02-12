@@ -52,9 +52,8 @@ class RestControllerAdvice {
         ElasticsearchException::class,
         MailException::class,
         LogFileIOException::class,
+        ApplicationRemoteException::class,
         Exception::class // Wildcard
-        LogFileIOException::class,
-        ApplicationRemoteException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
