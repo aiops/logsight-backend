@@ -19,6 +19,7 @@ import ai.logsight.backend.users.ports.web.response.GetUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -31,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
@@ -370,8 +372,8 @@ class UserControllerIntegrationTest {
 
         private fun getInvalidActivateRequests(): List<Arguments> {
             return mapOf(
-                "Invalid User" to "{\"id\":null, \"activationToken\":\"${UUID.randomUUID()}\"",
-                "Invalid token" to "{\"id\":\"${TestInputConfig.baseUser.id}\", \"activationToken\":\"\"}",
+                "Invalid User" to mapper.writeValueAsString(mapOf("activationToken" to UUID.randomUUID())),
+                "Invalid token" to mapper.writeValueAsString(mapOf("id" to TestInputConfig.baseUser.id, "activationToken" to "")),
 
             ).map { x -> Arguments.of(x.key, x.value) }
         }
@@ -395,7 +397,7 @@ class UserControllerIntegrationTest {
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
-            Assertions.assertThat(exception is MethodArgumentNotValidException)
+            Assertions.assertThat(exception is HttpMessageNotReadableException)
         }
 
         @Test
