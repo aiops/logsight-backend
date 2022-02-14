@@ -5,16 +5,20 @@ import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.service.UserService
 import ai.logsight.backend.users.domain.service.command.*
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.domain.service.query.FindUserQuery
 import ai.logsight.backend.users.ports.web.request.*
-import ai.logsight.backend.users.ports.web.response.*
+import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
+import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
+import ai.logsight.backend.users.ports.web.response.CreateUserResponse
+import ai.logsight.backend.users.ports.web.response.GetUserResponse
+import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import java.util.*
 import javax.validation.Valid
 
 @Api(tags = ["Users"], description = " ")
@@ -27,15 +31,13 @@ class UserController(
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
 
     @ApiOperation("Get authenticated user")
-    @GetMapping("/user")
+    @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    fun getUser(
-        authentication: Authentication
-    ): GetUserResponse {
-        logger.info("Getting information for the already authenticated user.", this::getUser.name)
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
+    fun getUser(@PathVariable userId: UUID): GetUserResponse {
+        logger.info("Getting information for the already authenticated user.")
+        val user = userService.findUser(FindUserQuery(userId))
         logger.info("User found in database. Sending response.", this::getUser.name)
-        return GetUserResponse(user.id, user.email)
+        return GetUserResponse(user.id)
     }
 
     /**
@@ -46,13 +48,12 @@ class UserController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
         val createUserCommand = CreateUserCommand(
-            email = createUserRequest.email,
-            password = createUserRequest.password
+            email = createUserRequest.email, password = createUserRequest.password
         )
         logger.info("Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name)
         val user = userService.createUser(createUserCommand)
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
-        return CreateUserResponse(id = user.id, email = user.email)
+        return CreateUserResponse(id = user.id)
     }
 
     /**
@@ -64,12 +65,11 @@ class UserController(
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
         logger.info("Activating user ${activateUserRequest.id}.", this::activateUser.name)
         val activateUserCommand = ActivateUserCommand(
-            id = activateUserRequest.id,
-            activationToken = activateUserRequest.activationToken
+            id = activateUserRequest.id, activationToken = activateUserRequest.activationToken
         )
         val activatedUser = userService.activateUser(activateUserCommand)
         logger.info("User ${activateUserRequest.id} successfully activated.", this::activateUser.name)
-        return ActivateUserResponse(id = activatedUser.id, email = activatedUser.email)
+        return ActivateUserResponse(id = activatedUser.id)
     }
 
     /**
@@ -79,10 +79,9 @@ class UserController(
     @PostMapping("/change_password")
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(
-        authentication: Authentication,
         @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
     ): ChangePasswordResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
+        val user = userService.findUser(FindUserQuery(changePasswordRequest.id))
         val changePasswordCommand = ChangePasswordCommand(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,
@@ -92,7 +91,7 @@ class UserController(
         logger.info("Starting the process for changing password of a user ${user.id}.", this::changePassword.name)
         val modifiedUser = userService.changePassword(changePasswordCommand)
         logger.info("Password changed for a user ${user.id}.", this::changePassword.name)
-        return ChangePasswordResponse(id = modifiedUser.id, email = modifiedUser.email)
+        return ChangePasswordResponse(id = modifiedUser.id)
     }
 
     /**
@@ -109,12 +108,11 @@ class UserController(
             id = resetPasswordRequest.id
         )
         logger.info(
-            "Starting the process for reset password of a user ${resetPasswordRequest.id}.",
-            this::resetPassword.name
+            "Starting the process for reset password of a user ${resetPasswordRequest.id}.", this::resetPassword.name
         )
         val modifiedUser = userService.resetPasswordWithToken(resetPasswordCommand)
         logger.info("Password reset successfully for user ${resetPasswordRequest.id}.", this::resetPassword.name)
-        return ResetPasswordResponse(id = modifiedUser.id, email = modifiedUser.email)
+        return ResetPasswordResponse(id = modifiedUser.id)
     }
 
     /**
@@ -144,8 +142,7 @@ class UserController(
         try {
             userService.createLocalUser(
                 CreateUserCommand(
-                    email = "clientadmin@logsight.ai",
-                    password = "samplepassword"
+                    email = "clientadmin@logsight.ai", password = "samplepassword"
                 )
             )
         } catch (e: Exception) {

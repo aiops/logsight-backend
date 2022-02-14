@@ -2,14 +2,12 @@ package ai.logsight.backend.timeselection.ports.web
 
 import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.timeselection.ports.web.request.PredefinedTimeRequest
+import ai.logsight.backend.timeselection.ports.web.response.CreateTimeSelectionResponse
+import ai.logsight.backend.timeselection.ports.web.response.DeleteTimeSelectionResponse
+import ai.logsight.backend.timeselection.ports.web.response.TimeSelectionResponse
 import ai.logsight.backend.users.domain.service.UserService
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
-import ai.logsight.backend.users.ports.web.response.CreateTimeSelectionResponse
-import ai.logsight.backend.users.ports.web.response.DeleteTimeSelectionResponse
-import ai.logsight.backend.users.ports.web.response.TimeSelectionResponse
-import io.swagger.v3.oas.annotations.Hidden
+import ai.logsight.backend.users.domain.service.query.FindUserQuery
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.*
@@ -19,7 +17,7 @@ import javax.validation.constraints.Pattern
 
 @ApiIgnore
 @RestController
-@RequestMapping("/api/v1/time_ranges")
+@RequestMapping("/api/v1/users/{userId}/time_ranges")
 class TimeSelectionController(
     val userService: UserService,
     val timeSelectionService: TimeSelectionService
@@ -28,39 +26,35 @@ class TimeSelectionController(
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getTimeSelections(
-        authentication: Authentication
+        @PathVariable userId: UUID
     ): TimeSelectionResponse {
-        val response = TimeSelectionResponse(
+        return TimeSelectionResponse(
             timeSelectionService.findAllByUser(
-                userService.findUserByEmail(
-                    FindUserByEmailQuery(
-                        authentication.name
-                    )
-                )
+                userService.findUser(FindUserQuery(userId))
             )
         )
-        return response
     }
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createTimeSelection(
-        authentication: Authentication,
+        @PathVariable userId: UUID,
         @Valid @RequestBody request: PredefinedTimeRequest
     ): CreateTimeSelectionResponse {
-        val user = userService.findUserByEmail(FindUserByEmailQuery(authentication.name))
-        return CreateTimeSelectionResponse(timeSelectionService.createTimeSelection(user, request))
+        val user = userService.findUser(FindUserQuery(userId))
+        return CreateTimeSelectionResponse(timeSelection = timeSelectionService.createTimeSelection(user, request))
     }
 
     @DeleteMapping("/{timeSelectionId}")
     @ResponseStatus(HttpStatus.OK)
     fun deleteTimeSelection(
-        authentication: Authentication,
+        @PathVariable userId: UUID,
         @Valid @NotEmpty(message = "timeSelectionId must not be empty.") @Pattern(
             regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
             message = "timeSelectionId must be UUID type."
         ) @PathVariable timeSelectionId: UUID
     ): DeleteTimeSelectionResponse {
+
         timeSelectionService.deleteTimeSelection(timeSelectionId)
         return DeleteTimeSelectionResponse(timeSelectionId)
     }

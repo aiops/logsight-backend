@@ -69,7 +69,8 @@ class RestControllerAdvice {
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
         MissingKotlinParameterException::class,
-        HttpMessageNotReadableException::class
+        HttpMessageNotReadableException::class,
+        IllegalArgumentException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)

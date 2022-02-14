@@ -1,4 +1,4 @@
-package ai.logsight.backend.users.ports.web.response
+package ai.logsight.backend.timeselection.ports.web.response
 
 import java.util.*
 

@@ -3,11 +3,11 @@ package ai.logsight.backend.users.ports.web
 import ai.logsight.backend.security.UserDetailsServiceImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.UserService
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -38,7 +38,7 @@ class UserControllerUnitTest {
     fun `should return valid get user response when the user exists`() {
         // given
         val userId = UUID.randomUUID()
-        Mockito.`when`(userService.findUserByEmail(FindUserByEmailQuery("sasho@sasho.com")))
+        Mockito.`when`(userService.findUser(any()))
             .thenReturn(createUserObject(id = userId))
 
         // when
@@ -54,7 +54,7 @@ class UserControllerUnitTest {
     fun `should return invalid get user response when the user does not exists`() {
         // given
         val userId = UUID.randomUUID()
-        Mockito.`when`(userService.findUserByEmail(FindUserByEmailQuery("k@sasho.com")))
+        Mockito.`when`(userService.findUser(any()))
             .thenReturn(createUserObject(id = userId))
 
         // when

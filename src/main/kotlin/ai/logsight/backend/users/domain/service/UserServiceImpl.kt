@@ -9,6 +9,7 @@ import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
+import ai.logsight.backend.users.domain.service.query.FindUserQuery
 import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
@@ -129,6 +130,10 @@ class UserServiceImpl(
         )
     }
 
+    override fun findUser(findUserQuery: FindUserQuery): User {
+        return userStorageService.findUserById(findUserQuery.userId)
+    }
+
     override fun findUserByEmail(findUserByEmailQuery: FindUserByEmailQuery): User {
         return userStorageService.findUserByEmail(findUserByEmailQuery.email)
     }
@@ -158,7 +163,9 @@ class UserServiceImpl(
             title = "Reset your password",
             template = EmailTemplateTypes.RESET_PASSWORD_EMAIL
         )
-        logger.info("Sending password reset email to user ${user.id}", this::generateForgotPasswordTokenAndSendEmail.name)
+        logger.info(
+            "Sending password reset email to user ${user.id}", this::generateForgotPasswordTokenAndSendEmail.name
+        )
         emailService.sendPasswordResetEmail(emailContext)
     }
 }

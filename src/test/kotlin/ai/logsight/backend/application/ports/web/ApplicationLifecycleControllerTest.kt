@@ -59,15 +59,16 @@ class ApplicationLifecycleControllerTest {
     private lateinit var analyticsManagerAppRPC: RPCService
 
     companion object {
-        const val endpoint = "/api/v1/applications"
+        const val endpoint = "/api/v1/users"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
     }
 
     @Nested
-    @DisplayName("POST /api/v1/applications")
+    @DisplayName("POST $endpoint/{userId}/applications")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class CreateApplication {
+        private val createEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications"
 
         @BeforeAll
         fun setup() {
@@ -94,7 +95,7 @@ class ApplicationLifecycleControllerTest {
             Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
                 .thenReturn(response)
             // when\
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -147,7 +148,7 @@ class ApplicationLifecycleControllerTest {
             // given
             val request = CreateApplicationRequest(name)
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -162,12 +163,12 @@ class ApplicationLifecycleControllerTest {
         }
 
         @Test
-        @WithMockUser(username = "invalidUser@gmail.com")
         fun `should return error if user is not created`() {
             // given
+            val createEndpoint = "$endpoint/${UUID.randomUUID()}/applications"
             val request = CreateApplicationRequest("app_name")
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -186,7 +187,7 @@ class ApplicationLifecycleControllerTest {
             // given
             val request = CreateApplicationRequest(TestInputConfig.baseAppName)
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -210,7 +211,7 @@ class ApplicationLifecycleControllerTest {
             Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
                 .thenThrow(ApplicationRemoteException())
 
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -258,7 +259,7 @@ class ApplicationLifecycleControllerTest {
         fun `should delete an Application successfully`() {
             // given
             val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/$appId"
+            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
             val response = RPCResponse(
                 TestInputConfig.baseAppEntity.id.toString(), "message", 200
             )
@@ -294,7 +295,7 @@ class ApplicationLifecycleControllerTest {
         fun `should return bad request for invalid input`() {
             // given
             val invalidId = "application"
-            val deleteEndpoint = "$endpoint/$invalidId"
+            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$invalidId"
             // when
             val response = RPCResponse(
                 TestInputConfig.baseAppEntity.id.toString(), "message", 200
@@ -319,7 +320,7 @@ class ApplicationLifecycleControllerTest {
         fun `should return error if user is not created`() {
             // given
             val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/$appId"
+            val deleteEndpoint = "$endpoint/${UUID.randomUUID()}/applications/$appId"
             // when
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -338,7 +339,7 @@ class ApplicationLifecycleControllerTest {
         fun `should return conflict if App doesn't exist in database`() {
             // given
             val appId = UUID.randomUUID()
-            val deleteEndpoint = "$endpoint/$appId"
+            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
             // when
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -357,7 +358,7 @@ class ApplicationLifecycleControllerTest {
         fun `should delete application and throw error if backend fails`() {
             // given
             val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/$appId"
+            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
 
             // when
             Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
@@ -383,7 +384,7 @@ class ApplicationLifecycleControllerTest {
         fun `should throw error if application is still CREATING`() {
             // given
             val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/$appId"
+            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
             val appCreating = TestInputConfig.baseApp.toApplicationEntity()
             appCreating.status = ApplicationStatus.CREATING
             appRepository.save(appCreating)

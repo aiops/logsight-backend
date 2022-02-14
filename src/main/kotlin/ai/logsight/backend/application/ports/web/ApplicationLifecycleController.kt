@@ -15,7 +15,6 @@ import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
@@ -24,7 +23,7 @@ import javax.validation.constraints.Pattern
 
 @Api(tags = ["Applications"], description = " ")
 @RestController
-@RequestMapping("/api/v1/applications")
+@RequestMapping("/api/v1/users/{userId}/applications")
 class ApplicationLifecycleController(
     private val userService: UserStorageService,
     private val applicationService: ApplicationLifecycleService,
@@ -37,12 +36,13 @@ class ApplicationLifecycleController(
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
-        authentication: Authentication,
+        @PathVariable userId: UUID,
     ): GetAllApplicationsResponse {
         logger.info("Getting the authenticated user object.", this::getApplications.name)
-        val user = userService.findUserByEmail(authentication.name)
+        val user = userService.findUserById(userId)
         logger.info("User ${user.id} found in the database.", this::getApplications.name)
-        val applications = applicationStorageService.findAllApplicationsByUser(user).map { it.toApplicationResponse() }
+        val applications = applicationStorageService.findAllApplicationsByUser(user)
+            .map { it.toApplicationResponse() }
         logger.info("Returning back the list of applications to user ${user.id}", this::getApplications.name)
         return GetAllApplicationsResponse(
             applications = applications
@@ -56,10 +56,10 @@ class ApplicationLifecycleController(
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createApplication(
-        authentication: Authentication,
+        @PathVariable userId: UUID,
         @Valid @RequestBody createApplicationRequest: CreateApplicationRequest
     ): CreateApplicationResponse {
-        val user = userService.findUserByEmail(authentication.name)
+        val user = userService.findUserById(userId)
         val createApplicationCommand = CreateApplicationCommand(
             applicationName = createApplicationRequest.applicationName,
             user = user
@@ -83,13 +83,13 @@ class ApplicationLifecycleController(
     @DeleteMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(
-        authentication: Authentication,
+        @PathVariable userId: UUID,
         @Valid @PathVariable @Pattern(
             regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
             message = "applicationId must be UUID type."
         ) @NotEmpty(message = "applicationId must not be empty.") applicationId: UUID
     ): DeleteApplicationResponse {
-        val user = userService.findUserByEmail(authentication.name)
+        val user = userService.findUserById(userId)
         val deleteApplicationCommand = DeleteApplicationCommand(
             applicationId = applicationId,
             user = user
