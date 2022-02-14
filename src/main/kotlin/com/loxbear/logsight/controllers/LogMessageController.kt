@@ -207,7 +207,7 @@ class LogMessageController(
         val batchSize = 1000
         var currentSize = 0
         // i set this count as a threshold for how many times we wait without data before exiting the thread. Currently, set to 1 day.
-        val waitingCount = if (elasticsearchPeriod > 0) 86400 / elasticsearchPeriod else 86400
+        val waitingCount = if (elasticsearchPeriod > 0) 86400 / (elasticsearchPeriod / 1000) else 86400
         var countEmpty = 0
         val appLogMap: HashMap<String, ArrayList<LogMessage>> = hashMapOf()
         while (countEmpty < waitingCount) {
@@ -225,13 +225,14 @@ class LogMessageController(
                 } else {
                     countEmpty = 0
                 }
+                logger.info("Received ${data.length()} log messages from elasticsearch.")
 
                 val filteredData = data.filter { d ->
                     val log = JSONObject(d.toString())
                     startTimeVar = log.getJSONObject("_source").getString(elasticsearchTimestampName)
                     log.has("_source") && log.getJSONObject("_source").has("kubernetes")
                 }
-                logger.debug("${data.length() - filteredData.size} log messages were dropped due to missing k8s meta-information.")
+                logger.info("${data.length() - filteredData.size} log messages were dropped due to missing k8s meta-information.")
 
                 val appLogPairs = filteredData.map { d ->
                     val log = JSONObject(d.toString()).getJSONObject("_source")
@@ -255,12 +256,16 @@ class LogMessageController(
                         Pair("default", log.toString())
                     }
                 }
+                logger.info("Mapped ${appLogPairs.size} application and log message pairs.")
+
                 appLogPairs.forEach { appLog ->
                     if (!appLogMap.contains(appLog.first))
                         appLogMap[appLog.first] = arrayListOf()
                     appLogMap[appLog.first]?.add(LogMessage(appLog.second))
                 }
-                if (data.length() < 10000 || currentSize >= batchSize)
+                logger.info("Mapped ${appLogPairs.size} application and log message list.")
+
+                if (data.length() < 1000 || currentSize >= batchSize)
                     break
             }
 
@@ -297,8 +302,10 @@ class LogMessageController(
                 }
             }
             // sleep before polling again.
-            if (currentSize < batchSize)
+            if (currentSize < batchSize) {
+                logger.info("Waiting until next polling period for ${elasticsearchPeriod / 1000} seconds.")
                 Thread.sleep(elasticsearchPeriod)
+            }
         }
     }
 
