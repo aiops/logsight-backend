@@ -44,7 +44,9 @@ class UserServiceImpl(
         val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
         // send Activation email
         try {
+            logger.info("Sending activation email to user ${savedUser.email}", this::createUser.name)
             sendActivationEmail(SendActivationEmailCommand(savedUser.email))
+            logger.info("Activation email successfully sent to user ${savedUser.email}", this::createUser.name)
         } catch (e: MailException) {
             logger.error("Mail was not sent. Communication to mail client failed. Try again.")
         }
@@ -156,6 +158,7 @@ class UserServiceImpl(
             title = "Reset your password",
             template = EmailTemplateTypes.RESET_PASSWORD_EMAIL
         )
+        logger.info("Sending password reset email to user ${user.id}", this::generateForgotPasswordTokenAndSendEmail.name)
         emailService.sendPasswordResetEmail(emailContext)
     }
 }

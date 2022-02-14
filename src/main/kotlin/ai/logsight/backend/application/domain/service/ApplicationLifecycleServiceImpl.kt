@@ -9,8 +9,7 @@ import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.extensions.toApplicationDTO
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.out.rpc.RPCService
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import ai.logsight.backend.common.logging.LoggerImpl
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -20,7 +19,7 @@ class ApplicationLifecycleServiceImpl(
     val applicationStorageService: ApplicationStorageService,
     @Qualifier("ZeroMQ") val analyticsManagerAppRPC: RPCService
 ) : ApplicationLifecycleService {
-    val logger: Logger = LoggerFactory.getLogger(ApplicationLifecycleServiceImpl::class.java)
+    private val logger = LoggerImpl(ApplicationLifecycleServiceImpl::class.java)
 
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
         // Create application
@@ -29,7 +28,10 @@ class ApplicationLifecycleServiceImpl(
         )
 
         fun handleException(message: String) {
-            logger.debug("Rolling back changes. Deleting application")
+            logger.error(
+                "Creating application went wrong. Rolling back changes and deleting application. $message",
+                this::createApplication.name
+            )
             applicationStorageService.deleteApplication(applicationId = application.id)
             throw ApplicationRemoteException(message)
         }
@@ -42,11 +44,13 @@ class ApplicationLifecycleServiceImpl(
                 handleException(response.message)
             }
         } catch (ex: ApplicationRemoteException) {
-            logger.error(ex.message)
             // rollback changes
             handleException(ex.message.toString())
         }
-        logger.info("Application ${application.name} created.")
+        logger.info(
+            "Application ${application.name} created successfully in logsight core. Setting applicationStatus to ${ApplicationStatus.READY}",
+            this::createApplication.name
+        )
         return applicationStorageService.setApplicationStatus(application, ApplicationStatus.READY)
     }
 
@@ -55,6 +59,10 @@ class ApplicationLifecycleServiceImpl(
         if (application.status == ApplicationStatus.CREATING) {
             throw ApplicationStatusException("Application is still creating. Please wait for the application creation process to finish first.")
         }
+        logger.info(
+            "Setting the application status of ${application.id} to ${ApplicationStatus.DELETING}",
+            this::deleteApplication.name
+        )
         applicationStorageService.setApplicationStatus(application, ApplicationStatus.DELETING)
 
         try {
@@ -64,7 +72,7 @@ class ApplicationLifecycleServiceImpl(
                 throw ApplicationRemoteException(response.message)
             }
         } catch (ex: ApplicationRemoteException) {
-            logger.error(ex.message)
+            logger.error(ex.message.toString())
             // rollback changes
             throw ApplicationRemoteException(ex.message)
         } finally {

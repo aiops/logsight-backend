@@ -1,4 +1,4 @@
-package ai.logsight.backend.charts
+package ai.logsight.backend.charts.domain.service
 
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
@@ -14,6 +14,7 @@ import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
 import ai.logsight.backend.charts.rest.request.ChartRequest
 import ai.logsight.backend.common.dto.Credentials
+import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -35,6 +36,8 @@ class ESChartsServiceImpl(
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
+    private val logger = LoggerImpl(ESChartsServiceImpl::class.java)
+
     override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
         // get the String response from elasticsearch and map it into a HeatMapData Object.
         val applicationIndices = getApplicationIndexes(
@@ -42,9 +45,15 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
+        logger.info("Obtained application indices: $applicationIndices.", this::createHeatMap.name)
         val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        logger.info(
+            "Obtained data from elasticsearch indices and successfully converted into an object",
+            this::createHeatMap.name
+        )
         // map the HeatMapDataObject into HeatMapChart Object
         val heatMapSeries = mutableListOf<ChartSeries>()
+        logger.info("Mapping the data to an output chart.", this::createHeatMap.name)
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
@@ -68,10 +77,15 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-
+        logger.info("Obtained application indices: $applicationIndices.", this::createBarChart.name)
         val barChartData =
             mapper.readValue<BarChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        logger.info(
+            "Obtained data from elasticsearch indices and successfully converted into an object",
+            this::createBarChart.name
+        )
         // map the BarChartData into BarChart Object
+        logger.info("Mapping the data to an output chart.", this::createBarChart.name)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -90,9 +104,14 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-
+        logger.info("Obtained application indices: $applicationIndices.", this::createPieChart.name)
         val pieChartData =
             mapper.readValue<PieChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        logger.info(
+            "Obtained data from elasticsearch indices and successfully converted into an object",
+            this::createPieChart.name
+        )
+        logger.info("Mapping the data to an output chart.", this::createPieChart.name)
         val pieChartSeries = mutableListOf<ChartSeriesPoint>()
         pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
             pieChartSeries.add(
@@ -111,8 +130,14 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
+        logger.info("Obtained application indices: $applicationIndices.", this::createTableChart.name)
         val tableChartData =
             mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        logger.info(
+            "Obtained data from elasticsearch indices and successfully converted into an object",
+            this::createTableChart.name
+        )
+        logger.info("Mapping the data to an output chart.", this::createTableChart.name)
         return TableChart(
             data = tableChartData.hits.hits.map {
                 IncidentRow(

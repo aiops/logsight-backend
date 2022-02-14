@@ -1,4 +1,4 @@
-package ai.logsight.backend.charts
+package ai.logsight.backend.charts.domain.service
 
 import ai.logsight.backend.charts.domain.charts.BarChart
 import ai.logsight.backend.charts.domain.charts.HeatmapChart

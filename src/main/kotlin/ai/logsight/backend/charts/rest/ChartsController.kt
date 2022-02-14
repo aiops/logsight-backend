@@ -1,8 +1,9 @@
 package ai.logsight.backend.charts.rest
 
-import ai.logsight.backend.charts.ChartsService
+import ai.logsight.backend.charts.domain.service.ChartsService
 import ai.logsight.backend.charts.rest.request.ChartRequest
 import ai.logsight.backend.charts.rest.response.CreateChartResponse
+import ai.logsight.backend.common.logging.LoggerImpl
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -16,12 +17,15 @@ class ChartsController(
     private val chartsService: ChartsService,
 ) {
 
+    private val logger = LoggerImpl(ChartsController::class.java)
+
     @PostMapping("/heatmap")
     @ResponseStatus(HttpStatus.OK)
     fun createHeatmap(
         authentication: Authentication,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
+        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createHeatMap(query))
@@ -33,6 +37,7 @@ class ChartsController(
         authentication: Authentication,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
+        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createBarChart(query))
@@ -44,6 +49,7 @@ class ChartsController(
         authentication: Authentication,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
+        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createPieChart(query))
@@ -55,6 +61,7 @@ class ChartsController(
         authentication: Authentication,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
+        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(authentication, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createTableChart(query))

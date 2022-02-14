@@ -21,7 +21,11 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
     @Throws(Exception::class)
     override fun configure(http: HttpSecurity) {
         http.cors().and().csrf().disable().authorizeRequests()
-            .antMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/activate").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/reset_password").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/forgot_password").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/resend_activation").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .antMatchers("/v2/api-docs/**").permitAll()
             .antMatchers("/swagger.json").permitAll()
