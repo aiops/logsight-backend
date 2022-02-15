@@ -37,7 +37,7 @@ class UserController(
         logger.info("Getting information for the already authenticated user.")
         val user = userService.findUser(FindUserQuery(userId))
         logger.info("User found in database. Sending response.", this::getUser.name)
-        return GetUserResponse(user.id)
+        return GetUserResponse(user.id, user.email)
     }
 
     /**

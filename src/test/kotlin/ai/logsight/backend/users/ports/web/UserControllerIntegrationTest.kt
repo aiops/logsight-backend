@@ -84,7 +84,7 @@ class UserControllerIntegrationTest {
         @Test
         fun `Valid response when the user exists`() {
             // given
-            val expectedResponse = GetUserResponse(id = TestInputConfig.baseUser.id)
+            val expectedResponse = GetUserResponse(id = TestInputConfig.baseUser.id, TestInputConfig.baseEmail)
             val getUserEndpoint = "$endpoint/${TestInputConfig.baseUser.id}"
             // when
             val result = mockMvc.get(getUserEndpoint) {
