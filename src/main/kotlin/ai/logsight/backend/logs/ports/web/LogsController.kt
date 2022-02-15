@@ -6,7 +6,6 @@ import ai.logsight.backend.logs.domain.service.LogsService
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
-import ai.logsight.backend.logs.ports.web.requests.SendLogFileRequest
 import ai.logsight.backend.logs.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ports.web.responses.LogsReceiptResponse
 import io.swagger.annotations.Api
@@ -45,7 +44,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogBatch(logBatchDTO)
         return LogsReceiptResponse(
-            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
+            logsReceipt.id, logsReceipt.orderNum, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
     }
 
@@ -67,7 +66,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogFile(logFileDTO)
         return LogsReceiptResponse(
-            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
+            logsReceipt.id, logsReceipt.orderNum, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
     }
 
@@ -79,7 +78,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogSample(logSampleDTO)
         return LogsReceiptResponse(
-            logsReceipt.application.id, logsReceipt.orderCounter, logsReceipt.logsCount, logsReceipt.source
+            logsReceipt.id, logsReceipt.orderNum, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
     }
 }

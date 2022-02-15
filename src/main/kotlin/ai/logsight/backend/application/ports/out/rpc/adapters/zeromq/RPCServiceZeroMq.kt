@@ -15,13 +15,16 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
 
-@Service @Qualifier("ZeroMQ") class RPCServiceZeroMq(
+@Service
+@Qualifier("ZeroMQ")
+class RPCServiceZeroMq(
     val zeroMqRPCSocket: ZMQ.Socket,
     val xSync: XSync<String>
 ) : RPCService {
 
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
     private val logger = LoggerImpl(RPCServiceZeroMq::class.java)
+
     override fun createApplication(createApplicationDTO: ApplicationDTO): RPCResponse {
         createApplicationDTO.action = ApplicationDTOActions.CREATE
         return sendZeroMqRPC(createApplicationDTO)
@@ -35,14 +38,20 @@ import org.zeromq.ZMQ
     fun sendZeroMqRPC(applicationDTO: ApplicationDTO): RPCResponse {
         var message: ByteArray? = null
         xSync.execute("logsight-rpc") { // TODO Move mutex definitions to somewhere else
-            logger.info("Sending RPC request via ZeroMQ for application ${applicationDTO.id} in logsight core.", this::sendZeroMqRPC.name)
+            logger.info(
+                "Sending RPC request via ZeroMQ for application ${applicationDTO.id} to logsight core.",
+                this::sendZeroMqRPC.name
+            )
             zeroMqRPCSocket.send(mapper.writeValueAsString(applicationDTO))
             var respId = ""
             while (applicationDTO.id.toString() != respId) {
                 message = zeroMqRPCSocket.recv()
                 respId = message?.let { mapper.readValue<RPCResponse>(it.decodeToString()).id } ?: break
             }
-            logger.info("Received RPC response via ZeroMQ for application ${applicationDTO.id} in logsight core.", this::sendZeroMqRPC.name)
+            logger.info(
+                "Received RPC response via ZeroMQ for application ${applicationDTO.id} to logsight core.",
+                this::sendZeroMqRPC.name
+            )
         }
         return message?.let { mapper.readValue<RPCResponse>(it.decodeToString()) } ?: throw ApplicationRemoteException(
             "Timeout while waiting for RPC reply to ${applicationDTO.action} application ${applicationDTO.name}."

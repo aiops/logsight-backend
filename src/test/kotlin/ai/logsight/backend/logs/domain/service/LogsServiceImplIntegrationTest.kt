@@ -4,11 +4,11 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
+import ai.logsight.backend.common.utils.TopicJsonSerializer
 import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
-import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
-import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.TopicJsonSerializer
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -124,7 +124,7 @@ class LogsServiceImplIntegrationTest {
 
             // then
             Assertions.assertNotNull(logReceipt)
-            Assertions.assertEquals(numMessages.toLong(), logReceipt.logsCount)
+            Assertions.assertEquals(numMessages, logReceipt.logsCount)
             Assertions.assertEquals(source, logReceipt.source)
             Assertions.assertEquals(application1.id, logReceipt.application.id)
         }
@@ -144,14 +144,14 @@ class LogsServiceImplIntegrationTest {
             Assertions.assertEquals(logReceipts.size, numBatches)
             // assert that values are sorted asc
             Assertions.assertTrue {
-                logReceipts.map { it.orderCounter }.asSequence().zipWithNext { a, b -> a <= b }.all { it }
+                logReceipts.map { it.orderNum }.asSequence().zipWithNext { a, b -> a <= b }.all { it }
             }
         }
 
         @Test
         fun `should transmit order to zeromq`() {
             // given
-            val topic = topicBuilder.buildTopic(user.key, application1.name)
+            val topic = topicBuilder.buildTopic(listOf(user.key, application1.name))
             val zeroMQSocket = getZeroMqTestSocket(topic)
 
             val numBatches = 5
@@ -170,7 +170,7 @@ class LogsServiceImplIntegrationTest {
         @Test
         fun `should transmit order to zeromq concurrent`() {
             // given
-            val topic = topicBuilder.buildTopic(user.key, application1.name)
+            val topic = topicBuilder.buildTopic(listOf(user.key, application1.name))
             val zeroMQSocket = getZeroMqTestSocket(topic)
 
             val numBatches = 20
@@ -195,8 +195,8 @@ class LogsServiceImplIntegrationTest {
         @Test
         fun `should not block zeromq concurrent transfer for different apps`() {
             // given
-            val topic1 = topicBuilder.buildTopic(user.key, application1.name)
-            val topic2 = topicBuilder.buildTopic(user.key, application2.name)
+            val topic1 = topicBuilder.buildTopic(listOf(user.key, application1.name))
+            val topic2 = topicBuilder.buildTopic(listOf(user.key, application2.name))
             val zeroMQSocket1 = getZeroMqTestSocket(topic1)
             val zeroMQSocket2 = getZeroMqTestSocket(topic2)
 
@@ -225,11 +225,11 @@ class LogsServiceImplIntegrationTest {
         }
 
         private fun verifyZeroMqOrder(zeroMQSocket: ZMQ.Socket, logsReceipts: List<LogsReceipt>, numBatches: Int) {
-            val receiptIdsExpected = logsReceipts.map { it.orderCounter }
+            val receiptIdsExpected = logsReceipts.map { it.orderNum }
             val serializedLogs = List(numBatches * numMessages) {
                 String(zeroMQSocket.recv())
             }
-            val receiptIds = topicJsonSerializer.deserialize(serializedLogs).map { it.receiptId }
+            val receiptIds = serializedLogs.map { topicJsonSerializer.deserialize(it, Log::class.java).orderCounter }
 
             // num. sent logs = num. received logs
             Assertions.assertEquals(receiptIdsExpected.size, logsReceipts.size)

@@ -4,11 +4,12 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
-import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
@@ -41,6 +42,9 @@ class LogsServiceImplUnitTest {
 
     @Mock
     private lateinit var applicationLifecycleService: ApplicationLifecycleService
+
+    @Mock
+    private lateinit var applicationStorageService: ApplicationStorageService
 
     @Spy
     private val xSync = XSync<String>()
@@ -79,7 +83,7 @@ class LogsServiceImplUnitTest {
     @Test
     fun `should return valid log receipt`() {
         // given
-        Mockito.`when`(topicBuilder.buildTopic(user.key, appReady.name))
+        Mockito.`when`(topicBuilder.buildTopic(listOf(user.key, appReady.name, "input")))
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(logsReceipt)
@@ -93,7 +97,7 @@ class LogsServiceImplUnitTest {
         assertNotNull(logsReceipt)
         assertEquals(logsReceipt.source, source)
         assertEquals(logsReceipt.logsCount, logObjects.size)
-        assertEquals(logsReceipt.orderCounter, logsReceipt.orderCounter)
+        assertEquals(logsReceipt.orderNum, logsReceipt.orderNum)
         assertEquals(logsReceipt.application, appReady)
     }
 
@@ -116,7 +120,7 @@ class LogsServiceImplUnitTest {
     @Test
     fun `should throw an runtime exceptions if logs receipt storage returns null`() {
         // given
-        Mockito.`when`(topicBuilder.buildTopic(user.key, appReady.name))
+        Mockito.`when`(topicBuilder.buildTopic(listOf(user.key, appReady.name, "input")))
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(null)
@@ -131,7 +135,7 @@ class LogsServiceImplUnitTest {
     @Test
     fun `should forward internal exceptions from the logs receipt storage`() {
         // given
-        Mockito.`when`(topicBuilder.buildTopic(user.key, appReady.name))
+        Mockito.`when`(topicBuilder.buildTopic(listOf(user.key, appReady.name, "input")))
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenThrow(RuntimeException::class.java)
@@ -144,7 +148,7 @@ class LogsServiceImplUnitTest {
     @Test
     fun `number of received logs not equal to number of transmitted logs`() {
         // given
-        Mockito.`when`(topicBuilder.buildTopic(user.key, appReady.name))
+        Mockito.`when`(topicBuilder.buildTopic(listOf(user.key, appReady.name, "input")))
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(logsReceipt)
@@ -159,14 +163,14 @@ class LogsServiceImplUnitTest {
         assertNotNull(logsReceipt)
         assertEquals(logsReceipt.source, source)
         assertEquals(logObjects.size - 1, logsReceipt.logsCount)
-        assertEquals(logsReceipt.orderCounter, logsReceipt.orderCounter)
+        assertEquals(logsReceipt.orderNum, logsReceipt.orderNum)
         assertEquals(logsReceipt.application, appReady)
     }
 
     @Test
     fun `should forward internal exceptions from the logs receipt update`() {
         // given
-        Mockito.`when`(topicBuilder.buildTopic(user.key, appReady.name))
+        Mockito.`when`(topicBuilder.buildTopic(listOf(user.key, appReady.name, "input")))
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(logsReceipt)

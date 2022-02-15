@@ -7,6 +7,7 @@ import ai.logsight.backend.logs.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.extensions.toLogsReceipt
 import ai.logsight.backend.logs.extensions.toLogsReceiptEntity
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class LogsReceiptStorageServiceImpl(
@@ -22,7 +23,7 @@ class LogsReceiptStorageServiceImpl(
         return logsReceiptRepository.save(logsReceiptEntity).toLogsReceipt()
     }
 
-    override fun findLogsReceiptById(logReceiptId: Long): LogsReceipt {
+    override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {
         return findLogsReceiptByIdPrivate(logReceiptId).toLogsReceipt()
     }
 
@@ -32,7 +33,7 @@ class LogsReceiptStorageServiceImpl(
         return logsReceiptRepository.save(logsReceiptEntity).toLogsReceipt()
     }
 
-    private fun findLogsReceiptByIdPrivate(logReceiptId: Long): LogsReceiptEntity {
-        return logsReceiptRepository.findById(logReceiptId).orElseThrow { LogsReceiptNotFoundException() }
+    private fun findLogsReceiptByIdPrivate(logsReceiptId: UUID): LogsReceiptEntity {
+        return logsReceiptRepository.findById(logsReceiptId).orElseThrow { LogsReceiptNotFoundException() }
     }
 }

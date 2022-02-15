@@ -6,6 +6,7 @@ import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.logs.exceptions.LogFileIOException
+import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -42,7 +43,8 @@ class RestControllerAdvice {
         EmailExistsException::class,
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
-        UserAlreadyActivatedException::class
+        UserAlreadyActivatedException::class,
+        ResultInitAlreadyPendingException::class
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)

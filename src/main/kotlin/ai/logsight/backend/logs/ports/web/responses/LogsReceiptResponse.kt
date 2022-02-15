@@ -3,8 +3,9 @@ package ai.logsight.backend.logs.ports.web.responses
 import java.util.*
 
 data class LogsReceiptResponse(
-    val appId: UUID,
-    val orderId: Long,
+    val id: UUID,
+    val orderNum: Long,
     val logsCount: Int,
     val source: String,
+    val appId: UUID
 )

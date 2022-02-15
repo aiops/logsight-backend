@@ -8,7 +8,6 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageServiceImpl
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
@@ -16,14 +15,12 @@ import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
 import ai.logsight.backend.logs.domain.service.dto.LogSampleDTO
-import ai.logsight.backend.logs.domain.service.helpers.TopicBuilder
+import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.exceptions.LogFileIOException
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.File
@@ -49,6 +46,9 @@ class LogsServiceImpl(
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
+
+    // TODO make configurable
+    private var topicPostfix: String = "input"
 
     object SampleLogConstants {
         val SAMPLE_LOGS_APP_NAMES = listOf("hdfs_node", "node_manager", "resource_manager", "name_node")
@@ -122,9 +122,22 @@ class LogsServiceImpl(
                     CreateApplicationCommand(appName, logSampleDTO.user)
                 )
             } catch (e: ApplicationAlreadyCreatedException) {
-                logger.error("Sample application $appName was already created... recreating..", this::processLogSample.name)
-                val application = applicationStorageService.findApplicationByUserAndName(user = logSampleDTO.user, applicationName = appName)
-                application?.let { applicationLifecycleService.deleteApplication(DeleteApplicationCommand(applicationId = it.id, user = logSampleDTO.user)) }
+                logger.error(
+                    "Sample application $appName was already created... recreating..",
+                    this::processLogSample.name
+                )
+                val application = applicationStorageService.findApplicationByUserAndName(
+                    user = logSampleDTO.user,
+                    applicationName = appName
+                )
+                application?.let {
+                    applicationLifecycleService.deleteApplication(
+                        DeleteApplicationCommand(
+                            applicationId = it.id,
+                            user = logSampleDTO.user
+                        )
+                    )
+                }
                 applicationLifecycleService.createApplication(CreateApplicationCommand(appName, logSampleDTO.user))
             }
 
@@ -147,6 +160,7 @@ class LogsServiceImpl(
         return logsReceipts.last()
     }
 
+    // TODO Refactor this asap
     fun processLogs(
         user: User,
         app: Application,
@@ -160,7 +174,7 @@ class LogsServiceImpl(
             source = source,
             application = app
         )
-        val topic = topicBuilder.buildTopic(user.key, app.name)
+        val topic = topicBuilder.buildTopic(listOf(user.key, app.name, topicPostfix))
 
         // Order and transmission to logsight core are synchronized via mutex
         var logsReceipt: LogsReceipt? = null
@@ -168,7 +182,7 @@ class LogsServiceImpl(
         xSync.execute("logs-stream") { // TODO define mutex constants somewhere else
             logsReceipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
             val logs = logMessages.map { message ->
-                Log(app.name, app.id.toString(), user.key, format, tag, logsReceipt!!.orderCounter, message)
+                Log(app.name, app.id.toString(), user.key, format, tag, logsReceipt!!.orderNum, message)
             }
             sentLogs = logStream.serializeAndSend(topic, logs)
         }
@@ -184,7 +198,7 @@ class LogsServiceImpl(
                     logsReceiptStorageService.updateLogsCount(logsReceiptNotNull, sentLogs)
                 }
             }
-        } ?: throw RuntimeException() // This should happen
+        } ?: throw RuntimeException() // This should not happen
     }
 
     // TODO: This should not be here, implement a method in applicationService that implements this logic.
