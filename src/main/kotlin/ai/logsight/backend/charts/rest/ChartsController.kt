@@ -26,7 +26,7 @@ class ChartsController(
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
-        val query = chartsService.getChartQuery(authentication, createChartRequest)
+        val query = chartsService.getChartQuery(authentication.name, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createHeatMap(query))
     }
@@ -38,7 +38,7 @@ class ChartsController(
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
-        val query = chartsService.getChartQuery(authentication, createChartRequest)
+        val query = chartsService.getChartQuery(authentication.name, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createBarChart(query))
     }
@@ -50,7 +50,7 @@ class ChartsController(
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
-        val query = chartsService.getChartQuery(authentication, createChartRequest)
+        val query = chartsService.getChartQuery(authentication.name, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createPieChart(query))
     }
@@ -62,7 +62,7 @@ class ChartsController(
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
         logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
-        val query = chartsService.getChartQuery(authentication, createChartRequest)
+        val query = chartsService.getChartQuery(authentication.name, createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createTableChart(query))
     }

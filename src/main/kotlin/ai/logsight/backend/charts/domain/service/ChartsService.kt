@@ -13,5 +13,5 @@ interface ChartsService {
     fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart
     fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart
     fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart
-    fun getChartQuery(authentication: Authentication, createChartRequest: ChartRequest): GetChartDataQuery
+    fun getChartQuery(userName: String, createChartRequest: ChartRequest): GetChartDataQuery
 }

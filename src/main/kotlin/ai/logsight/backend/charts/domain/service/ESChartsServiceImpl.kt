@@ -159,8 +159,8 @@ class ESChartsServiceImpl(
         )
     }
 
-    override fun getChartQuery(authentication: Authentication, createChartRequest: ChartRequest): GetChartDataQuery {
-        val user = userStorageService.findUserByEmail(authentication.name)
+    override fun getChartQuery(userName: String, createChartRequest: ChartRequest): GetChartDataQuery {
+        val user = userStorageService.findUserByEmail(userName)
         val application: Application? = try {
             createChartRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
         } catch (e: ApplicationNotFoundException) {
