@@ -57,11 +57,13 @@ class ESChartsServiceImpl(
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
-                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString(" ")
+                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("_")
+                val app = applicationStorageService.findApplicationByUserAndName(user = getChartDataQuery.user, name)
                 heatMapListPoints.add(
                     ChartSeriesPoint(
                         name = name,
                         value = i.valueData.value,
+                        applicationId = app?.id
                     )
                 )
             }

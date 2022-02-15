@@ -4,7 +4,12 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
+import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
+import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageServiceImpl
+import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
 import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
@@ -35,11 +40,12 @@ enum class LogDataSources(val source: String) {
 class LogsServiceImpl(
     val logsReceiptStorageService: LogsReceiptStorageService,
     val applicationLifecycleService: ApplicationLifecycleService,
+    val applicationStorageService: ApplicationStorageService,
     val logStream: LogStream,
     val topicBuilder: TopicBuilder,
     val xSync: XSync<String>
 ) : LogsService {
-    val logger: Logger = LoggerFactory.getLogger(LogsServiceImpl::class.java)
+    val logger: LoggerImpl = LoggerImpl(LogsServiceImpl::class.java)
 
     @Value("\${resources.path}")
     private lateinit var resourcesPath: String
@@ -111,9 +117,19 @@ class LogsServiceImpl(
     override fun processLogSample(logSampleDTO: LogSampleDTO): LogsReceipt {
         val logsReceipts = SampleLogConstants.SAMPLE_LOGS_APP_NAMES.map { appName ->
             // TODO Recreation might be required if time mapping of sample logs is implemented
-            val app = applicationLifecycleService.createApplication(
-                CreateApplicationCommand(appName, logSampleDTO.user)
-            )
+            val app = try {
+                applicationLifecycleService.createApplication(
+                    CreateApplicationCommand(appName, logSampleDTO.user)
+                )
+            } catch (e: ApplicationAlreadyCreatedException) {
+                logger.error("Sample application $appName was already created... recreating..", this::processLogSample.name)
+                val application = applicationStorageService.findApplicationByUserAndName(user = logSampleDTO.user, applicationName = appName)
+                application?.let { applicationLifecycleService.deleteApplication(DeleteApplicationCommand(applicationId = it.id, user = logSampleDTO.user)) }
+                applicationLifecycleService.createApplication(CreateApplicationCommand(appName, logSampleDTO.user))
+            }
+
+//            Thread.sleep(5000)
+
             // App lifecycle service might alter the name of the app. Therefore, the original appName is used as
             // argument here.
             val filePath = Paths.get(resourcesPath, SampleLogConstants.SAMPLE_LOG_DIR, appName)

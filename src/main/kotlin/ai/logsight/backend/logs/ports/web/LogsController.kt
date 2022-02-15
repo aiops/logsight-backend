@@ -1,6 +1,7 @@
 package ai.logsight.backend.logs.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.service.LogsService
 import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
 import ai.logsight.backend.logs.domain.service.dto.LogFileDTO
@@ -14,7 +15,10 @@ import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.util.*
 import javax.validation.Valid
+import javax.validation.constraints.NotNull
 
 @Api(tags = ["Logs"], description = " ")
 @RestController
@@ -49,14 +53,17 @@ class LogsController(
     @PostMapping("/file")
     fun uploadFile(
         authentication: Authentication,
-        @Valid @RequestBody logFileRequest: SendLogFileRequest
+        @RequestPart("file") @NotNull(message = "file must not be empty.") file: MultipartFile,
+        @RequestParam("applicationId") @NotNull(message = "applicationId must not be empty.") applicationId: UUID,
+        @RequestParam("tag", required = false, defaultValue = "default") tag: String = "default",
+        @RequestParam("logFormats", required = false, defaultValue = "UNKNOWN_FORMAT") logFormats: LogFormats = LogFormats.UNKNOWN_FORMAT,
     ): LogsReceiptResponse {
         val logFileDTO = LogFileDTO(
             user = userStorageService.findUserByEmail(authentication.name),
-            application = applicationStorageService.findApplicationById(logFileRequest.applicationId),
-            tag = logFileRequest.tag,
-            logFormats = logFileRequest.logFormats,
-            file = logFileRequest.file
+            application = applicationStorageService.findApplicationById(applicationId),
+            tag = tag,
+            logFormats = logFormats,
+            file = file
         )
         val logsReceipt = logsService.processLogFile(logFileDTO)
         return LogsReceiptResponse(

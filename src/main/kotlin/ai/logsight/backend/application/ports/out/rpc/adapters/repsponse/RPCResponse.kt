@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import org.springframework.http.HttpStatus
 
 data class RPCResponse(
-    val id: String,
+    @JsonAlias("app_id") val id: String,
     val message: String,
     @JsonAlias("status") val statusCode: Int,
 ) {
