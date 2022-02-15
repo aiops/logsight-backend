@@ -26,7 +26,9 @@ import java.io.InputStream
 import java.nio.file.Paths
 
 enum class LogDataSources(val source: String) {
-    REST_BATCH("restBatch"), FILE("file"), SAMPLE("sample")
+    REST_BATCH("restBatch"),
+    FILE("file"),
+    SAMPLE("sample")
 }
 
 @Service
@@ -69,7 +71,8 @@ class LogsServiceImpl(
 
     private fun readFileContent(fileName: String, inputStream: InputStream): String =
         try {
-            inputStream.readBytes().toString(Charsets.UTF_8)
+            inputStream.readBytes()
+                .toString(Charsets.UTF_8)
         } catch (e: Exception) {
             throw LogFileIOException("Error while reading file content of file $fileName. Reason: ${e.message}")
         }
@@ -80,15 +83,28 @@ class LogsServiceImpl(
         val stringBuilder = StringBuilder()
         // Filters empty lines and appends multiline logs to one line based on heuristic that
         // multiline logs start with spaces
-        fileContent.lines().filter { it.isNotEmpty() }.forEach {
-            stringBuilder.append(it.trim().plus(" "))
-            if (!it.first().isWhitespace()) {
-                logMessages.add(stringBuilder.toString().trim())
-                stringBuilder.clear()
+        fileContent.lines()
+            .filter { it.isNotEmpty() }
+            .forEach {
+                stringBuilder.append(
+                    it.trim()
+                        .plus(" ")
+                )
+                if (!it.first()
+                    .isWhitespace()
+                ) {
+                    logMessages.add(
+                        stringBuilder.toString()
+                            .trim()
+                    )
+                    stringBuilder.clear()
+                }
             }
-        }
         if (stringBuilder.isNotEmpty())
-            logMessages.add(stringBuilder.toString().trim())
+            logMessages.add(
+                stringBuilder.toString()
+                    .trim()
+            )
         return logMessages
     }
 
@@ -155,6 +171,7 @@ class LogsServiceImpl(
         } ?: throw RuntimeException() // This should happen
     }
 
+    // TODO: This should not be here, implement a method in applicationService that implements this logic.
     private fun verifyApplicationReadyState(application: Application) {
         if (application.status != ApplicationStatus.READY) {
             throw ApplicationStatusException(
