@@ -34,6 +34,6 @@ class LogsReceiptStorageServiceImpl(
     }
 
     private fun findLogsReceiptByIdPrivate(logsReceiptId: UUID): LogsReceiptEntity {
-        return logsReceiptRepository.findById(logsReceiptId).orElseThrow { LogsReceiptNotFoundException() }
+        return logsReceiptRepository.findById(logsReceiptId).orElseThrow { LogsReceiptNotFoundException("Log receipt with id $logsReceiptId is not found") }
     }
 }

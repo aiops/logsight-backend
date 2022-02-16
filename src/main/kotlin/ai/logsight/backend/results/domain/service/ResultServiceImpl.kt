@@ -34,7 +34,7 @@ class ResultServiceImpl(
         // MUTEX to prevent duplicated ResultInit objects with status PENDING
         xSync.execute("result init") {
             // try to load ResultInit where status is in PENDING
-            val results = resultInitStorageService.findAllResultInitByStatus(ResultInitStatus.PENDING)
+            val results = resultInitStorageService.findAllResultInitByStatusAndApplicationId(ResultInitStatus.PENDING, createResultInitCommand.logsReceipt.application.id)
             resultInit = when (results.size) {
                 // none pending -> it is allowed to create a new ResultInit object and store it in DB
                 0 -> resultInitStorageService.saveResultInit(createResultInitCommand)

@@ -7,6 +7,7 @@ import ai.logsight.backend.results.domain.service.command.CreateResultInitComman
 import ai.logsight.backend.results.extensions.toResultInit
 import ai.logsight.backend.results.extensions.toResultInitEntity
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class ResultInitStorageServiceImpl(
@@ -24,8 +25,8 @@ class ResultInitStorageServiceImpl(
     override fun deleteResultInit(resultInit: ResultInit) =
         resultInitRepository.delete(resultInit.toResultInitEntity())
 
-    override fun findAllResultInitByStatus(status: ResultInitStatus): List<ResultInit> =
-        resultInitRepository.findAllByStatus(status).map(ResultInitEntity::toResultInit)
+    override fun findAllResultInitByStatusAndApplicationId(status: ResultInitStatus, applicationId: UUID): List<ResultInit> =
+        resultInitRepository.findAllByStatusAndLogsReceipt_Application_Id(status, applicationId).map(ResultInitEntity::toResultInit)
 
     override fun updateResultInitStatus(resultInit: ResultInit, status: ResultInitStatus): ResultInit {
         val resultInitEntity = resultInit.toResultInitEntity()

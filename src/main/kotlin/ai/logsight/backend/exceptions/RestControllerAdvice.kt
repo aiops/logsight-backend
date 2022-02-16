@@ -6,6 +6,7 @@ import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.logs.exceptions.LogFileIOException
+import ai.logsight.backend.logs.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
@@ -44,7 +45,7 @@ class RestControllerAdvice {
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
-        ResultInitAlreadyPendingException::class
+        ResultInitAlreadyPendingException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -72,7 +73,8 @@ class RestControllerAdvice {
         ApplicationNotFoundException::class,
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
-        IllegalArgumentException::class
+        IllegalArgumentException::class,
+        LogsReceiptNotFoundException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)

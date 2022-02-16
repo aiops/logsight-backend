@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface ResultInitRepository : JpaRepository<ResultInitEntity, UUID> {
-    fun findAllByStatus(status: ResultInitStatus): List<ResultInitEntity>
+    fun findAllByStatusAndLogsReceipt_Application_Id(status: ResultInitStatus, logReceiptApplicationId: UUID): List<ResultInitEntity>
 }

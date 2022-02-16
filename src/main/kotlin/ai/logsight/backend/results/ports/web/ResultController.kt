@@ -50,7 +50,7 @@ class ResultController(
                     this::createResultInit.name
                 )
                 CreateResultInitResponse(
-                    id = resultInit.id, status = resultInit.status, logsReceipt = resultInit.logsReceipt
+                    id = resultInit.id, status = resultInit.status
                 )
             }
         }
