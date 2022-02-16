@@ -146,6 +146,7 @@ class ESChartsServiceImpl(
             this::createTableChart.name
         )
         logger.info("Mapping the data to an output chart.", this::createTableChart.name)
+
         return TableChart(
             data = tableChartData.hits.hits.map {
                 IncidentRow(

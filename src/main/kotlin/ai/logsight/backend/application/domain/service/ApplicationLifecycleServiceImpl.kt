@@ -51,6 +51,7 @@ class ApplicationLifecycleServiceImpl(
             "Application ${application.name} created successfully in logsight core. Setting applicationStatus to ${ApplicationStatus.READY}",
             this::createApplication.name
         )
+        Thread.sleep(3000)
         return applicationStorageService.setApplicationStatus(application, ApplicationStatus.READY)
     }
 
