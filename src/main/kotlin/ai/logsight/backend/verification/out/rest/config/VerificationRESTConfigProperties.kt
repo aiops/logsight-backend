@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component
 class VerificationRESTConfigProperties {
     val endpoint = "verification"
     val host = "localhost"
-    val port = 5554
+    val port = 5557
     val apiVersion = 1
 }

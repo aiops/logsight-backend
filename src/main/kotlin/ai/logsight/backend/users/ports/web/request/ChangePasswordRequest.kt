@@ -4,11 +4,16 @@ import java.util.*
 import javax.validation.constraints.AssertTrue
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
 data class ChangePasswordRequest(
     @get:NotNull(message = "id must not be empty.")
-    val id: UUID,
+    @get:Pattern(
+        regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+        message = "id must be UUID type."
+    )
+    val id: String,
     @get:NotEmpty(message = "oldPassword must not be empty.")
     @get:Size(
         min = 8,

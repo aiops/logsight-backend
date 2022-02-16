@@ -8,7 +8,6 @@ import ai.logsight.backend.token.service.TokenService
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.domain.service.query.FindUserQuery
 import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
@@ -81,7 +80,7 @@ class UserServiceImpl(
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
         val user = userStorageService.findUserById(activateUserCommand.id)
         if (user.activated) {
-            throw UserAlreadyActivatedException()
+            return user
         }
         val activationToken = tokenService.findTokenById(activateUserCommand.activationToken)
         // check activation token
@@ -120,6 +119,10 @@ class UserServiceImpl(
      * Validate the token and change the user password.
      */
     override fun resetPasswordWithToken(resetPasswordCommand: ResetPasswordCommand): User {
+        val user = userStorageService.findUserById(resetPasswordCommand.id)
+        if (!user.activated) {
+            throw UserNotActivatedException()
+        }
         // check if token exists in DB
         val passwordResetToken = tokenService.findTokenById(resetPasswordCommand.passwordResetToken)
         // Check if matches user and not expired
@@ -132,10 +135,6 @@ class UserServiceImpl(
 
     override fun findUser(findUserQuery: FindUserQuery): User {
         return userStorageService.findUserById(findUserQuery.userId)
-    }
-
-    override fun findUserByEmail(findUserByEmailQuery: FindUserByEmailQuery): User {
-        return userStorageService.findUserByEmail(findUserByEmailQuery.email)
     }
 
     override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {

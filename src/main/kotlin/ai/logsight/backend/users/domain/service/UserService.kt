@@ -3,7 +3,6 @@ package ai.logsight.backend.users.domain.service
 import ai.logsight.backend.users.domain.LocalUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
-import ai.logsight.backend.users.domain.service.query.FindUserByEmailQuery
 import ai.logsight.backend.users.domain.service.query.FindUserQuery
 
 interface UserService {
@@ -12,7 +11,6 @@ interface UserService {
     fun changePassword(changePasswordCommand: ChangePasswordCommand): User
     fun resetPasswordWithToken(resetPasswordCommand: ResetPasswordCommand): User
     fun findUser(findUserQuery: FindUserQuery): User
-    fun findUserByEmail(findUserByEmailQuery: FindUserByEmailQuery): User
     fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand)
     fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser
     fun sendActivationEmail(sendActivationEmailCommand: SendActivationEmailCommand)
