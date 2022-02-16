@@ -1,7 +1,10 @@
 package ai.logsight.backend.users.ports.web.request
 
 import java.util.*
-import javax.validation.constraints.*
+import javax.validation.constraints.AssertTrue
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
 class ResetPasswordRequest(
     @get:NotNull(message = "id must not be empty.")
@@ -16,7 +19,7 @@ class ResetPasswordRequest(
     val passwordResetToken: UUID
 ) {
     @AssertTrue(message = "newPassword and repeatPassword must be equal")
-    fun isValidPass(): Boolean {
+    fun isValidPassword(): Boolean {
         return Objects.equals(this.password, this.repeatPassword)
     }
 }

@@ -6,6 +6,5 @@ import java.util.*
 
 data class CreateResultInitResponse(
     val id: UUID,
-    val status: ResultInitStatus,
-    val logsReceipt: LogsReceipt
+    val status: ResultInitStatus
 )

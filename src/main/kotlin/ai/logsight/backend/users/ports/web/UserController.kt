@@ -65,7 +65,7 @@ class UserController(
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
         logger.info("Activating user ${activateUserRequest.id}.", this::activateUser.name)
         val activateUserCommand = ActivateUserCommand(
-            id = activateUserRequest.id, activationToken = activateUserRequest.activationToken
+            id = UUID.fromString(activateUserRequest.id), activationToken = activateUserRequest.activationToken
         )
         val activatedUser = userService.activateUser(activateUserCommand)
         logger.info("User ${activateUserRequest.id} successfully activated.", this::activateUser.name)
@@ -81,7 +81,7 @@ class UserController(
     fun changePassword(
         @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
     ): ChangePasswordResponse {
-        val user = userService.findUser(FindUserQuery(changePasswordRequest.id))
+        val user = userService.findUser(FindUserQuery(UUID.fromString(changePasswordRequest.id)))
         val changePasswordCommand = ChangePasswordCommand(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,

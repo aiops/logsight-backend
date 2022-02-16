@@ -8,7 +8,7 @@ import java.util.*
 interface ResultInitStorageService {
     fun saveResultInit(createResultInitCommand: CreateResultInitCommand): ResultInit
     fun deleteResultInit(resultInit: ResultInit)
-    fun findAllResultInitByStatus(status: ResultInitStatus): List<ResultInit>
     fun findResultInitById(resultInitId: UUID): ResultInit
+    fun findAllResultInitByStatusAndApplicationId(status: ResultInitStatus, applicationId: UUID): List<ResultInit>
     fun updateResultInitStatus(resultInit: ResultInit, status: ResultInitStatus): ResultInit
 }

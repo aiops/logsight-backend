@@ -11,13 +11,8 @@ import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTO
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTOOperations
-import ai.logsight.backend.results.ports.web.ResultController
 import com.antkorwin.xsync.XSync
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.messaging.Message
-import org.springframework.messaging.MessageHandler
 import org.springframework.stereotype.Service
-import org.zeromq.ZMsg
 
 @Service
 class ResultServiceImpl(
@@ -38,7 +33,10 @@ class ResultServiceImpl(
         // MUTEX to prevent duplicated ResultInit objects with status PENDING
         xSync.execute("result init") {
             // try to load ResultInit where status is in PENDING
-            val results = resultInitStorageService.findAllResultInitByStatus(ResultInitStatus.PENDING)
+            val results = resultInitStorageService.findAllResultInitByStatusAndApplicationId(
+                ResultInitStatus.PENDING,
+                createResultInitCommand.logsReceipt.application.id
+            )
             resultInit = when (results.size) {
                 // none pending -> it is allowed to create a new ResultInit object and store it in DB
                 0 -> resultInitStorageService.saveResultInit(createResultInitCommand)
@@ -86,7 +84,7 @@ class ResultServiceImpl(
             "Failed to update status of ResultInit object. Reason: ${e.message}",
             this::updateResultInitStatus.name
         )
-        
+
         val resultInit = try {
             resultInitStorageService.findResultInitById(updateResultInitStatusCommand.id)
         } catch (e: Exception) {

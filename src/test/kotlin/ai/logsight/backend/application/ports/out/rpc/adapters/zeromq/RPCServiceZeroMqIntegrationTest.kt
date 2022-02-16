@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -31,6 +32,8 @@ import kotlin.test.assertTrue
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
+@DirtiesContext
+
 internal class RPCServiceZeroMqIntegrationTest {
     @Autowired
     lateinit var zeroMqConf: RPCConfigPropertiesZeroMq
@@ -162,8 +165,10 @@ internal class RPCServiceZeroMqIntegrationTest {
             zeroMQRepSocket.close()
 
             // Name and message field are abused to verify that request and response match
-            val expected: Array<String> = responses.map { it.first.name }.toTypedArray()
-            val actual: Array<String> = responses.map { it.second.message }.toTypedArray()
+            val expected: Array<String> = responses.map { it.first.name }
+                .toTypedArray()
+            val actual: Array<String> = responses.map { it.second.message }
+                .toTypedArray()
 
             // then
             Assertions.assertArrayEquals(expected, actual)

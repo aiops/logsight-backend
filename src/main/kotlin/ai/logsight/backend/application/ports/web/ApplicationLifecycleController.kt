@@ -36,10 +36,10 @@ class ApplicationLifecycleController(
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
-        @PathVariable userId: UUID,
+        @PathVariable userId: String,
     ): GetAllApplicationsResponse {
         logger.info("Getting the authenticated user object.", this::getApplications.name)
-        val user = userService.findUserById(userId)
+        val user = userService.findUserById(UUID.fromString(userId))
         logger.info("User ${user.id} found in the database.", this::getApplications.name)
         val applications = applicationStorageService.findAllApplicationsByUser(user)
             .map { it.toApplicationResponse() }
@@ -56,13 +56,15 @@ class ApplicationLifecycleController(
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createApplication(
-        @PathVariable userId: UUID,
+        @PathVariable @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createApplicationRequest: CreateApplicationRequest
     ): CreateApplicationResponse {
-        val user = userService.findUserById(userId)
+        val user = userService.findUserById(UUID.fromString(userId))
         val createApplicationCommand = CreateApplicationCommand(
-            applicationName = createApplicationRequest.applicationName,
-            user = user
+            applicationName = createApplicationRequest.applicationName, user = user
         )
         logger.info(
             "Creating application ${createApplicationRequest.applicationName} for user ${user.id}.",
@@ -83,22 +85,25 @@ class ApplicationLifecycleController(
     @DeleteMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(
-        @PathVariable userId: UUID,
-        @Valid @PathVariable @Pattern(
+        @PathVariable @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String,
+
+        @PathVariable @Valid @Pattern(
             regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
             message = "applicationId must be UUID type."
-        ) @NotEmpty(message = "applicationId must not be empty.") applicationId: UUID
+        ) @NotEmpty(message = "applicationId must not be empty.") applicationId: String
     ): DeleteApplicationResponse {
-        val user = userService.findUserById(userId)
+        val user = userService.findUserById(UUID.fromString(userId))
         val deleteApplicationCommand = DeleteApplicationCommand(
-            applicationId = applicationId,
-            user = user
+            applicationId = UUID.fromString(applicationId), user = user
         )
         logger.info(
             "Deleting application ${deleteApplicationCommand.applicationId} for user ${user.id}.",
             this::deleteApplication.name
         )
-        val application = applicationStorageService.findApplicationById(applicationId)
+        val application = applicationStorageService.findApplicationById(UUID.fromString(applicationId))
         applicationService.deleteApplication(deleteApplicationCommand)
         logger.info(
             "Application successfully deleted application ${deleteApplicationCommand.applicationId} for user ${user.id}.",

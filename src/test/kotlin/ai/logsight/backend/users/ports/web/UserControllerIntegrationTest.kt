@@ -34,6 +34,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
@@ -45,7 +46,9 @@ import java.util.*
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DirtiesContext
 class UserControllerIntegrationTest {
+
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -321,7 +324,7 @@ class UserControllerIntegrationTest {
             userRepository.save(user.toUserEntity())
             val tokenEntity = TokenEntity(user.id, TokenType.ACTIVATION_TOKEN, Duration.ofMinutes(15))
             tokenRepository.save(tokenEntity)
-            val activateUserRequest = ActivateUserRequest(user.id, tokenEntity.token)
+            val activateUserRequest = ActivateUserRequest(user.id.toString(), tokenEntity.token)
             val response = ActivateUserResponse(user.id)
             // when
             val result = mockMvc.post(activateEndpoint) {
@@ -345,12 +348,12 @@ class UserControllerIntegrationTest {
         }
 
         @Test
-        fun `Conflict when the user is already activated`() {
+        fun `OK when the user is already activated`() {
             // given
             val user = TestInputConfig.baseUser
             val tokenEntity = TokenEntity(user.id, TokenType.ACTIVATION_TOKEN, Duration.ofMinutes(15))
             tokenRepository.save(tokenEntity)
-            val activateUserRequest = ActivateUserRequest(user.id, tokenEntity.token)
+            val activateUserRequest = ActivateUserRequest(user.id.toString(), tokenEntity.token)
             // when
             val result = mockMvc.post(activateEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -362,7 +365,7 @@ class UserControllerIntegrationTest {
             Assertions.assertThat(userResult!!.activated) // user is activated
 
             val exception = result.andExpect {
-                status { isConflict() }
+                status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -406,10 +409,12 @@ class UserControllerIntegrationTest {
 
         @Test
         fun `Conflict when the token has expired`() {
-            val user = TestInputConfig.baseUser
+            val user = newUserEntity
+            user.activated = false
+            userRepository.save(user)
             val tokenEntity = TokenEntity(user.id, TokenType.ACTIVATION_TOKEN, Duration.ofMinutes(0))
             tokenRepository.save(tokenEntity)
-            val activateUserRequest = ActivateUserRequest(user.id, tokenEntity.token)
+            val activateUserRequest = ActivateUserRequest(user.id.toString(), tokenEntity.token)
             // when
             val result = mockMvc.post(activateEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -444,11 +449,11 @@ class UserControllerIntegrationTest {
         private val changePasswordEndpoint = "$endpoint/change_password"
 
         @Test
-        fun `OK when password changed sucesfully`() {
+        fun `OK when password changed successfully`() {
             // given
             val user = TestInputConfig.baseUser
             val newPassword = "newPassword"
-            val request = ChangePasswordRequest(user.id, user.password, newPassword, newPassword)
+            val request = ChangePasswordRequest(user.id.toString(), user.password, newPassword, newPassword)
             val response = ChangePasswordResponse(user.id)
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -475,17 +480,23 @@ class UserControllerIntegrationTest {
 
         private fun getInvalidPasswords(): List<Arguments> {
             return mapOf(
+                "Invalid ID" to ChangePasswordRequest(
+                    "invalid id", TestInputConfig.basePassword, "password123", "password123"
+                ),
                 "Passwords not match" to ChangePasswordRequest(
-                    TestInputConfig.baseUser.id, TestInputConfig.basePassword, "password123", "notMatchPassword"
+                    TestInputConfig.baseUser.id.toString(),
+                    TestInputConfig.basePassword,
+                    "password123",
+                    "notMatchPassword"
                 ),
                 "Old password too short" to ChangePasswordRequest(
-                    TestInputConfig.baseUser.id,
+                    TestInputConfig.baseUser.id.toString(),
                     "short",
                     "password123",
                     "password123"
                 ),
                 "New password too short" to ChangePasswordRequest(
-                    TestInputConfig.baseUser.id,
+                    TestInputConfig.baseUser.id.toString(),
                     TestInputConfig.basePassword,
                     "short",
                     "short"
@@ -516,7 +527,12 @@ class UserControllerIntegrationTest {
         fun `should Error response for wrong old password`() {
             // given
             val request =
-                ChangePasswordRequest(TestInputConfig.baseUser.id, "WrongOldPassword", "password123", "password123")
+                ChangePasswordRequest(
+                    TestInputConfig.baseUser.id.toString(),
+                    "WrongOldPassword",
+                    "password123",
+                    "password123"
+                )
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
@@ -539,7 +555,7 @@ class UserControllerIntegrationTest {
             user.activated = false
             userRepository.save(user)
             val request =
-                ChangePasswordRequest(user.id, user.password, "password123", "password123")
+                ChangePasswordRequest(user.id.toString(), user.password, "password123", "password123")
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)

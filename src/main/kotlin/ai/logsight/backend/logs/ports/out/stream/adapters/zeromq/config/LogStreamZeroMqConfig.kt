@@ -15,6 +15,7 @@ class LogStreamZeroMqConfig(
     fun logStreamZeroMqSocket(): ZMQ.Socket {
         val ctx = ZContext()
         val zeroMQSocket = ctx.createSocket(SocketType.PUB)
+        zeroMQSocket.setHWM(0)
         val addr = "${logStreamZeroMqConfig.protocol}://${logStreamZeroMqConfig.host}:${logStreamZeroMqConfig.port}"
         val status = zeroMQSocket.bind(addr)
         if (!status) throw ConnectException("ZeroMQ log stream is not able to bind socket to $addr")

@@ -27,8 +27,8 @@ class ResultInitStorageServiceImpl(
     override fun deleteResultInit(resultInit: ResultInit) =
         resultInitRepository.delete(resultInit.toResultInitEntity())
 
-    override fun findAllResultInitByStatus(status: ResultInitStatus): List<ResultInit> =
-        resultInitRepository.findAllByStatus(status).map(ResultInitEntity::toResultInit)
+    override fun findAllResultInitByStatusAndApplicationId(status: ResultInitStatus, applicationId: UUID): List<ResultInit> =
+        resultInitRepository.findAllByStatusAndLogsReceipt_Application_Id(status, applicationId).map(ResultInitEntity::toResultInit)
 
     override fun findResultInitById(resultInitId: UUID): ResultInit = findResultInitByIdPrivate(resultInitId).toResultInit()
 

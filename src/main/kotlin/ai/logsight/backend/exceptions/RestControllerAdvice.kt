@@ -6,12 +6,14 @@ import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.logs.exceptions.LogFileIOException
+import ai.logsight.backend.logs.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.users.exceptions.*
+import ai.logsight.backend.verification.exceptions.RemoteVerificationException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
@@ -44,7 +46,7 @@ class RestControllerAdvice {
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
-        ResultInitAlreadyPendingException::class
+        ResultInitAlreadyPendingException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -56,7 +58,8 @@ class RestControllerAdvice {
         MailException::class,
         LogFileIOException::class,
         ApplicationRemoteException::class,
-        Exception::class // Wildcard
+        Exception::class, // Wildcard,
+        RemoteVerificationException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
@@ -72,7 +75,8 @@ class RestControllerAdvice {
         ApplicationNotFoundException::class,
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
-        IllegalArgumentException::class
+        IllegalArgumentException::class,
+        LogsReceiptNotFoundException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)

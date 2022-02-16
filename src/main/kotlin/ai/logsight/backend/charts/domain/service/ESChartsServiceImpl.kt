@@ -11,7 +11,11 @@ import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.repository.entities.elasticsearch.*
+import ai.logsight.backend.charts.repository.entities.elasticsearch.BarChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
+import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultBucket
 import ai.logsight.backend.charts.rest.request.ChartRequest
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -23,8 +27,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.loxbear.logsight.charts.data.IncidentRow
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import java.util.*
 import kotlin.reflect.full.memberProperties
 
 @Service
@@ -57,7 +61,9 @@ class ESChartsServiceImpl(
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
-                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("_")
+                val name = i.key.split("_")
+                    .subList(1, i.key.split("_").size - 1)
+                    .joinToString("_")
                 val app = applicationStorageService.findApplicationByUserAndName(user = getChartDataQuery.user, name)
                 heatMapListPoints.add(
                     ChartSeriesPoint(
@@ -140,6 +146,7 @@ class ESChartsServiceImpl(
             this::createTableChart.name
         )
         logger.info("Mapping the data to an output chart.", this::createTableChart.name)
+
         return TableChart(
             data = tableChartData.hits.hits.map {
                 IncidentRow(
@@ -159,8 +166,8 @@ class ESChartsServiceImpl(
         )
     }
 
-    override fun getChartQuery(userName: String, createChartRequest: ChartRequest): GetChartDataQuery {
-        val user = userStorageService.findUserByEmail(userName)
+    override fun getChartQuery(userId: UUID, createChartRequest: ChartRequest): GetChartDataQuery {
+        val user = userStorageService.findUserById(userId)
         val application: Application? = try {
             createChartRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
         } catch (e: ApplicationNotFoundException) {
@@ -175,7 +182,14 @@ class ESChartsServiceImpl(
     }
 
     fun getApplicationIndexes(user: User, application: Application?, indexType: String) =
-        applicationStorageService.findAllApplicationsByUser(user).filter {
-            application?.let { application -> application.id == it.id } ?: true
-        }.joinToString(",") { "${user.key.lowercase().filter { it2 -> it2.isLetterOrDigit() }}_${it.name}_$indexType" }
+        applicationStorageService.findAllApplicationsByUser(user)
+            .filter {
+                application?.let { application -> application.id == it.id } ?: true
+            }
+            .joinToString(",") {
+                "${
+                user.key.lowercase()
+                    .filter { it2 -> it2.isLetterOrDigit() }
+                }_${it.name}_$indexType"
+            }
 }
