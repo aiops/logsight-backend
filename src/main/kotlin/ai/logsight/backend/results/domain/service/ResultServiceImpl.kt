@@ -5,6 +5,7 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.results.domain.ResultInit
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
+import ai.logsight.backend.results.domain.service.command.UpdateResultInitStatusCommand
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
@@ -13,7 +14,10 @@ import ai.logsight.backend.results.ports.rpc.dto.FlushDTOOperations
 import ai.logsight.backend.results.ports.web.ResultController
 import com.antkorwin.xsync.XSync
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.messaging.Message
+import org.springframework.messaging.MessageHandler
 import org.springframework.stereotype.Service
+import org.zeromq.ZMsg
 
 @Service
 class ResultServiceImpl(
@@ -66,11 +70,39 @@ class ResultServiceImpl(
                 resultInitRPCService.flush(topic, flushDTO)
             } catch (e: Exception) {
                 // Revert DB entry if sending failed
-                logger.error("Failed to send flush RPC $flushDTO. Reason: ${e.message}")
+                logger.error(
+                    "Failed to send flush RPC $flushDTO. Reason: ${e.message}",
+                    this::updateResultInitStatus.name
+                )
                 resultInitStorageService.deleteResultInit(resultInitNotNull)
                 throw RuntimeException("Failed to send flush RPC $flushDTO. Reason: ${e.message}")
             }
             resultInitNotNull
         } ?: throw RuntimeException() // This should not happen
+    }
+
+    override fun updateResultInitStatus(updateResultInitStatusCommand: UpdateResultInitStatusCommand): ResultInit? {
+        fun logError(e: Exception) = logger.error(
+            "Failed to update status of ResultInit object. Reason: ${e.message}",
+            this::updateResultInitStatus.name
+        )
+        
+        val resultInit = try {
+            resultInitStorageService.findResultInitById(updateResultInitStatusCommand.id)
+        } catch (e: Exception) {
+            logError(e)
+            null
+        }
+
+        return resultInit?.let { resultInitNotNull ->
+            try {
+                resultInitStorageService.updateResultInitStatus(
+                    resultInitNotNull, updateResultInitStatusCommand.status
+                )
+            } catch (e: Exception) {
+                logError(e)
+                null
+            }
+        }
     }
 }

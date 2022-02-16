@@ -1,11 +1,20 @@
 package ai.logsight.backend.results.ports.rpc.adapters.zeromq.config
 
+import ai.logsight.backend.results.domain.service.ResultService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.integration.annotation.ServiceActivator
+import org.springframework.integration.channel.FluxMessageChannel
+import org.springframework.integration.support.json.EmbeddedJsonHeadersMessageMapper
+import org.springframework.integration.zeromq.inbound.ZeroMqMessageProducer
+import org.springframework.messaging.MessageHandler
+import org.springframework.messaging.converter.GenericMessageConverter
 import org.zeromq.SocketType
 import org.zeromq.ZContext
 import org.zeromq.ZMQ
 import java.net.ConnectException
+
 
 @Configuration
 class ResultInitRPCZeroMqConfig(
@@ -13,25 +22,11 @@ class ResultInitRPCZeroMqConfig(
 ) {
     @Bean
     fun resultInitRPCSocketPub(): ZMQ.Socket {
+        val zmqContext = ZContext()
         val endpoint = "${resultInitRPCZeroMqConfigProperties.protocol}://" +
             "${resultInitRPCZeroMqConfigProperties.host}:" +
-            "${resultInitRPCZeroMqConfigProperties.pubPort}"
-        return getSocket(endpoint, SocketType.PUB)
-    }
-
-    @Bean
-    fun resultInitRPCSocketSub(): ZMQ.Socket {
-        val endpoint = "${resultInitRPCZeroMqConfigProperties.protocol}://" +
-            "${resultInitRPCZeroMqConfigProperties.host}:" +
-            "${resultInitRPCZeroMqConfigProperties.subPort}"
-        val socket = getSocket(endpoint, SocketType.SUB)
-        socket.subscribe(resultInitRPCZeroMqConfigProperties.subTopic)
-        return socket
-    }
-
-    private fun getSocket(endpoint: String, type: SocketType): ZMQ.Socket {
-        val ctx = ZContext()
-        val socket = ctx.createSocket(type)
+            "${resultInitRPCZeroMqConfigProperties.port}"
+        val socket = zmqContext.createSocket(SocketType.PUB)
         val status = try {
             socket.bind(endpoint)
         } catch (e: Exception) {

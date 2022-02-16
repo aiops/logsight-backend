@@ -1,5 +1,6 @@
 package ai.logsight.backend.common.utils
 
+import ai.logsight.backend.common.logging.LoggerImpl
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 
