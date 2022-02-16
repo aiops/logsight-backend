@@ -9,5 +9,5 @@ class RPCConfigPropertiesZeroMq(
     val protocol: String = "tcp",
     val host: String = "0.0.0.0",
     val port: Int = 5555,
-    val timeout: Int = 5 * 1000 // seconds
+    val timeout: Int = 10 * 1000 // seconds
 )
