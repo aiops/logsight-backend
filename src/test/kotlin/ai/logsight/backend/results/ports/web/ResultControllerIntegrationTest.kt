@@ -12,16 +12,18 @@ import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.results.domain.ResultOperations
 import ai.logsight.backend.results.domain.service.ResultInitStatus
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
-import ai.logsight.backend.results.extensions.toResultInit
 import ai.logsight.backend.results.ports.persistence.ResultInitEntity
 import ai.logsight.backend.results.ports.persistence.ResultInitRepository
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
 import ai.logsight.backend.results.ports.web.request.CreateResultInitRequest
-import ai.logsight.backend.users.exceptions.MailClientException
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
@@ -41,6 +44,8 @@ import java.util.*
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@DirtiesContext
+
 internal class ResultControllerIntegrationTest {
 
     @Autowired
@@ -109,7 +114,8 @@ internal class ResultControllerIntegrationTest {
                 status { isCreated() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 assert(ResultInitStatus.PENDING.name in result.andReturn().response.contentAsString)
-            }.andReturn().response.contentAsString
+            }
+                .andReturn().response.contentAsString
         }
 
         @Test
@@ -128,7 +134,8 @@ internal class ResultControllerIntegrationTest {
             result.andExpect {
                 status { isBadRequest() }
                 content { contentType(MediaType.APPLICATION_JSON) }
-            }.andReturn().response.contentAsString
+            }
+                .andReturn().response.contentAsString
         }
 
         @Test

@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -35,6 +36,7 @@ import java.util.*
 
 @WithMockUser(username = "sasho@sasho.com")
 @WebMvcTest(LogsController::class)
+@DirtiesContext
 internal class LogsControllerUnitTest {
 
     @Autowired
@@ -88,10 +90,22 @@ internal class LogsControllerUnitTest {
 
             // then
             result.andExpect(status().isOk)
-                .andExpect(MockMvcResultMatchers.jsonPath("$.appId").value(appId.toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.orderId").value(orderCounter))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.logsCount").value(logBatchDTO.logs.size))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.source").value(source))
+                .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.appId")
+                        .value(appId.toString())
+                )
+                .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.orderId")
+                        .value(orderCounter)
+                )
+                .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.logsCount")
+                        .value(logBatchDTO.logs.size)
+                )
+                .andExpect(
+                    MockMvcResultMatchers.jsonPath("$.source")
+                        .value(source)
+                )
         }
 
         @Test

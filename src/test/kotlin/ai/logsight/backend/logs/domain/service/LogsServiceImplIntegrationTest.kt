@@ -4,10 +4,10 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
+import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.common.utils.TopicJsonSerializer
 import ai.logsight.backend.logs.domain.LogFormats
 import ai.logsight.backend.logs.domain.LogsReceipt
-import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.users.extensions.toUser
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.zeromq.SocketType
 import org.zeromq.ZContext
@@ -31,6 +32,8 @@ import org.zeromq.ZMQ
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
+@DirtiesContext
+
 class LogsServiceImplIntegrationTest {
     @Autowired
     lateinit var applicationRepository: ApplicationRepository
@@ -144,7 +147,10 @@ class LogsServiceImplIntegrationTest {
             Assertions.assertEquals(logReceipts.size, numBatches)
             // assert that values are sorted asc
             Assertions.assertTrue {
-                logReceipts.map { it.orderNum }.asSequence().zipWithNext { a, b -> a <= b }.all { it }
+                logReceipts.map { it.orderNum }
+                    .asSequence()
+                    .zipWithNext { a, b -> a <= b }
+                    .all { it }
             }
         }
 
@@ -235,7 +241,9 @@ class LogsServiceImplIntegrationTest {
             Assertions.assertEquals(receiptIdsExpected.size, logsReceipts.size)
             // assert that values are sorted asc
             Assertions.assertTrue {
-                receiptIds.asSequence().zipWithNext { a, b -> a <= b }.all { it }
+                receiptIds.asSequence()
+                    .zipWithNext { a, b -> a <= b }
+                    .all { it }
             }
         }
 
