@@ -10,7 +10,7 @@ class ActivateUserRequest(
         regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
         message = "id must be UUID type."
     )
-    val id: String,
+    val userId: String,
     @get:NotNull(message = "activationToken must not be empty.")
     val activationToken: UUID
 )

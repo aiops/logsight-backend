@@ -8,7 +8,7 @@ import javax.validation.constraints.Size
 
 class ResetPasswordRequest(
     @get:NotNull(message = "id must not be empty.")
-    val id: UUID,
+    val userId: UUID,
     @get:NotEmpty(message = "password must not be empty.")
     @get:Size(min = 8, message = "password must be at least 8 characters.")
     val password: String,

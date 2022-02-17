@@ -91,11 +91,11 @@ internal class LogsControllerUnitTest {
             // then
             result.andExpect(status().isOk)
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.appId")
+                    MockMvcResultMatchers.jsonPath("$.applicationId")
                         .value(appId.toString())
                 )
                 .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.orderId")
+                    MockMvcResultMatchers.jsonPath("$.orderNum")
                         .value(orderCounter)
                 )
                 .andExpect(

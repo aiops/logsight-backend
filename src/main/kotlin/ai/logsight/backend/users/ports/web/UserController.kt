@@ -53,7 +53,7 @@ class UserController(
         logger.info("Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name)
         val user = userService.createUser(createUserCommand)
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
-        return CreateUserResponse(id = user.id)
+        return CreateUserResponse(userId = user.id)
     }
 
     /**
@@ -63,13 +63,13 @@ class UserController(
     @PostMapping("/activate")
     @ResponseStatus(HttpStatus.OK)
     fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
-        logger.info("Activating user ${activateUserRequest.id}.", this::activateUser.name)
+        logger.info("Activating user ${activateUserRequest.userId}.", this::activateUser.name)
         val activateUserCommand = ActivateUserCommand(
-            id = UUID.fromString(activateUserRequest.id), activationToken = activateUserRequest.activationToken
+            id = UUID.fromString(activateUserRequest.userId), activationToken = activateUserRequest.activationToken
         )
         val activatedUser = userService.activateUser(activateUserCommand)
-        logger.info("User ${activateUserRequest.id} successfully activated.", this::activateUser.name)
-        return ActivateUserResponse(id = activatedUser.id)
+        logger.info("User ${activateUserRequest.userId} successfully activated.", this::activateUser.name)
+        return ActivateUserResponse(userId = activatedUser.id)
     }
 
     /**
@@ -81,7 +81,7 @@ class UserController(
     fun changePassword(
         @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
     ): ChangePasswordResponse {
-        val user = userService.findUser(FindUserQuery(UUID.fromString(changePasswordRequest.id)))
+        val user = userService.findUser(FindUserQuery(UUID.fromString(changePasswordRequest.userId)))
         val changePasswordCommand = ChangePasswordCommand(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,
@@ -91,7 +91,7 @@ class UserController(
         logger.info("Starting the process for changing password of a user ${user.id}.", this::changePassword.name)
         val modifiedUser = userService.changePassword(changePasswordCommand)
         logger.info("Password changed for a user ${user.id}.", this::changePassword.name)
-        return ChangePasswordResponse(id = modifiedUser.id)
+        return ChangePasswordResponse(userId = modifiedUser.id)
     }
 
     /**
@@ -105,14 +105,14 @@ class UserController(
             password = resetPasswordRequest.password,
             repeatPassword = resetPasswordRequest.repeatPassword,
             passwordResetToken = resetPasswordRequest.passwordResetToken,
-            id = resetPasswordRequest.id
+            id = resetPasswordRequest.userId
         )
         logger.info(
-            "Starting the process for reset password of a user ${resetPasswordRequest.id}.", this::resetPassword.name
+            "Starting the process for reset password of a user ${resetPasswordRequest.userId}.", this::resetPassword.name
         )
         val modifiedUser = userService.resetPasswordWithToken(resetPasswordCommand)
-        logger.info("Password reset successfully for user ${resetPasswordRequest.id}.", this::resetPassword.name)
-        return ResetPasswordResponse(id = modifiedUser.id)
+        logger.info("Password reset successfully for user ${resetPasswordRequest.userId}.", this::resetPassword.name)
+        return ResetPasswordResponse(userId = modifiedUser.id)
     }
 
     /**

@@ -9,7 +9,7 @@ data class GetCompareResultRequest(
     @get:NotNull(message = "applicationId must not be null or empty.")
     val applicationId: UUID,
     @RequestParam(required = false)
-    val resultInitId: UUID?,
+    val flushId: UUID?,
     @get:NotEmpty(message = "baselineTag must not be empty.")
     val baselineTag: String,
     @get:NotEmpty(message = "compareTag must not be empty.")

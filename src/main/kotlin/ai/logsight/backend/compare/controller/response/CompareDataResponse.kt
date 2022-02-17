@@ -8,8 +8,8 @@ import java.util.*
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class CompareDataResponse(
     var applicationId: UUID? = null,
-    var resultInitId: UUID? = null,
-    var reportLink: String? = "",
+    var flushId: UUID? = null,
+    var detailedReportLink: String? = "",
     @JsonAlias("risk")
     val risk: Long,
     @JsonAlias("total_n_log_messages")
