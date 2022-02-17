@@ -9,6 +9,7 @@ import java.util.*
 data class CompareDataResponse(
     var applicationId: UUID? = null,
     var resultInitId: UUID? = null,
+    var reportLink: String? = "",
     @JsonAlias("risk")
     val risk: Long,
     @JsonAlias("total_n_log_messages")

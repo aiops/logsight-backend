@@ -13,6 +13,7 @@ import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
+import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -94,19 +95,19 @@ class CompareService(
         return mapper.readValue<CompareDataResponse>(response.body().toString())
     }
 
-    fun getCompareTags(userId: UUID, applicationId: UUID): MutableList<String> {
+    fun getCompareTags(userId: UUID, applicationId: UUID): MutableList<Tag> {
         val application = applicationStorageService.findApplicationById(applicationId)
         val applicationIndex = "${application.user.key}_${application.name}_log_ad"
         val chartRequest = ChartRequest(applicationId = applicationId, chartConfig = ChartConfig("util", "now", "now", "versions", "log_ad"))
         val getChartDataQuery = chartsService.getChartQuery(application.user.id, chartRequest)
         val tags = chartsRepository.getData(getChartDataQuery, applicationIndex) // use mapper here
-        val dataList = mutableListOf<String>()
+        val dataList = mutableListOf<Tag>()
         JSONObject(tags)
             .getJSONObject("aggregations")
             .getJSONObject("listAggregations")
             .getJSONArray("buckets")
             .forEach {
-                dataList.add(JSONObject(it.toString()).getString("key"))
+                dataList.add(Tag(JSONObject(it.toString()).getString("key"), JSONObject(it.toString()).getString("key")))
             }
         return dataList
     }

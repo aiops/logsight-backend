@@ -1,9 +1,11 @@
 package ai.logsight.backend.compare.controller
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.common.config.CommonConfigurationProperties
 import ai.logsight.backend.compare.controller.request.GetCompareResultRequest
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
+import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.service.CompareService
 import io.swagger.annotations.Api
 import org.springframework.http.HttpStatus
@@ -16,12 +18,14 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/compare")
 class CompareController(
     val compareService: CompareService,
-    val applicationStorageService: ApplicationStorageService
+    val applicationStorageService: ApplicationStorageService,
+    val commonConfigurationProperties: CommonConfigurationProperties
 ) {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): CompareDataResponse {
+
         val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
         val compareDTO = CompareDTO(
             applicationId = application.id,
@@ -34,6 +38,8 @@ class CompareController(
         val compareResponse = compareService.getCompareData(compareDTO)
         compareResponse.applicationId = application.id
         compareResponse.resultInitId = getCompareResultRequest.resultInitId
+        compareResponse.reportLink =
+            "${commonConfigurationProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.compareTag}"
         return compareResponse
     }
 
@@ -57,7 +63,7 @@ class CompareController(
     fun getCompareVersions(
         @RequestParam(required = true) applicationId: UUID,
         @RequestParam(required = true) userId: UUID
-    ): MutableList<String> {
+    ): MutableList<Tag> {
         return compareService.getCompareTags(userId, applicationId) // use response here
     }
 }
