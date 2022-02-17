@@ -1,10 +1,16 @@
 package ai.logsight.backend.verification.service
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.service.ChartsService
 import ai.logsight.backend.charts.repository.ESChartRepository
+import ai.logsight.backend.charts.rest.ChartsController
 import ai.logsight.backend.charts.rest.request.ChartRequest
+import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
+import ai.logsight.backend.results.domain.service.ResultInitStatus
+import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
+import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.verification.dto.VerificationDTO
 import ai.logsight.backend.verification.exceptions.RemoteVerificationException
 import ai.logsight.backend.verification.out.rest.config.VerificationRESTConfigProperties
@@ -17,12 +23,14 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.*
 
 @Service
 class ContinuousVerificationService(
     private val restConfigProperties: VerificationRESTConfigProperties,
     private val applicationStorageService: ApplicationStorageService,
     private val chartsRepository: ESChartRepository,
+    private val resultInitStorageService: ResultInitStorageService,
     private val chartsService: ChartsService
 ) {
     val resetTemplate = RestTemplateConnector()
@@ -30,7 +38,18 @@ class ContinuousVerificationService(
         .build()
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
+    private val logger = LoggerImpl(ChartsController::class.java)
+
     fun getVerificationData(verificationDTO: VerificationDTO): String {
+        try {
+            val resultInit = verificationDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
+            if (resultInit!!.status != ResultInitStatus.DONE) {
+                throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
+            }
+        } catch (e: Exception) {
+            logger.warn("Result init is null. Getting results anyway!")
+        }
+
         val uri = buildVerificationEndpointURI(verificationDTO)
         val request =
             HttpRequest.newBuilder()
@@ -48,9 +67,10 @@ class ContinuousVerificationService(
             .toString()
     }
 
-    fun getVerificationTags(chartRequest: ChartRequest): MutableList<String> {
-        val application = chartRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
-        val applicationIndex = "${application!!.user.id}_${application.name}_log_ad"
+    fun getVerificationTags(userId: UUID, applicationId: UUID): MutableList<String> {
+        val application = applicationStorageService.findApplicationById(applicationId)
+        val applicationIndex = "${application.user.key}_${application.name}_log_ad"
+        val chartRequest = ChartRequest(applicationId = applicationId, chartConfig = ChartConfig("util", "now", "now", "versions", "log_ad"))
         val getChartDataQuery = chartsService.getChartQuery(application.user.id, chartRequest)
         val tags = chartsRepository.getData(getChartDataQuery, applicationIndex) // use mapper here
         val dataList = mutableListOf<String>()

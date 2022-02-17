@@ -16,7 +16,7 @@ package ai.logsight.backend.verification.controller
 //    companion object {
 //        val mapper = ObjectMapper().registerModule(KotlinModule())!!
 //        const val endpoint = "/api/v1/verification"
-//        val request = LogCompareRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
+//        val request = GetVerificationResultRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
 //    }
 //
 //    @BeforeEach

@@ -45,7 +45,6 @@ import java.util.*
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext
-
 internal class ResultControllerIntegrationTest {
 
     @Autowired
