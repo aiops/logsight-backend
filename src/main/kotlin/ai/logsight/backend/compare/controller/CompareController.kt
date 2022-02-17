@@ -17,7 +17,7 @@ import javax.validation.Valid
 
 @Api(tags = ["Compare"], description = " ")
 @RestController
-@RequestMapping("/api/v1/compare")
+@RequestMapping("/api/v1/logs/compare")
 class CompareController(
     val compareService: CompareService,
     val applicationStorageService: ApplicationStorageService,

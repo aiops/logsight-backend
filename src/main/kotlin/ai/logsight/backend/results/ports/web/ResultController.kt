@@ -14,9 +14,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
-@Api(tags = ["Log operations"], description = " ")
+@Api(tags = ["Control"], description = " ")
 @RestController
-// TODO ("CHANGE NAME OF FLUSH")
 @RequestMapping("/api/v1/logs/flush")
 class ResultController(
     private val receiptStorageService: LogsReceiptStorageService,
@@ -30,7 +29,7 @@ class ResultController(
      */
     @ApiOperation("Flush currently sent logs in analysis pipeline.")
     @PostMapping("")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     fun createResultInit(
         @Valid @RequestBody createResultInitRequest: CreateResultInitRequest
     ): CreateResultInitResponse {
@@ -44,16 +43,12 @@ class ResultController(
         )
         logger.info("Creating ResultInit object for logs receipt $logsReceipt.", this::createResultInit.name)
         val resultInit = resultService.createResultInit(createResultInitCommand)
-        return when (createResultInitRequest.operation) {
-            ResultOperations.INIT -> {
-                logger.info(
-                    "ResultInit with id: ${resultInit.id} successfully created.",
-                    this::createResultInit.name
-                )
-                CreateResultInitResponse(
-                    flushId = resultInit.id, status = resultInit.status
-                )
-            }
-        }
+        logger.info(
+            "ResultInit with id: ${resultInit.id} successfully created.",
+            this::createResultInit.name
+        )
+        return CreateResultInitResponse(
+            flushId = resultInit.id, status = resultInit.status
+        )
     }
 }

@@ -101,7 +101,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id, ResultOperations.INIT)
+            val request = CreateResultInitRequest(receiptId = receipt.id)
             // when
             val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -110,7 +110,7 @@ internal class ResultControllerIntegrationTest {
             }
             // then
             result.andExpect {
-                status { isCreated() }
+                status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 assert(ResultInitStatus.PENDING.name in result.andReturn().response.contentAsString)
             }
@@ -122,7 +122,7 @@ internal class ResultControllerIntegrationTest {
             // given
             val user = userRepository.save(TestInputConfig.baseUserEntity)
             val application = appRepository.save(TestInputConfig.baseAppEntity)
-            val request = CreateResultInitRequest(receiptId = application.id, ResultOperations.INIT) // wrong id
+            val request = CreateResultInitRequest(receiptId = application.id) // wrong id
             // when
             val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -149,7 +149,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id, ResultOperations.INIT)
+            val request = CreateResultInitRequest(receiptId = receipt.id)
             resultInitRepository.save(
                 ResultInitEntity(
                     UUID.randomUUID(),
@@ -184,7 +184,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id, ResultOperations.INIT)
+            val request = CreateResultInitRequest(receiptId = receipt.id)
             Mockito.`when`(resultInitRPCService.flush(any(), any()))
                 .thenThrow(RuntimeException::class.java)
             // when

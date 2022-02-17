@@ -6,6 +6,5 @@ import javax.validation.constraints.NotNull
 
 data class CreateResultInitRequest(
     @get:NotNull(message = "receiptId must not be empty")
-    val receiptId: UUID,
-    val operation: ResultOperations
+    val receiptId: UUID
 )
