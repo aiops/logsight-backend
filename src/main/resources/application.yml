@@ -1,22 +1,30 @@
 spring:
   main:
     banner-mode: "off"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    username: logsight
+    password: logsight
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+      javax:
+        persistence:
+          schema-generation:
+            create-source: metadata
+            scripts:
+              action: create
+              create-target: schema.sql
   servlet:
     multipart:
       enabled: true
       max-file-size: 500MB
       max-request-size: 500MB
-  datasource:
-    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
-    username: logsight
-    password: logsight
-    driver-class-name: org.postgresql.Driver
+
   mail:
     host: mail.privateemail.com
     port: 587
@@ -29,6 +37,9 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
+
+
 
 resources:
   path: src/main/resources/
