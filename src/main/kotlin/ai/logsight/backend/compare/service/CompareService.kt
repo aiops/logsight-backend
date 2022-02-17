@@ -7,15 +7,15 @@ import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.rest.ChartsController
 import ai.logsight.backend.charts.rest.request.ChartRequest
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.results.domain.service.ResultInitStatus
-import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
-import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
+import ai.logsight.backend.connectors.rest.RestTemplateConnector
+import ai.logsight.backend.results.domain.service.ResultInitStatus
+import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
+import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -70,13 +70,11 @@ class CompareService(
     }
 
     fun getCompareData(compareDTO: CompareDTO): CompareDataResponse {
-        try {
-            val resultInit = compareDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
-            if (resultInit!!.status != ResultInitStatus.DONE) {
-                throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
-            }
-        } catch (e: Exception) {
-            logger.warn("Result init is null. Getting results anyway!")
+        val resultInit = compareDTO.resultInitId?.let {
+            resultInitStorageService.findResultInitById(it)
+        }
+        if (resultInit != null && resultInit.status != ResultInitStatus.DONE) {
+            throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
         }
 
         val uri = buildCompareEndpointURI(compareDTO)

@@ -138,7 +138,7 @@ internal class ResultControllerIntegrationTest {
         }
 
         @Test
-        fun `should return exception if there is an already pending receipt for the same application`() {
+        fun `should return valid if there is an already pending receipt for the same application`() {
             // given
             userRepository.save(TestInputConfig.baseUserEntity)
             val application = appRepository.save(TestInputConfig.baseAppEntity)
@@ -165,7 +165,7 @@ internal class ResultControllerIntegrationTest {
             }
             // then
             val exception = result.andExpect {
-                status { isConflict() }
+                status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException

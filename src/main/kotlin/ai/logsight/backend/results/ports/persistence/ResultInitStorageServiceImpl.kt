@@ -40,5 +40,5 @@ class ResultInitStorageServiceImpl(
 
     private fun findResultInitByIdPrivate(resultInitId: UUID): ResultInitEntity =
         resultInitRepository.findById(resultInitId)
-            .orElseThrow { ApplicationNotFoundException("ResultInit with ID $resultInitId does not exist.") }
+            .orElseThrow { ResultInitNotFoundException("ResultInit with ID $resultInitId does not exist.") }
 }

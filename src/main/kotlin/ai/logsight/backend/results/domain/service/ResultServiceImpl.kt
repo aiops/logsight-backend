@@ -29,29 +29,10 @@ class ResultServiceImpl(
 
     override fun createResultInit(createResultInitCommand: CreateResultInitCommand): ResultInit {
         // This is needed due to the mutex block. Later it's ugly with ?.let There might be a better way?
-        var resultInit: ResultInit? = null
-        // MUTEX to prevent duplicated ResultInit objects with status PENDING
-        xSync.execute("result init") {
-            // try to load ResultInit where status is in PENDING
-            val results = resultInitStorageService.findAllResultInitByStatusAndApplicationId(
-                ResultInitStatus.PENDING,
-                createResultInitCommand.logsReceipt.application.id
-            )
-            resultInit = when (results.size) {
-                // none pending -> it is allowed to create a new ResultInit object and store it in DB
-                0 -> resultInitStorageService.saveResultInit(createResultInitCommand)
-                // pending -> throw exception since only one at a time is allowed
-                1 -> throw ResultInitAlreadyPendingException(
-                    "A result init ${results[0]} is already pending. Try to poll for the results."
-                )
-                // TODO: This invalid state can be fixed. Write a routine to terminate the ResulInit request to restore a valid state
-                else -> throw ResultInitAlreadyPendingException(
-                    "Invalid state. There are ${results.size} pending result inits but 1 is allowed."
-                )
-            }
-        }
+        // try to load ResultInit where status is in PENDING
+        val resultInit = resultInitStorageService.saveResultInit(createResultInitCommand)
 
-        return resultInit?.let { resultInitNotNull ->
+        return resultInit.let { resultInitNotNull ->
             // Create DTO to transfer to logsight core
             val flushDTO = FlushDTO(
                 id = resultInitNotNull.id,
