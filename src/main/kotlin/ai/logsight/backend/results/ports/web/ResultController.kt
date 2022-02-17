@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
-@Api(tags = ["Results"], description = " ")
+@Api(tags = ["Log operations"], description = " ")
 @RestController
 // TODO ("CHANGE NAME OF FLUSH")
 @RequestMapping("/api/v1/logs/flush")
@@ -28,7 +28,7 @@ class ResultController(
     /**
      * Register a new ResultInit object.
      */
-    @ApiOperation("Create ResultInit")
+    @ApiOperation("Flush currently sent logs in analysis pipeline.")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createResultInit(
@@ -51,7 +51,7 @@ class ResultController(
                     this::createResultInit.name
                 )
                 CreateResultInitResponse(
-                    id = resultInit.id, status = resultInit.status
+                    flushId = resultInit.id, status = resultInit.status
                 )
             }
         }

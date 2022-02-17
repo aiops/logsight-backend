@@ -32,7 +32,7 @@ class ApplicationLifecycleController(
 
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
 
-    @ApiOperation("Get all application of the authenticated user")
+    @ApiOperation("Get all application of the authenticated user.")
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
@@ -52,7 +52,7 @@ class ApplicationLifecycleController(
     /**
      * Register a new application in the system.
      */
-    @ApiOperation("Create application")
+    @ApiOperation("Create application.")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     fun createApplication(
@@ -81,7 +81,7 @@ class ApplicationLifecycleController(
     /**
      * Delete an existing application.
      */
-    @ApiOperation("Delete application")
+    @ApiOperation("Delete application.")
     @DeleteMapping("/{applicationId}")
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(

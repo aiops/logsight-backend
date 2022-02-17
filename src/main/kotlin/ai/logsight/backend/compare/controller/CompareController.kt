@@ -8,12 +8,14 @@ import ai.logsight.backend.compare.dto.CompareDTO
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.service.CompareService
 import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import springfox.documentation.annotations.ApiIgnore
 import java.util.*
 import javax.validation.Valid
 
-@Api(tags = ["Applications"], description = " ")
+@Api(tags = ["Compare"], description = " ")
 @RestController
 @RequestMapping("/api/v1/compare")
 class CompareController(
@@ -22,6 +24,7 @@ class CompareController(
     val commonConfigurationProperties: CommonConfigurationProperties
 ) {
 
+    @ApiOperation("Obtain log compare results between two tags.")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): CompareDataResponse {
@@ -43,6 +46,7 @@ class CompareController(
         return compareResponse
     }
 
+    @ApiIgnore
     @PostMapping("/view")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareViewResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): String {
@@ -58,9 +62,10 @@ class CompareController(
         return compareService.getCompareDataView(compareDTO)
     }
 
-    @GetMapping("/versions")
+    @ApiOperation("Get all available tags for specific application.")
+    @GetMapping("/tags")
     @ResponseStatus(HttpStatus.OK)
-    fun getCompareVersions(
+    fun getCompareTags(
         @RequestParam(required = true) applicationId: UUID,
         @RequestParam(required = true) userId: UUID
     ): MutableList<Tag> {

@@ -73,7 +73,7 @@ internal class ResultControllerIntegrationTest {
     private lateinit var analyticsManagerAppRPC: RPCService
 
     companion object {
-        const val endpoint = "/api/v1/results"
+        const val endpoint = "/api/v1/logs/flush"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
     }
 
@@ -103,7 +103,7 @@ internal class ResultControllerIntegrationTest {
             )
             val request = CreateResultInitRequest(receiptId = receipt.id, ResultOperations.INIT)
             // when
-            val result = mockMvc.post("/api/v1/results") {
+            val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -124,7 +124,7 @@ internal class ResultControllerIntegrationTest {
             val application = appRepository.save(TestInputConfig.baseAppEntity)
             val request = CreateResultInitRequest(receiptId = application.id, ResultOperations.INIT) // wrong id
             // when
-            val result = mockMvc.post("/api/v1/results") {
+            val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -158,7 +158,7 @@ internal class ResultControllerIntegrationTest {
                 )
             )
             // when
-            val result = mockMvc.post("/api/v1/results") {
+            val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -188,7 +188,7 @@ internal class ResultControllerIntegrationTest {
             Mockito.`when`(resultInitRPCService.flush(any(), any()))
                 .thenThrow(RuntimeException::class.java)
             // when
-            val result = mockMvc.post("/api/v1/results") {
+            val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
