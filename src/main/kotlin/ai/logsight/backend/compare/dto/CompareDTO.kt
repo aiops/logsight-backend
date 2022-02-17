@@ -1,8 +1,8 @@
-package ai.logsight.backend.verification.dto
+package ai.logsight.backend.compare.dto
 
 import java.util.*
 
-data class VerificationDTO(
+data class CompareDTO(
     val applicationId: UUID,
     val applicationName: String,
     val resultInitId: UUID?,

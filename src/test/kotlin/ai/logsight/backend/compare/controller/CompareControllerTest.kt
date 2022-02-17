@@ -1,9 +1,9 @@
-package ai.logsight.backend.verification.controller
-
+//package ai.logsight.backend.compare.controller
+//
 //
 // @AutoConfigureMockMvc
 // @ActiveProfiles("test")
-// internal class ContinuousVerificationControllerTest {
+// internal class CompareControllerTest {
 //    @Autowired
 //    private lateinit var mockMvc: MockMvc
 //
@@ -15,8 +15,8 @@ package ai.logsight.backend.verification.controller
 //
 //    companion object {
 //        val mapper = ObjectMapper().registerModule(KotlinModule())!!
-//        const val endpoint = "/api/v1/verification"
-//        val request = GetVerificationResultRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
+//        const val endpoint = "/api/v1/compare"
+//        val request = GetCompareResultRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
 //    }
 //
 //    @BeforeEach

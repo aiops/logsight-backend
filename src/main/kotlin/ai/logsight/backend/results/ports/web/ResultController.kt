@@ -16,7 +16,8 @@ import javax.validation.Valid
 
 @Api(tags = ["Results"], description = " ")
 @RestController
-@RequestMapping("/api/v1/results")
+// TODO ("CHANGE NAME OF FLUSH")
+@RequestMapping("/api/v1/logs/flush")
 class ResultController(
     private val receiptStorageService: LogsReceiptStorageService,
     private val resultService: ResultService

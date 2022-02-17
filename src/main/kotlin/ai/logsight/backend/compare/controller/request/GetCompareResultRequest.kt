@@ -1,11 +1,11 @@
-package ai.logsight.backend.verification.controller.request
+package ai.logsight.backend.compare.controller.request
 
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 
-data class GetVerificationResultRequest(
+data class GetCompareResultRequest(
     @get:NotNull(message = "applicationId must not be null or empty.")
     val applicationId: UUID,
     @RequestParam(required = false)

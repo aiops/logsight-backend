@@ -13,7 +13,7 @@ import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.users.exceptions.*
-import ai.logsight.backend.verification.exceptions.RemoteVerificationException
+import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
@@ -59,7 +59,7 @@ class RestControllerAdvice {
         LogFileIOException::class,
         ApplicationRemoteException::class,
         Exception::class, // Wildcard,
-        RemoteVerificationException::class
+        RemoteCompareException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

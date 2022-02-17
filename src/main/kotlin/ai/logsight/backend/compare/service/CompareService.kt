@@ -1,4 +1,4 @@
-package ai.logsight.backend.verification.service
+package ai.logsight.backend.compare.service
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.domain.dto.ChartConfig
@@ -11,11 +11,13 @@ import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import ai.logsight.backend.results.domain.service.ResultInitStatus
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
-import ai.logsight.backend.verification.dto.VerificationDTO
-import ai.logsight.backend.verification.exceptions.RemoteVerificationException
-import ai.logsight.backend.verification.out.rest.config.VerificationRESTConfigProperties
+import ai.logsight.backend.compare.controller.response.CompareDataResponse
+import ai.logsight.backend.compare.dto.CompareDTO
+import ai.logsight.backend.compare.exceptions.RemoteCompareException
+import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.json.JSONObject
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -26,8 +28,8 @@ import java.net.http.HttpResponse
 import java.util.*
 
 @Service
-class ContinuousVerificationService(
-    private val restConfigProperties: VerificationRESTConfigProperties,
+class CompareService(
+    private val restConfigProperties: CompareRESTConfigProperties,
     private val applicationStorageService: ApplicationStorageService,
     private val chartsRepository: ESChartRepository,
     private val resultInitStorageService: ResultInitStorageService,
@@ -40,9 +42,9 @@ class ContinuousVerificationService(
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
-    fun getVerificationData(verificationDTO: VerificationDTO): String {
+    fun getCompareDataView(compareDTO: CompareDTO): String {
         try {
-            val resultInit = verificationDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
+            val resultInit = compareDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
             if (resultInit!!.status != ResultInitStatus.DONE) {
                 throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
             }
@@ -50,7 +52,7 @@ class ContinuousVerificationService(
             logger.warn("Result init is null. Getting results anyway!")
         }
 
-        val uri = buildVerificationEndpointURI(verificationDTO)
+        val uri = buildCompareEndpointURI(compareDTO)
         val request =
             HttpRequest.newBuilder()
                 .uri(uri)
@@ -59,15 +61,40 @@ class ContinuousVerificationService(
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() != HttpStatus.OK.value())
-            throw RemoteVerificationException(
+            throw RemoteCompareException(
                 response.body()
                     .toString()
             )
-        return response.body()
-            .toString()
+        return response.body().toString()
     }
 
-    fun getVerificationTags(userId: UUID, applicationId: UUID): MutableList<String> {
+    fun getCompareData(compareDTO: CompareDTO): CompareDataResponse {
+        try {
+            val resultInit = compareDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
+            if (resultInit!!.status != ResultInitStatus.DONE) {
+                throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
+            }
+        } catch (e: Exception) {
+            logger.warn("Result init is null. Getting results anyway!")
+        }
+
+        val uri = buildCompareEndpointURI(compareDTO)
+        val request =
+            HttpRequest.newBuilder()
+                .uri(uri)
+                .GET()
+                .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() != HttpStatus.OK.value())
+            throw RemoteCompareException(
+                response.body()
+                    .toString()
+            )
+        return mapper.readValue<CompareDataResponse>(response.body().toString())
+    }
+
+    fun getCompareTags(userId: UUID, applicationId: UUID): MutableList<String> {
         val application = applicationStorageService.findApplicationById(applicationId)
         val applicationIndex = "${application.user.key}_${application.name}_log_ad"
         val chartRequest = ChartRequest(applicationId = applicationId, chartConfig = ChartConfig("util", "now", "now", "versions", "log_ad"))
@@ -84,7 +111,7 @@ class ContinuousVerificationService(
         return dataList
     }
 
-    private fun buildVerificationEndpointURI(verificationDTO: VerificationDTO) =
+    private fun buildCompareEndpointURI(compareDTO: CompareDTO) =
         UriComponentsBuilder.newInstance()
             .scheme("http")
             .host(restConfigProperties.host)
@@ -92,11 +119,11 @@ class ContinuousVerificationService(
             .path("/api")
             .path("/v${restConfigProperties.apiVersion}")
             .path("/${restConfigProperties.endpoint}")
-            .queryParam(VerificationDTO::applicationId.name, verificationDTO.applicationId)
-            .queryParam(VerificationDTO::applicationName.name, verificationDTO.applicationName)
-            .queryParam(VerificationDTO::baselineTag.name, verificationDTO.baselineTag)
-            .queryParam(VerificationDTO::compareTag.name, verificationDTO.compareTag)
-            .queryParam(VerificationDTO::privateKey.name, verificationDTO.privateKey)
+            .queryParam(CompareDTO::applicationId.name, compareDTO.applicationId)
+            .queryParam(CompareDTO::applicationName.name, compareDTO.applicationName)
+            .queryParam(CompareDTO::baselineTag.name, compareDTO.baselineTag)
+            .queryParam(CompareDTO::compareTag.name, compareDTO.compareTag)
+            .queryParam(CompareDTO::privateKey.name, compareDTO.privateKey)
             .build()
             .toUri()
 }
