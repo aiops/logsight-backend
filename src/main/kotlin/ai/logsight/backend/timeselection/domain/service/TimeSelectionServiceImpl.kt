@@ -3,10 +3,10 @@ package ai.logsight.backend.timeselection.domain.service
 import ai.logsight.backend.timeselection.domain.TimeSelection
 import ai.logsight.backend.timeselection.ports.out.persistence.DateTimeType
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
+import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionStorageService
 import ai.logsight.backend.timeselection.ports.web.request.PredefinedTimeRequest
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
-import ai.logsight.backend.users.ports.out.persistence.TimeSelectionStorageService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

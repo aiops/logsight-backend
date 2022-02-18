@@ -1,15 +1,21 @@
 package ai.logsight.backend.users.extensions
 
-import ai.logsight.backend.users.domain.LocalUser
+import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import java.time.LocalDateTime
 
-fun UserEntity.toLocalUser() = LocalUser(
-    id = this.id, key = this.key
+fun UserEntity.toUser() = User(
+    id = this.id,
+    email = this.email,
+    password = this.password,
+    key = this.key,
+    activated = this.activated,
+    dateCreated = this.dateCreated ?: LocalDateTime.now(),
+    userType = this.userType
 )
 
-fun UserEntity.toUser() = User(
+fun UserEntity.toOnlineUser() = OnlineUser(
     id = this.id,
     email = this.email,
     password = this.password,
@@ -25,7 +31,7 @@ fun UserEntity.toUser() = User(
 
 )
 
-fun User.toUserEntity() = UserEntity(
+fun OnlineUser.toUserEntity() = UserEntity(
     id = this.id,
     email = this.email,
     password = this.password,
@@ -40,7 +46,22 @@ fun User.toUserEntity() = UserEntity(
     userType = this.userType
 )
 
-fun User.toLocalUser() = LocalUser(
+fun OnlineUser.toUser() = User(
     id = this.id,
-    key = this.key
+    email = this.email,
+    password = this.password,
+    key = this.key,
+    activated = this.activated,
+    dateCreated = this.dateCreated,
+    userType = this.userType
+)
+
+fun User.toUserEntity() = UserEntity(
+    id = this.id,
+    email = this.email,
+    password = this.password,
+    key = this.key,
+    activated = this.activated,
+    dateCreated = this.dateCreated,
+    userType = this.userType
 )

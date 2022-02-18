@@ -1,9 +1,7 @@
-package ai.logsight.backend.users.ports.out.persistence
+package ai.logsight.backend.timeselection.ports.out.persistence
 
 import ai.logsight.backend.timeselection.domain.TimeSelection
 import ai.logsight.backend.timeselection.extensions.toTimeSelection
-import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
-import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionRepository
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
@@ -14,11 +12,13 @@ class TimeSelectionStorageImpl(
     private val timeSelectionRepository: TimeSelectionRepository,
 ) : TimeSelectionStorageService {
     override fun findAllByUser(user: User): List<TimeSelection> {
-        return timeSelectionRepository.findAllByUser(user.toUserEntity()).map { timeSelection -> timeSelection.toTimeSelection() }
+        return timeSelectionRepository.findAllByUser(user.toUserEntity())
+            .map { timeSelection -> timeSelection.toTimeSelection() }
     }
 
     override fun saveTimeSelection(timeSelection: TimeSelectionEntity): TimeSelection {
-        return timeSelectionRepository.save(timeSelection).toTimeSelection()
+        return timeSelectionRepository.save(timeSelection)
+            .toTimeSelection()
     }
 
     override fun deleteTimeSelectionById(timeSelectionId: UUID) {

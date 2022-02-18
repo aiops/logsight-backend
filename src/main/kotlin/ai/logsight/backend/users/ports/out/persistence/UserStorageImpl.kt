@@ -1,9 +1,11 @@
 package ai.logsight.backend.users.ports.out.persistence
 
+import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.EmailExistsException
 import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserNotFoundException
+import ai.logsight.backend.users.extensions.toOnlineUser
 import ai.logsight.backend.users.extensions.toUser
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -15,17 +17,17 @@ class UserStorageImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) : UserStorageService {
-    override fun createUser(email: String, password: String): User {
+    override fun createOnlineUser(email: String, password: String): OnlineUser {
         if (userRepository.findByEmail(email) != null) throw EmailExistsException("User with $email is already registered.")
 
         val userEntity = UserEntity(
             email = email, password = passwordEncoder.encode(password), userType = UserType.ONLINE_USER
         )
         val savedEntity = userRepository.save(userEntity)
-        return savedEntity.toUser()
+        return savedEntity.toOnlineUser()
     }
 
-    override fun createLocalUser(email: String, password: String): User {
+    override fun createUser(email: String, password: String): User {
         if (userRepository.findByEmail(email) != null) throw EmailExistsException("User with email $email is already registered.")
         val userEntity = UserEntity(
             email = email,

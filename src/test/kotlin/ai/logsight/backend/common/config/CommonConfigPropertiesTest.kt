@@ -18,7 +18,7 @@ internal class CommonConfigPropertiesTest {
 
     companion object {
         val baseURI = URI("http://localhost:4200")
-        const val logsightEmail = "info@logsight.ai"
+        const val logsightEmail = "support@logsight.ai"
     }
 
     @Test

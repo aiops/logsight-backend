@@ -1,7 +1,6 @@
-package ai.logsight.backend.users.ports.out.persistence
+package ai.logsight.backend.timeselection.ports.out.persistence
 
 import ai.logsight.backend.timeselection.domain.TimeSelection
-import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import ai.logsight.backend.users.domain.User
 import java.util.*
 

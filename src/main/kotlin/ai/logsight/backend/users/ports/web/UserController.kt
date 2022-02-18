@@ -6,6 +6,7 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.service.UserService
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserQuery
+import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
 import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
@@ -13,8 +14,13 @@ import ai.logsight.backend.users.ports.web.response.CreateUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import java.util.*
 import javax.validation.Valid
 
@@ -27,6 +33,9 @@ class UserController(
 
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
 
+    @Value("\${logsight.user}")
+    private val mode: String? = null
+
     /**
      * Register a new user in the system.
      */
@@ -37,8 +46,14 @@ class UserController(
         val createUserCommand = CreateUserCommand(
             email = createUserRequest.email, password = createUserRequest.password
         )
-        logger.info("Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name)
-        val user = userService.createUser(createUserCommand)
+        logger.info(
+            "Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name
+        )
+        val user = when (mode) {
+            "online" -> userService.createOnlineUser(createUserCommand)
+                .toUser()
+            else -> userService.createUser(createUserCommand)
+        }
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
         return CreateUserResponse(userId = user.id)
     }
@@ -95,7 +110,8 @@ class UserController(
             id = resetPasswordRequest.userId
         )
         logger.info(
-            "Starting the process for reset password of a user ${resetPasswordRequest.userId}.", this::resetPassword.name
+            "Starting the process for reset password of a user ${resetPasswordRequest.userId}.",
+            this::resetPassword.name
         )
         val modifiedUser = userService.resetPasswordWithToken(resetPasswordCommand)
         logger.info("Password reset successfully for user ${resetPasswordRequest.userId}.", this::resetPassword.name)

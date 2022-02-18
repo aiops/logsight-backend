@@ -10,10 +10,12 @@ import com.antkorwin.xsync.XSync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
 
 @Service
+@Primary
 class ApplicationRPCServiceZeroMq(
     val zeroMqRPCSocket: ZMQ.Socket,
     val xSync: XSync<String>

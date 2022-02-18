@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -83,7 +84,7 @@ internal class LogsControllerUnitTest {
                 .thenReturn(user)
             Mockito.`when`(applicationStorageService.findApplicationById(appId))
                 .thenReturn(app)
-            Mockito.`when`(logsService.processLogBatch(logBatchDTO))
+            Mockito.`when`(logsService.processLogBatch(any()))
                 .thenReturn(logsReceipt)
 
             // when
@@ -94,10 +95,6 @@ internal class LogsControllerUnitTest {
                 .andExpect(
                     MockMvcResultMatchers.jsonPath("$.applicationId")
                         .value(appId.toString())
-                )
-                .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.orderNum")
-                        .value(orderCounter)
                 )
                 .andExpect(
                     MockMvcResultMatchers.jsonPath("$.logsCount")
@@ -144,7 +141,7 @@ internal class LogsControllerUnitTest {
                 .thenReturn(user)
             Mockito.`when`(applicationStorageService.findApplicationById(appId))
                 .thenReturn(app)
-            Mockito.`when`(logsService.processLogBatch(logBatchDTO))
+            Mockito.`when`(logsService.processLogBatch(any()))
                 .thenThrow(ApplicationStatusException::class.java)
 
             // when
@@ -183,12 +180,7 @@ internal class LogsControllerUnitTest {
         email = email,
         password = "sasho",
         key = "key",
-        activationDate = LocalDateTime.now(),
         dateCreated = LocalDateTime.now(),
-        hasPaid = true,
-        usedData = 10,
-        approachingLimit = false,
-        availableData = 10000,
         activated = true,
         userType = UserType.ONLINE_USER
     )

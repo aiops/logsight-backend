@@ -25,7 +25,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -58,8 +57,7 @@ class ApplicationLifecycleControllerTest {
     private lateinit var appRepository: ApplicationRepository
 
     @MockBean
-    @Qualifier("ZeroMQ")
-    private lateinit var analyticsManagerAppRPC: RPCService
+    private lateinit var applicationRPCServiceZeroMq: RPCService
 
     companion object {
         const val endpoint = "/api/v1/users"
@@ -95,7 +93,7 @@ class ApplicationLifecycleControllerTest {
             val response = RPCResponse(
                 TestInputConfig.baseAppEntity.id.toString(), "message", 200
             )
-            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenReturn(response)
             // when\
             val result = mockMvc.post(createEndpoint) {
@@ -211,7 +209,7 @@ class ApplicationLifecycleControllerTest {
             val request = CreateApplicationRequest(appName)
 
             // when
-            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenThrow(ApplicationRemoteException())
 
             val result = mockMvc.post(createEndpoint) {
@@ -266,7 +264,7 @@ class ApplicationLifecycleControllerTest {
             val response = RPCResponse(
                 TestInputConfig.baseAppEntity.id.toString(), "message", 200
             )
-            Mockito.`when`(analyticsManagerAppRPC.deleteApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.deleteApplication(any()))
                 .thenReturn(response)
             // when\
             val result = mockMvc.delete(deleteEndpoint) {
@@ -303,7 +301,7 @@ class ApplicationLifecycleControllerTest {
             val response = RPCResponse(
                 TestInputConfig.baseAppEntity.id.toString(), "message", 200
             )
-            Mockito.`when`(analyticsManagerAppRPC.deleteApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.deleteApplication(any()))
                 .thenReturn(response)
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -364,7 +362,7 @@ class ApplicationLifecycleControllerTest {
             val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
 
             // when
-            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenThrow(ApplicationRemoteException())
 
             val result = mockMvc.delete(deleteEndpoint) {
@@ -393,7 +391,7 @@ class ApplicationLifecycleControllerTest {
             appRepository.save(appCreating)
 
             // when
-            Mockito.`when`(analyticsManagerAppRPC.createApplication(any()))
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenThrow(ApplicationRemoteException())
 
             val result = mockMvc.delete(deleteEndpoint) {

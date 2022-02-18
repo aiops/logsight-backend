@@ -5,7 +5,7 @@ import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.email.domain.service.helpers.EmailTemplateTypes
 import ai.logsight.backend.timeselection.domain.service.TimeSelectionService
 import ai.logsight.backend.token.service.TokenService
-import ai.logsight.backend.users.domain.LocalUser
+import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.domain.service.command.*
 import ai.logsight.backend.users.domain.service.query.FindUserQuery
@@ -13,7 +13,6 @@ import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
 import ai.logsight.backend.users.exceptions.UserNotActivatedException
-import ai.logsight.backend.users.extensions.toLocalUser
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.slf4j.Logger
@@ -34,19 +33,19 @@ class UserServiceImpl(
 
     val logger: Logger = LoggerFactory.getLogger(UserServiceImpl::class.java)
 
-    override fun createUser(createUserCommand: CreateUserCommand): User {
-
+    override fun createOnlineUser(createUserCommand: CreateUserCommand): OnlineUser {
+        logger.info("Creating online user.")
         if (userStorageService.checkEmailExists(createUserCommand.email)) {
             val user = userStorageService.findUserByEmail(createUserCommand.email)
             if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
         }
         // create user
-        val savedUser = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
+        val savedUser = userStorageService.createOnlineUser(createUserCommand.email, createUserCommand.password)
         // send Activation email
         try {
-            logger.info("Sending activation email to user ${savedUser.email}", this::createUser.name)
+            logger.info("Sending activation email to user ${savedUser.email}", this::createOnlineUser.name)
             sendActivationEmail(SendActivationEmailCommand(savedUser.email))
-            logger.info("Activation email successfully sent to user ${savedUser.email}", this::createUser.name)
+            logger.info("Activation email successfully sent to user ${savedUser.email}", this::createOnlineUser.name)
         } catch (e: MailException) {
             logger.error("Mail was not sent. Communication to mail client failed. Try again.")
         }
@@ -78,6 +77,7 @@ class UserServiceImpl(
      * Activate the user given the activation link.
      */
     override fun activateUser(activateUserCommand: ActivateUserCommand): User {
+        logger.info("Creating offline user.")
         val user = userStorageService.findUserById(activateUserCommand.id)
         if (user.activated) {
             return user
@@ -137,13 +137,17 @@ class UserServiceImpl(
         return userStorageService.findUserById(findUserQuery.userId)
     }
 
-    override fun createLocalUser(createUserCommand: CreateUserCommand): LocalUser {
-        val user = userStorageService.createLocalUser(createUserCommand.email, createUserCommand.password)
+    override fun createUser(createUserCommand: CreateUserCommand): User {
+        if (userStorageService.checkEmailExists(createUserCommand.email)) {
+            val user = userStorageService.findUserByEmail(createUserCommand.email)
+            if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
+        }
+        val user = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
         externalServices.initializeServicesForUser(user)
 
         // setup predefined timestamps
         timeSelectionService.createPredefinedTimeSelections(user)
-        return user.toLocalUser()
+        return user
     }
 
     /**
