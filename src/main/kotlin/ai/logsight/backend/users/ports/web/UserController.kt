@@ -10,12 +10,9 @@ import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
 import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
 import ai.logsight.backend.users.ports.web.response.CreateUserResponse
-import ai.logsight.backend.users.ports.web.response.GetUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
-import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.event.EventListener
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -29,16 +26,6 @@ class UserController(
 ) {
 
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
-
-    @ApiOperation("Get authenticated user")
-    @GetMapping("/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    fun getUser(@PathVariable userId: UUID): GetUserResponse {
-        logger.info("Getting information for the already authenticated user.")
-        val user = userService.findUser(FindUserQuery(userId))
-        logger.info("User found in database. Sending response.", this::getUser.name)
-        return GetUserResponse(user.id, user.email)
-    }
 
     /**
      * Register a new user in the system.
