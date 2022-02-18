@@ -15,7 +15,7 @@ import springfox.documentation.annotations.ApiIgnore
 import java.util.*
 import javax.validation.Valid
 
-@Api(tags = ["Compare"], description = " ")
+@Api(tags = ["Compare"], description = "Comparison between log data (e.g., from different deployments)")
 @RestController
 @RequestMapping("/api/v1/logs/compare")
 class CompareController(
@@ -24,7 +24,7 @@ class CompareController(
     val commonConfigurationProperties: CommonConfigurationProperties
 ) {
 
-    @ApiOperation("Obtain log compare results between two tags.")
+    @ApiOperation("Obtain log compare results between two tags")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): CompareDataResponse {
@@ -62,7 +62,7 @@ class CompareController(
         return compareService.getCompareDataView(compareDTO)
     }
 
-    @ApiOperation("Get all available tags for specific application.")
+    @ApiOperation("Get all available tags for specific application")
     @GetMapping("/tags")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareTags(

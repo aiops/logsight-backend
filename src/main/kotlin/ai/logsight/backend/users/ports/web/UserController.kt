@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
 
-@Api(tags = ["Users"], description = " ")
+@Api(tags = ["Users"], description = "Operations about users")
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(
@@ -97,7 +97,7 @@ class UserController(
     /**
      * Receive the token from the link sent via email and display form to reset password
      */
-    @ApiOperation("Reset password, when the user forgets it.")
+    @ApiOperation("Reset password, when the user forgets it")
     @PostMapping("/reset_password")
     @ResponseStatus(HttpStatus.OK)
     fun resetPassword(@Valid @RequestBody resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse {

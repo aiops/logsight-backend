@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
-@Api(tags = ["Control"], description = " ")
+@Api(tags = ["Control"], description = "Control operations on the data stream")
 @RestController
 @RequestMapping("/api/v1/logs/flush")
 class ResultController(
@@ -27,7 +27,7 @@ class ResultController(
     /**
      * Register a new ResultInit object.
      */
-    @ApiOperation("Flush currently sent logs in analysis pipeline.")
+    @ApiOperation("Flush currently sent logs in analysis pipeline")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun createResultInit(

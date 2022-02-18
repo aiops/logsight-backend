@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
 
-@Api(tags = ["Authentication"], description = " ")
+@Api(tags = ["Authentication"], description = "User authentication")
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController(

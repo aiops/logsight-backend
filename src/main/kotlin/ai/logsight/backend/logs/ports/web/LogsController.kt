@@ -19,7 +19,7 @@ import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
-@Api(tags = ["Logs"], description = " ")
+@Api(tags = ["Logs"], description = "Send logs")
 @RestController
 @RequestMapping("/api/v1/logs")
 class LogsController(
@@ -28,7 +28,7 @@ class LogsController(
     val applicationStorageService: ApplicationStorageService
 ) {
 
-    @ApiOperation("Send list of log messages for analysis.")
+    @ApiOperation("Send list of log messages for analysis")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun sendLogList(
@@ -48,7 +48,7 @@ class LogsController(
         )
     }
 
-    @ApiOperation("Send log file for analysis.")
+    @ApiOperation("Send log file for analysis")
     @PostMapping("/file")
     fun uploadFile(
         authentication: Authentication,
@@ -70,7 +70,7 @@ class LogsController(
         )
     }
 
-    @ApiOperation("Load sample log data.")
+    @ApiOperation("Load sample log data")
     @PostMapping("/sample")
     fun sampleData(authentication: Authentication): LogsReceiptResponse {
         val logSampleDTO = LogSampleDTO(
