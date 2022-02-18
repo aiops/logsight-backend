@@ -4,12 +4,11 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.out.rpc.RPCService
-import ai.logsight.backend.logs.domain.service.LogDataSources
-import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.extensions.toLogsReceiptEntity
-import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
-import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.results.domain.ResultOperations
+import ai.logsight.backend.logs.domain.enums.LogDataSources
+import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.ingestion.extensions.toLogsReceiptEntity
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.results.domain.service.ResultInitStatus
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitEntity
@@ -87,12 +86,12 @@ internal class ResultControllerIntegrationTest {
             userRepository.deleteAll()
             appRepository.deleteAll()
             receiptRepository.deleteAll()
+            userRepository.save(TestInputConfig.baseUserEntity)
         }
 
         @Test
         fun `should create result init successfully`() {
             // given
-            val user = userRepository.save(TestInputConfig.baseUserEntity)
             val application = appRepository.save(TestInputConfig.baseAppEntity)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
@@ -120,7 +119,6 @@ internal class ResultControllerIntegrationTest {
         @Test
         fun `should return error when result init receipt id does not exist`() {
             // given
-            val user = userRepository.save(TestInputConfig.baseUserEntity)
             val application = appRepository.save(TestInputConfig.baseAppEntity)
             val request = CreateResultInitRequest(receiptId = application.id) // wrong id
             // when

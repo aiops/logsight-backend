@@ -1,6 +1,6 @@
 package ai.logsight.backend.results.ports.persistence
 
-import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptEntity
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptEntity
 import ai.logsight.backend.results.domain.service.ResultInitStatus
 import java.util.*
 import javax.persistence.*

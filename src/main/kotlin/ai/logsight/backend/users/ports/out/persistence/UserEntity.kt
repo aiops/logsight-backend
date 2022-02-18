@@ -1,7 +1,6 @@
 package ai.logsight.backend.users.ports.out.persistence
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
-import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptEntity
 import ai.logsight.backend.security.KeyGenerator
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import java.time.LocalDateTime
