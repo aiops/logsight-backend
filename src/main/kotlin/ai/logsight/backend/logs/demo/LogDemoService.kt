@@ -4,6 +4,7 @@ import ai.logsight.backend.application.domain.service.ApplicationLifecycleServic
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
+import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
@@ -13,8 +14,6 @@ import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
-import java.net.URL
-import java.nio.file.Paths
 
 @Service
 class LogDemoService(
@@ -22,6 +21,8 @@ class LogDemoService(
     private val applicationRepository: ApplicationRepository,
     private val logIngestionService: LogIngestionService
 ) {
+    val logger: LoggerImpl = LoggerImpl(LogDemoService::class.java)
+
     object SampleLogConstants {
         const val SAMPLE_LOG_DIR = "sample_data"
         const val SAMPLE_TAG = "default"
@@ -50,11 +51,10 @@ class LogDemoService(
         val logReceipts = applications.map { application ->
             // load sample data
             // todo extract in function
-            val resource: URL =
-                LogDemoService::class.java.classLoader.getResource("${SampleLogConstants.SAMPLE_LOG_DIR}/${application.name}")!!
-            val file = Paths.get(resource.toURI())
-                .toFile()
-            val logMessages = LogFileReader().readFile(application.name, file.inputStream())
+            val fileAsInputStream = LogDemoService::class.java.classLoader.getResourceAsStream(
+                "${SampleLogConstants.SAMPLE_LOG_DIR}/${application.name}"
+            )!!
+            val logMessages = LogFileReader().readFile(application.name, fileAsInputStream)
             logIngestionService.processLogBatch(
                 LogBatchDTO(
                     user,

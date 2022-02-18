@@ -12,11 +12,9 @@ class ESQueryBuilder {
     }
 
     private fun loadJsonQuery(featureType: String, chartType: String): ESQuery {
-        val path = QueryPathBuilder().buildPath(featureType, chartType)
-        if (!path.exists()) {
-            val msg = "Feature $featureType does not exist for chart $chartType."
-            throw InvalidFeatureException(msg)
-        }
-        return ESQuery(String(Files.readAllBytes(Paths.get(path.toString()))))
+        val fileInputStream = QueryPathBuilder().buildPath(featureType, chartType)
+        return fileInputStream?.let { fileInputStreamNotNull ->
+            ESQuery(String(fileInputStreamNotNull.readAllBytes()))
+        } ?: throw InvalidFeatureException("Feature $featureType does not exist for chart $chartType.")
     }
 }

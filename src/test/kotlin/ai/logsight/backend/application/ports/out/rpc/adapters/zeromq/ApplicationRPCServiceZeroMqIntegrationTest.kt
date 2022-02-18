@@ -76,6 +76,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
                 continue
             }
         }
+        Thread.sleep(3)
         return zeroMQSocket
     }
 
