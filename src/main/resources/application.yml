@@ -29,10 +29,14 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
+springdoc:
+  swagger-ui:
+    path: '/swagger-ui.html'
 
 server:
   error:
     include-stacktrace: ON_PARAM
+  forward-headers-strategy: framework
 
 logsight:
   user: offline
