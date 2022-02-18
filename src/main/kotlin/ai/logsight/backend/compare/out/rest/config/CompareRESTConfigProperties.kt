@@ -5,11 +5,11 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @ConstructorBinding
-@ConfigurationProperties(prefix = "logsight.result-api.compare")
+@ConfigurationProperties(prefix = "logsight.result-api")
 @EnableConfigurationProperties
 data class CompareRESTConfigProperties(
     val scheme: String,
     val host: String,
     val port: Int,
-    val path: String
+    val comparePath: String
 )

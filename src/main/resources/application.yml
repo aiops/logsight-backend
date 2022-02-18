@@ -38,12 +38,11 @@ logsight:
     base-url: "http://localhost:4200"
     logsight-email: "support@logsight.ai"
 
-  application-rpc:
-    zeromq:
-      protocol: "tcp"
-      host: "0.0.0.0"
-      port: 5555
-      timeout: 10000    # Seconds
+  application-rpc-zeromq:
+    protocol: "tcp"
+    host: "0.0.0.0"
+    port: 5555
+    timeout: 10000    # Seconds
 
   logs:
     stream-zeromq:
@@ -75,11 +74,10 @@ logsight:
     header: "kbn-xsrf"
 
   result-api:
-    compare:
-      scheme: "http"
-      host: "localhost"
-      port: 5554
-      path: "api/v1/compare"
+    scheme: "http"
+    host: "localhost"
+    port: 5554
+    compare-path: "api/v1/compare"
 
   token:
     minutes: 15
