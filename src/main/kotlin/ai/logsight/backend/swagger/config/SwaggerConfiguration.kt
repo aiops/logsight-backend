@@ -25,7 +25,10 @@ class SwaggerConfiguration {
     fun api(): Docket? {
         return Docket(DocumentationType.SWAGGER_2)
             .ignoredParameterTypes(
-                Authentication::class.java
+                Authentication::class.java,
+                SecurityReference::class.java,
+                AuthorizationScope::class.java,
+                SecurityContext::class.java
             )
             .select()
             .apis(RequestHandlerSelectors.any())
