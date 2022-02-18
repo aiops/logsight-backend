@@ -5,11 +5,12 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.domain.LogFormats
-import ai.logsight.backend.logs.domain.LogsReceipt
-import ai.logsight.backend.logs.domain.service.LogDataSources
-import ai.logsight.backend.logs.domain.service.LogsService
-import ai.logsight.backend.logs.domain.service.dto.LogBatchDTO
+import ai.logsight.backend.logs.domain.enums.LogDataSources
+import ai.logsight.backend.logs.domain.enums.LogFormats
+import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
+import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
+import ai.logsight.backend.logs.ingestion.ports.web.LogsController
 import ai.logsight.backend.security.UserDetailsServiceImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.UserNotFoundException
@@ -52,7 +53,7 @@ internal class LogsControllerUnitTest {
     private lateinit var applicationStorageService: ApplicationStorageService
 
     @MockBean
-    private lateinit var logsService: LogsService
+    private lateinit var logsService: LogIngestionService
 
     @Nested
     @DisplayName("Post Logs")
@@ -170,13 +171,11 @@ internal class LogsControllerUnitTest {
             result.andExpect(status().isInternalServerError)
         }
 
-        private fun performRequest(requestBody: String = defaultBody): ResultActions =
-            mockMvc.perform(
-                post(logsUriPath)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody)
-                    .accept(MediaType.APPLICATION_JSON)
-            )
+        private fun performRequest(requestBody: String = defaultBody): ResultActions = mockMvc.perform(
+            post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody)
+                .accept(MediaType.APPLICATION_JSON)
+        )
     }
 
     private fun createMockUser(email: String) = User(
@@ -208,7 +207,7 @@ internal class LogsControllerUnitTest {
         tag: String = "default",
         logFormat: LogFormats = LogFormats.UNKNOWN_FORMAT,
         logs: List<String> = listOf("Hello World!")
-    ) = LogBatchDTO(user, application, tag, logFormat, logs)
+    ) = LogBatchDTO(user, application, tag, logFormat, logs, LogDataSources.SAMPLE)
 
     private fun createMockLogsReceipt(
         application: Application,

@@ -1,7 +1,7 @@
 package ai.logsight.backend.application.ports.out.persistence
 
 import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptEntity
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptEntity
 import ai.logsight.backend.security.KeyGenerator
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import java.util.*

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 @Service
 class ApplicationLifecycleServiceImpl(
     val applicationStorageService: ApplicationStorageService,
-    @Qualifier("ZeroMQ") val analyticsManagerAppRPC: RPCService
+    val applicationRPCServiceZeroMq: RPCService
 ) : ApplicationLifecycleService {
     private val logger = LoggerImpl(ApplicationLifecycleServiceImpl::class.java)
 
@@ -38,7 +38,7 @@ class ApplicationLifecycleServiceImpl(
         // create application in backend
         try {
 
-            val response = analyticsManagerAppRPC.createApplication(application.toApplicationDTO())
+            val response = applicationRPCServiceZeroMq.createApplication(application.toApplicationDTO())
             if (response.status != HttpStatus.OK) {
                 // rollback changes
                 handleException(response.message)
@@ -68,7 +68,7 @@ class ApplicationLifecycleServiceImpl(
 
         try {
 
-            val response = analyticsManagerAppRPC.deleteApplication(application.toApplicationDTO())
+            val response = applicationRPCServiceZeroMq.deleteApplication(application.toApplicationDTO())
             if (response.status != HttpStatus.OK) {
                 throw ApplicationRemoteException(response.message)
             }
