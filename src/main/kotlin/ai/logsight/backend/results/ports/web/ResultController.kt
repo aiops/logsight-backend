@@ -3,7 +3,6 @@ package ai.logsight.backend.results.ports.web
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.results.domain.ResultOperations
 import ai.logsight.backend.results.domain.service.ResultService
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
 import ai.logsight.backend.results.ports.web.request.CreateResultInitRequest

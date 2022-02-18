@@ -9,7 +9,6 @@ import ai.logsight.backend.logs.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.extensions.toLogsReceiptEntity
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.results.domain.ResultOperations
 import ai.logsight.backend.results.domain.service.ResultInitStatus
 import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitEntity

@@ -1,6 +1,5 @@
 package ai.logsight.backend.results.ports.web.request
 
-import ai.logsight.backend.results.domain.ResultOperations
 import java.util.*
 import javax.validation.constraints.NotNull
 
