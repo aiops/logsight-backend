@@ -115,7 +115,7 @@ class CompareService(
             .scheme(restConfigProperties.scheme)
             .host(restConfigProperties.host)
             .port(restConfigProperties.port)
-            .path(restConfigProperties.path)
+            .path(restConfigProperties.comparePath)
             .queryParam(CompareDTO::applicationId.name, compareDTO.applicationId)
             .queryParam(CompareDTO::applicationName.name, compareDTO.applicationName)
             .queryParam(CompareDTO::baselineTag.name, compareDTO.baselineTag)
