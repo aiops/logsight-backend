@@ -451,7 +451,7 @@ class UserControllerIntegrationTest {
             // given
             val user = TestInputConfig.baseUser
             val newPassword = "newPassword"
-            val request = ChangePasswordRequest(user.id.toString(), user.password, newPassword, newPassword)
+            val request = ChangePasswordRequest(user.id.toString(), TestInputConfig.basePassword, newPassword, newPassword)
             val response = ChangePasswordResponse(user.id)
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON

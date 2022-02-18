@@ -57,9 +57,7 @@ class UserStorageImpl(
         val userEntity = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with id $id doesn't exist in database.") }
 
-        if (newPassword != confirmNewPassword) throw PasswordsNotMatchException("Provided passwords do not match. Please retype your password correctly.")
-
-        // change password
+// change password
         userEntity.password = passwordEncoder.encode(newPassword)
         // save changes
         return userRepository.save(userEntity)

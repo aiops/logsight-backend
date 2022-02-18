@@ -8,15 +8,20 @@ import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserType
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 
 object TestInputConfig {
+
+    val passwordEncoder = BCryptPasswordEncoder()
 
     const val baseEmail = "testemail@gmail.com"
     const val basePassword = "testpassword"
     const val baseAppName = "test_app"
 
     val baseUserEntity = UserEntity(
-        email = baseEmail, password = basePassword, userType = UserType.ONLINE_USER, activated = true
+        email = baseEmail, password = passwordEncoder.encode(basePassword), userType = UserType.ONLINE_USER, activated = true
     )
     val baseUser = baseUserEntity.toUser()
 

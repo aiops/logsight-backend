@@ -19,6 +19,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.mail.MailException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 
@@ -29,6 +30,7 @@ class UserServiceImpl(
     private val emailService: EmailService,
     private val externalServices: ExternalServiceManager,
     private val timeSelectionService: TimeSelectionService,
+    private val passwordEncoder: PasswordEncoder
 ) : UserService {
 
     val logger: Logger = LoggerFactory.getLogger(UserServiceImpl::class.java)
@@ -107,9 +109,16 @@ class UserServiceImpl(
         if (!user.activated) {
             throw UserNotActivatedException()
         }
-        if (user.password != changePasswordCommand.oldPassword) {
+
+        if (!passwordEncoder.matches(changePasswordCommand.oldPassword, user.password)) {
             throw PasswordsNotMatchException("Invalid password. Please retype your old password correctly.")
         }
+
+        if (changePasswordCommand.newPassword != changePasswordCommand.confirmNewPassword)
+            throw PasswordsNotMatchException(
+                "Provided passwords do not match. Please retype your password correctly."
+            )
+
         return userStorageService.changePassword(
             user.id, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword
         )
