@@ -15,7 +15,7 @@ import springfox.documentation.annotations.ApiIgnore
 import java.util.*
 import javax.validation.Valid
 
-@Api(tags = ["Compare"], description = "Comparison between log data (e.g., from different deployments)")
+@Api(tags = ["Compare"], description = "Comparison between log data")
 @RestController
 @RequestMapping("/api/v1/logs/compare")
 class CompareController(

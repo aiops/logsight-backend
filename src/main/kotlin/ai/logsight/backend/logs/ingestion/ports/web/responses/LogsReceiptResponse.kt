@@ -4,7 +4,6 @@ import java.util.*
 
 data class LogsReceiptResponse(
     val receiptId: UUID,
-    val orderNum: Long,
     val logsCount: Int,
     val source: String,
     val applicationId: UUID

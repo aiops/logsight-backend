@@ -21,7 +21,7 @@ import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
-@Api(tags = ["Applications"], description = "Management of applications. Application represents one source of log data (e.g., a service)")
+@Api(tags = ["Applications"], description = "Management of applications")
 @RestController
 @RequestMapping("/api/v1/users/{userId}/applications")
 class ApplicationLifecycleController(

@@ -15,7 +15,7 @@ import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
 import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
 import ai.logsight.backend.users.ports.web.response.CreateUserResponse
-import ai.logsight.backend.users.ports.web.response.GetUserResponse
+import ai.logsight.backend.security.authentication.response.GetUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -66,16 +66,17 @@ class UserControllerIntegrationTest {
 
     companion object {
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
-        const val endpoint = "/api/v1/users"
+        const val getUserEndpoint = "/api/v1/users"
         const val newUserEmail = "newUser@email.com"
         private val newUserEntity = UserEntity(email = newUserEmail, password = "password123")
         val newUser = newUserEntity.toUser()
     }
 
     @Nested
-    @DisplayName("GET /api/v1/users/{userId}")
+    @DisplayName("GET /api/v1/auth/user")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class GetUser {
+        val getUserEndpoint = "/api/v1/auth/user"
         @BeforeAll
         fun setUp() {
             userRepository.deleteAll()
@@ -88,7 +89,6 @@ class UserControllerIntegrationTest {
         fun `Valid response when the user exists`() {
             // given
             val expectedResponse = GetUserResponse(userId = TestInputConfig.baseUser.id, TestInputConfig.baseEmail)
-            val getUserEndpoint = "$endpoint/${TestInputConfig.baseUser.id}"
             // when
             val result = mockMvc.get(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -109,11 +109,10 @@ class UserControllerIntegrationTest {
             }
         }
 
-        @WithMockUser(username = TestInputConfig.baseEmail)
+        @WithMockUser(username = "notexists@mail.com")
         @Test
         fun `Bad request if user doesn't exist`() {
             // given
-            val getUserEndpoint = "$endpoint/${UUID.randomUUID()}"
             // when
             val result = mockMvc.get(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -132,7 +131,6 @@ class UserControllerIntegrationTest {
         @Test
         fun `Forbidden for unauthenticated user`() {
             // given
-            val getUserEndpoint = "$endpoint/${TestInputConfig.baseUser.id}"
             val result = mockMvc.get(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 accept = MediaType.APPLICATION_JSON
@@ -146,7 +144,7 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint")
+    @DisplayName("POST $getUserEndpoint")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class CreateUser {
         @BeforeEach
@@ -161,7 +159,7 @@ class UserControllerIntegrationTest {
             // given
             val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(createUserRequest)
                 accept = MediaType.APPLICATION_JSON
@@ -191,7 +189,7 @@ class UserControllerIntegrationTest {
             // given
             val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(createUserRequest)
                 accept = MediaType.APPLICATION_JSON
@@ -238,7 +236,7 @@ class UserControllerIntegrationTest {
         ) {
             // given
             // when
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -263,7 +261,7 @@ class UserControllerIntegrationTest {
 
             // when
 
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -289,7 +287,7 @@ class UserControllerIntegrationTest {
 
             // when
 
-            val result = mockMvc.post(endpoint) {
+            val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
@@ -304,11 +302,11 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint/activate")
+    @DisplayName("POST $getUserEndpoint/activate")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class ActivateUser {
-        private val activateEndpoint = "$endpoint/activate"
+        private val activateEndpoint = "$getUserEndpoint/activate"
 
         @BeforeEach
         fun setUp() {
@@ -435,7 +433,7 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint/change_password")
+    @DisplayName("POST $getUserEndpoint/change_password")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class ChangePassword {
@@ -446,7 +444,7 @@ class UserControllerIntegrationTest {
             userRepository.save(TestInputConfig.baseUserEntity)
         }
 
-        private val changePasswordEndpoint = "$endpoint/change_password"
+        private val changePasswordEndpoint = "$getUserEndpoint/change_password"
 
         @Test
         fun `OK when password changed successfully`() {
@@ -572,11 +570,11 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint/reset_password")
+    @DisplayName("POST $getUserEndpoint/reset_password")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class ResetPassword {
-        private val passwordResetEndpoint = "$endpoint/reset_password"
+        private val passwordResetEndpoint = "$getUserEndpoint/reset_password"
 
         @BeforeAll
         fun setUp() {
@@ -675,10 +673,10 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint/forgot_password")
+    @DisplayName("POST $getUserEndpoint/forgot_password")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ForgotPassword {
-        private val forgotPasswordEndpoint = "$endpoint/forgot_password"
+        private val forgotPasswordEndpoint = "$getUserEndpoint/forgot_password"
 
         @BeforeAll
         fun setUp() {
@@ -733,10 +731,10 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $endpoint/resend_activation")
+    @DisplayName("POST $getUserEndpoint/resend_activation")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ResendActivation {
-        private val resendActivationEndpoint = "$endpoint/resend_activation"
+        private val resendActivationEndpoint = "$getUserEndpoint/resend_activation"
 
         @BeforeAll
         fun setUp() {
