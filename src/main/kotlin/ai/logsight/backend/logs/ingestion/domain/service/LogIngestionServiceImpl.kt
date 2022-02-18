@@ -1,7 +1,6 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
 import ai.logsight.backend.application.extensions.isReadyOrException
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.domain.Log
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service
 @Service
 class LogIngestionServiceImpl(
     val logsReceiptStorageService: LogsReceiptStorageService,
-    val applicationStorageService: ApplicationStorageService,
     val logStream: LogStream,
     val xSync: XSync<String>
 ) : LogIngestionService {
