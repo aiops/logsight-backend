@@ -5,7 +5,7 @@ import java.util.*
 
 data class ResultInitMessage(
     val id: UUID,
-    val orderCounter: Long,
+    val orderNum: Long,
     val logsCount: Int,
     val currentLogsCount: Int,
     val description: String,

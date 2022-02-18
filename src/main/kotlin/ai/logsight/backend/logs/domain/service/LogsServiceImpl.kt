@@ -160,7 +160,7 @@ class LogsServiceImpl(
         return logsReceipts.last()
     }
 
-    // TODO Refactor this asap
+    // TODO Refactor this
     fun processLogs(
         user: User,
         app: Application,
@@ -187,6 +187,7 @@ class LogsServiceImpl(
             sentLogs = logStream.serializeAndSend(topic, logs)
         }
 
+        // Should not be null but the init with null is needed by kotlin
         return logsReceipt?.let { logsReceiptNotNull ->
             when (sentLogs) {
                 logMessages.size -> logsReceiptNotNull
