@@ -45,7 +45,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogBatch(logBatchDTO)
         return LogsReceiptResponse(
-            logsReceipt.id, logsReceipt.orderNum, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
+            logsReceipt.id, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
     }
 
@@ -68,7 +68,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogBatch(logBatchDTO)
         return LogsReceiptResponse(
-            logsReceipt.id, logsReceipt.orderNum, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
+            logsReceipt.id, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
     }
 }
