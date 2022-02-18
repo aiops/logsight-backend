@@ -1,7 +1,7 @@
 package ai.logsight.backend.results.ports.channel.adapter.zeromq.config
 
-import ai.logsight.backend.results.ports.channel.adapter.zeromq.message.ResultInitMessageConverter
 import ai.logsight.backend.results.ports.channel.adapter.zeromq.ResultInitMessageHandlerZeroMq
+import ai.logsight.backend.results.ports.channel.adapter.zeromq.message.ResultInitMessageConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.integration.annotation.ServiceActivator

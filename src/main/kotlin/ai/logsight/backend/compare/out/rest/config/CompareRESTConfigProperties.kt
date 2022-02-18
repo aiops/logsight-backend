@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @ConstructorBinding
-@ConfigurationProperties(prefix = "logsight.result-api")
+@ConfigurationProperties(prefix = "logsight.result-api.rest")
 @EnableConfigurationProperties
 data class CompareRESTConfigProperties(
     val scheme: String,

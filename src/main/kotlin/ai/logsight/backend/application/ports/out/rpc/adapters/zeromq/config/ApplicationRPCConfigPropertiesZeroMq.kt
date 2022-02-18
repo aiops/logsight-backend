@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
-@ConfigurationProperties(prefix = "logsight.application-rpc-zeromq")
+@ConfigurationProperties(prefix = "logsight.application-rpc.zeromq")
 @ConstructorBinding
 @EnableConfigurationProperties
 data class ApplicationRPCConfigPropertiesZeroMq(
