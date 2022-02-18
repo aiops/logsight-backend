@@ -20,7 +20,7 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
             featureType = chartConfig.feature,
             chartType = chartConfig.type
         )
-        val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.protocol).host(elasticsearchConfig.host)
+        val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.scheme).host(elasticsearchConfig.host)
             .port(elasticsearchConfig.port).path(applicationIndices).path("/_search").build().toString()
         return connector.sendRequest(
             url, Credentials(getDataQuery.credentials.username, getDataQuery.credentials.password), query

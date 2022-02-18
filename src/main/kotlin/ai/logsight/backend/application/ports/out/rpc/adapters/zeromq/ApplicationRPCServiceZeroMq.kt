@@ -1,6 +1,5 @@
 package ai.logsight.backend.application.ports.out.rpc.adapters.zeromq
 
-import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.ports.out.rpc.RPCService
 import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
@@ -11,19 +10,17 @@ import com.antkorwin.xsync.XSync
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
 
 @Service
-@Qualifier("ZeroMQ")
-class RPCServiceZeroMq(
+class ApplicationRPCServiceZeroMq(
     val zeroMqRPCSocket: ZMQ.Socket,
     val xSync: XSync<String>
 ) : RPCService {
 
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
-    private val logger = LoggerImpl(RPCServiceZeroMq::class.java)
+    private val logger = LoggerImpl(ApplicationRPCServiceZeroMq::class.java)
 
     override fun createApplication(createApplicationDTO: ApplicationDTO): RPCResponse {
         createApplicationDTO.action = ApplicationDTOActions.CREATE

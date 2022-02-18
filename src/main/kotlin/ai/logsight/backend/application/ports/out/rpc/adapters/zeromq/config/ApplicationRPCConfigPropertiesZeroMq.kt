@@ -2,12 +2,14 @@ package ai.logsight.backend.application.ports.out.rpc.adapters.zeromq.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @ConfigurationProperties(prefix = "logsight.application-rpc.zeromq")
 @ConstructorBinding
-class RPCConfigPropertiesZeroMq(
-    val protocol: String = "tcp",
-    val host: String = "0.0.0.0",
-    val port: Int = 5555,
-    val timeout: Int = 10 * 1000 // seconds
+@EnableConfigurationProperties
+data class ApplicationRPCConfigPropertiesZeroMq(
+    val protocol: String,
+    val host: String,
+    val port: Int,
+    val timeout: Int // in seconds
 )

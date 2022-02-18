@@ -21,7 +21,6 @@ import java.util.*
 @Configuration
 @EnableSwagger2
 class SwaggerConfiguration {
-
     @Bean
     fun api(): Docket? {
         return Docket(DocumentationType.SWAGGER_2)
@@ -33,8 +32,8 @@ class SwaggerConfiguration {
             .paths(PathSelectors.ant("/api/v1/**"))
             .build()
             .apiInfo(apiInfo())
-            .securitySchemes(Arrays.asList(apiKey()) as List<SecurityScheme>?)
-            .securityContexts(Arrays.asList(securityContext()))
+            .securitySchemes(listOf(apiKey()))
+            .securityContexts(listOf(securityContext()))
     }
 
     private fun apiInfo(): ApiInfo? {
@@ -56,6 +55,6 @@ class SwaggerConfiguration {
         val authorizationScope = AuthorizationScope("global", "accessEverything")
         val authorizationScopes: Array<AuthorizationScope?> = arrayOfNulls<AuthorizationScope>(1)
         authorizationScopes[0] = authorizationScope
-        return Arrays.asList(SecurityReference("JWT", authorizationScopes))
+        return listOf(SecurityReference("JWT", authorizationScopes))
     }
 }

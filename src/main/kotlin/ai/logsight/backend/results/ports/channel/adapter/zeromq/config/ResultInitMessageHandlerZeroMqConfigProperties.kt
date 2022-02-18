@@ -2,12 +2,14 @@ package ai.logsight.backend.results.ports.channel.adapter.zeromq.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 
-@ConfigurationProperties(prefix = "logsight.result-init.message-handler.zeromq")
+@ConfigurationProperties(prefix = "logsight.logs.control-rpc-in-zeromq")
 @ConstructorBinding
-class ResultInitMessageHandlerZeroMqConfigProperties(
-    val protocol: String = "tcp",
-    val host: String = "0.0.0.0",
-    val port: Int = 5558,
-    val subTopic: String = "result_init"
+@EnableConfigurationProperties
+data class ResultInitMessageHandlerZeroMqConfigProperties(
+    val protocol: String,
+    val host: String,
+    val port: Int,
+    val topic: String
 )

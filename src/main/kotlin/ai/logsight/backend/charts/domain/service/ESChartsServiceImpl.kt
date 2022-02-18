@@ -16,7 +16,7 @@ import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultBucket
-import ai.logsight.backend.charts.rest.request.ChartRequest
+import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User

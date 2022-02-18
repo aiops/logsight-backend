@@ -36,7 +36,7 @@ class ElasticsearchService(
         val query =
             "{ \"id\": \"kibana_space_${userKey}\", " + "\"name\": \"Logsight\", " + "\"description\" : \"This is your Logsight Space - ${userKey}\" }"
 
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/api").path("/spaces").path("/space").build().toString()
         kibanaClient.sendRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
@@ -54,7 +54,7 @@ class ElasticsearchService(
 
         val query =
             "{ \"metadata\" : { \"version\" : 1 }," + "\"elasticsearch\": { \"cluster\" : [ ], " + "\"indices\" : [ {\"names\" : [$userKey*]," + " \"privileges\" : [ \"all\" ]}] }, " + "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " + "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " + "\"spaces\": [ \"kibana_space_${userKey}\" ] } ] }"
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/api").path("/security").path("/role").path("/$userKey")
             .build().toString()
         kibanaClient.putRequest(
@@ -65,7 +65,7 @@ class ElasticsearchService(
     fun kibanaLogin(user: User): ResponseEntity<String> {
         val query =
             "{\"providerType\":\"basic\", \"providerName\":\"basic\", \"currentURL\":\"/\", \"params\":{\"username\":\"${user.email}\", \"password\":\"${user.key}\"}}"
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/internal").path("/security").path("/login").build()
             .toString()
         return kibanaClient.postForEntity(
@@ -96,7 +96,7 @@ class ElasticsearchService(
         delete: Boolean = false
     ) {
 
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.protocol).host(kibanaConfig.host)
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
             .port(kibanaConfig.port).path("/s").path("/kibana_space_$userKey").path("/api")
             .path("/index_patterns").path("/index_pattern").build().toString()
         try {

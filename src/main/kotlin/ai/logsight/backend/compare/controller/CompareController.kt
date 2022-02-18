@@ -1,7 +1,7 @@
 package ai.logsight.backend.compare.controller
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.common.config.CommonConfigurationProperties
+import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.controller.request.GetCompareResultRequest
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
@@ -21,7 +21,7 @@ import javax.validation.Valid
 class CompareController(
     val compareService: CompareService,
     val applicationStorageService: ApplicationStorageService,
-    val commonConfigurationProperties: CommonConfigurationProperties
+    val commonConfigProperties: CommonConfigProperties
 ) {
 
     @ApiOperation("Obtain log compare results between two tags")
@@ -42,7 +42,7 @@ class CompareController(
         compareResponse.applicationId = application.id
         compareResponse.flushId = getCompareResultRequest.flushId
         compareResponse.detailedReportLink =
-            "${commonConfigurationProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.compareTag}"
+            "${commonConfigProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.compareTag}"
         return compareResponse
     }
 

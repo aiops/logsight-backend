@@ -8,16 +8,16 @@ import org.zeromq.ZMQ
 import java.net.ConnectException
 
 @Configuration
-class RPCConfigZeroMq(
-    private val RPCConfigPropertiesZeroMq: RPCConfigPropertiesZeroMq
+class ApplicationRPCConfigZeroMq(
+    private val ApplicationRPCConfigPropertiesZeroMq: ApplicationRPCConfigPropertiesZeroMq
 ) {
     @Bean
     fun zeroMqRPCSocket(): ZMQ.Socket {
         val ctx = ZContext()
         val socket = ctx.createSocket(SocketType.REQ)
-        val addr = "${RPCConfigPropertiesZeroMq.protocol}://${RPCConfigPropertiesZeroMq.host}:${RPCConfigPropertiesZeroMq.port}"
+        val addr = "${ApplicationRPCConfigPropertiesZeroMq.protocol}://${ApplicationRPCConfigPropertiesZeroMq.host}:${ApplicationRPCConfigPropertiesZeroMq.port}"
         socket.reqRelaxed = true
-        socket.receiveTimeOut = RPCConfigPropertiesZeroMq.timeout
+        socket.receiveTimeOut = ApplicationRPCConfigPropertiesZeroMq.timeout
         val status = socket.connect(addr)
         if (!status) throw ConnectException("ZeroMQ is not able to connect socket to $addr")
         return socket

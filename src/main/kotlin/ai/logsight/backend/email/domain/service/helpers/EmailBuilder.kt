@@ -1,6 +1,6 @@
 package ai.logsight.backend.email.domain.service.helpers
 
-import ai.logsight.backend.common.config.CommonConfigurationProperties
+import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.email.domain.Email
 import ai.logsight.backend.email.domain.EmailContext
 import org.springframework.stereotype.Service
@@ -12,7 +12,7 @@ import java.net.URL
 class EmailBuilder(
     val uriResolver: URIResolver,
     val templateEngine: TemplateEngine,
-    val commonConfig: CommonConfigurationProperties,
+    val commonConfig: CommonConfigProperties,
 ) {
 
     fun buildActivationEmail(emailContext: EmailContext): Email {

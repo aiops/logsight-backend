@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.client.RestClients
 import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration
 
 @Configuration
-class RestClientConfig(
+class ElasticsearchClientConfig(
     val elasticsearchConfigProperties: ElasticsearchConfigProperties
 ) : AbstractElasticsearchConfiguration() {
     @Bean

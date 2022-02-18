@@ -4,8 +4,8 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageS
 import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.service.ChartsService
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.rest.ChartsController
-import ai.logsight.backend.charts.rest.request.ChartRequest
+import ai.logsight.backend.charts.ports.web.ChartsController
+import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
@@ -112,12 +112,10 @@ class CompareService(
 
     private fun buildCompareEndpointURI(compareDTO: CompareDTO) =
         UriComponentsBuilder.newInstance()
-            .scheme("http")
+            .scheme(restConfigProperties.scheme)
             .host(restConfigProperties.host)
             .port(restConfigProperties.port)
-            .path("/api")
-            .path("/v${restConfigProperties.apiVersion}")
-            .path("/${restConfigProperties.endpoint}")
+            .path(restConfigProperties.path)
             .queryParam(CompareDTO::applicationId.name, compareDTO.applicationId)
             .queryParam(CompareDTO::applicationName.name, compareDTO.applicationName)
             .queryParam(CompareDTO::baselineTag.name, compareDTO.baselineTag)

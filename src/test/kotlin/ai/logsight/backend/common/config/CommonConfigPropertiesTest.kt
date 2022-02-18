@@ -11,10 +11,10 @@ import java.net.URI
 @SpringBootTest
 @ContextConfiguration
 @DirtiesContext
-internal class CommonConfigurationPropertiesTest {
+internal class CommonConfigPropertiesTest {
 
     @Autowired
-    lateinit var commonConfigurationProperties: CommonConfigurationProperties
+    lateinit var commonConfigProperties: CommonConfigProperties
 
     companion object {
         val baseURI = URI("http://localhost:4200")
@@ -23,7 +23,7 @@ internal class CommonConfigurationPropertiesTest {
 
     @Test
     fun `should verify application-config POJO`() {
-        Assertions.assertEquals(baseURI, commonConfigurationProperties.baseURL)
-        Assertions.assertEquals(logsightEmail, commonConfigurationProperties.logsightEmail)
+        Assertions.assertEquals(baseURI, commonConfigProperties.baseURL)
+        Assertions.assertEquals(logsightEmail, commonConfigProperties.logsightEmail)
     }
 }

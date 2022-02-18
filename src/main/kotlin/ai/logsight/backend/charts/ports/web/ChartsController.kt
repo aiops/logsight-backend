@@ -1,8 +1,8 @@
-package ai.logsight.backend.charts.rest
+package ai.logsight.backend.charts.ports.web
 
 import ai.logsight.backend.charts.domain.service.ChartsService
-import ai.logsight.backend.charts.rest.request.ChartRequest
-import ai.logsight.backend.charts.rest.response.CreateChartResponse
+import ai.logsight.backend.charts.ports.web.request.ChartRequest
+import ai.logsight.backend.charts.ports.web.response.CreateChartResponse
 import ai.logsight.backend.common.logging.LoggerImpl
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*

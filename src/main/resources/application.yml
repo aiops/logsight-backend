@@ -24,7 +24,6 @@ spring:
       enabled: true
       max-file-size: 500MB
       max-request-size: 500MB
-
   mail:
     host: mail.privateemail.com
     port: 587
@@ -33,37 +32,61 @@ spring:
   thymeleaf:
     check-template: true
     check-template-location: true
-
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-
-
-
-
-resources:
-  path: src/main/resources/
 
 server:
   error:
     include-stacktrace: ON_PARAM
 
 logsight:
+  common:
+    base-url: "http://localhost:4200"
+    logsight-email: "support@logsight.ai"
+
+  application-rpc:
+    zeromq:
+      protocol: "tcp"
+      host: "0.0.0.0"
+      port: 5555
+      timeout: 10000    # Seconds
+
+  logs:
+    stream-zeromq:
+      protocol: "tcp"
+      host: "0.0.0.0"
+      port: 5559
+    control-rpc-in-zeromq:
+      protocol: "tcp"
+      host: "0.0.0.0"
+      port: 5558
+      topic: "result_init"
+    control-rpc-out-zeromq:
+      protocol: "tcp"
+      host: "0.0.0.0"
+      port: 5557
+
   elasticsearch:
+    scheme: "http"
     host: "localhost"
     port: "9200"
-    protocol: "http"
     credentials:
       username: "elastic"
       password: "elasticsearchpassword"
 
   kibana:
+    scheme: "http"
     host: "localhost"
     port: "5601"
+    header: "kbn-xsrf"
+
+  result-api:
+    compare:
+      scheme: "http"
+      host: "localhost"
+      port: 5554
+      path: "api/v1/compare"
 
   token:
     minutes: 15
-
-  common-config:
-    base-url: http://localhost:4200
-    logsight-email: support@logsight.ai

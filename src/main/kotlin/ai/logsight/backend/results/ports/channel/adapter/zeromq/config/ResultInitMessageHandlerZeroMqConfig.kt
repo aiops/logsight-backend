@@ -25,7 +25,7 @@ class ResultInitMessageHandlerZeroMqConfig(
     ): ZeroMqMessageProducer {
         val zmqContext = ZContext()
         val zeroMqMessageProducer = ZeroMqMessageProducer(zmqContext, SocketType.SUB)
-        zeroMqMessageProducer.setTopics(resultInitMessageHandlerZeroMqConfigProperties.subTopic)
+        zeroMqMessageProducer.setTopics(resultInitMessageHandlerZeroMqConfigProperties.topic)
         zeroMqMessageProducer.setBindPort(resultInitMessageHandlerZeroMqConfigProperties.port)
         zeroMqMessageProducer.outputChannel = zeroMqMessageChannel
         zeroMqMessageProducer.setMessageConverter(converter)
