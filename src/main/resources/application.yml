@@ -35,7 +35,7 @@ server:
     include-stacktrace: ON_PARAM
 
 logsight:
-  user: online
+  user: offline
   common:
     base-url: "http://localhost:4200"
     logsight-email: "support@logsight.ai"
