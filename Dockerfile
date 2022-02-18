@@ -1,3 +1,5 @@
+# docker build -t logsight/logsight-backend .
+
 FROM gradle:6.8.3-jdk11 as cache
 RUN mkdir -p /home/gradle/cache_home
 ENV GRADLE_USER_HOME /home/gradle/cache_home
