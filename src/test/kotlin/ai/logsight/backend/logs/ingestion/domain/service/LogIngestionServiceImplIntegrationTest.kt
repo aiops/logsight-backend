@@ -96,10 +96,11 @@ class LogIngestionServiceImplIntegrationTest {
         private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
             val ctx = ZContext()
             val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://${zeroMqConf.host}:${zeroMqConf.port}"
+            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
             val status = zeroMQSocket.connect(addr)
             if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
             zeroMQSocket.subscribe(topic)
+            Thread.sleep(3)
             return zeroMQSocket
         }
 
@@ -202,56 +203,54 @@ class LogIngestionServiceImplIntegrationTest {
             zeroMQSocket.close()
         }
 
-        // TODO: ALEX PLEASE FIX THIS TEST.
-//        @Test
-//        fun `should not block zeromq concurrent transfer for different apps`() {
-//            // given
-//            val topic1 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application1.name))
-//            val topic2 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application2.name))
-//            val zeroMQSocket1 = getZeroMqTestSocket(topic1)
-//            val zeroMQSocket2 = getZeroMqTestSocket(topic2)
-//
-//            val numBatches = 5
-//            val batches = List(numBatches) { logMessages }
-//
-//            // when
-//            val logsReceipts1 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
-//            val logsReceipts2 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
-//            runBlocking(threadPoolContext) {
-//                batches.forEach { batch ->
-//                    launch {
-//                        val logsReceipt = logIngestionServiceImpl.processLogBatch(
-//                            LogBatchDTO(
-//                                TestInputConfig.baseUser,
-//                                application1,
-//                                tag,
-//                                format,
-//                                batch,
-//                                source = source
-//                            )
-//                        )
-//                        logsReceipts1.add(logsReceipt)
-//                    }
-//                    launch {
-//                        val logsReceipt = logIngestionServiceImpl.processLogBatch(
-//                            LogBatchDTO(
-//                                TestInputConfig.baseUser,
-//                                application1,
-//                                tag,
-//                                format,
-//                                batch,
-//                                source = source
-//                            )
-//                        )
-//                        logsReceipts2.add(logsReceipt)
-//                    }
-//                }
-//            }
-//
-//            // then
-//            verifyZeroMqOrder(zeroMQSocket1, logsReceipts1, numBatches)
-//            verifyZeroMqOrder(zeroMQSocket2, logsReceipts2, numBatches)
-//        }
+        @Test
+        fun `should not block zeromq concurrent transfer for different apps`() {
+            // given
+            val topic1 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application1.name))
+            val topic2 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application2.name))
+            val zeroMQSocket1 = getZeroMqTestSocket(topic1)
+            val zeroMQSocket2 = getZeroMqTestSocket(topic2)
+
+            val numBatches = 5
+            val batches = List(numBatches) { logMessages }
+
+            // when
+            val logsReceipts1 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
+            val logsReceipts2 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
+            runBlocking(threadPoolContext) {
+                batches.forEach { batch ->
+                    launch {
+                        val logsReceipt = logIngestionServiceImpl.processLogBatch(
+                            LogBatchDTO(
+                                TestInputConfig.baseUser,
+                                application1,
+                                tag,
+                                format,
+                                batch,
+                                source = source
+                            )
+                        )
+                        logsReceipts1.add(logsReceipt)
+                    }
+                    launch {
+                        val logsReceipt = logIngestionServiceImpl.processLogBatch(
+                            LogBatchDTO(
+                                TestInputConfig.baseUser,
+                                application2,
+                                tag,
+                                format,
+                                batch,
+                                source = source
+                            )
+                        )
+                        logsReceipts2.add(logsReceipt)
+                    }
+                }
+            }
+            // then
+            verifyZeroMqOrder(zeroMQSocket1, logsReceipts1, numBatches)
+            verifyZeroMqOrder(zeroMQSocket2, logsReceipts2, numBatches)
+        }
 
         private fun verifyZeroMqOrder(zeroMQSocket: ZMQ.Socket, logsReceipts: List<LogsReceipt>, numBatches: Int) {
             val receiptIdsExpected = logsReceipts.map { it.orderNum }
