@@ -6,7 +6,6 @@ import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.results.domain.ResultInit
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
 import ai.logsight.backend.results.domain.service.command.UpdateResultInitStatusCommand
-import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTO
@@ -18,10 +17,9 @@ import org.springframework.stereotype.Service
 class ResultServiceImpl(
     val resultInitStorageService: ResultInitStorageService,
     val resultInitRPCService: ResultInitRPCService,
-    val topicBuilder: TopicBuilder,
     val xSync: XSync<String>
 ) : ResultService {
-
+    val topicBuilder = TopicBuilder()
     private val logger: Logger = LoggerImpl(ResultServiceImpl::class.java)
 
     // TODO make configurable
@@ -50,20 +48,18 @@ class ResultServiceImpl(
             } catch (e: Exception) {
                 // Revert DB entry if sending failed
                 logger.error(
-                    "Failed to send flush RPC $flushDTO. Reason: ${e.message}",
-                    this::updateResultInitStatus.name
+                    "Failed to send flush RPC $flushDTO. Reason: ${e.message}", this::updateResultInitStatus.name
                 )
                 resultInitStorageService.deleteResultInit(resultInitNotNull)
                 throw RuntimeException("Failed to send flush RPC $flushDTO. Reason: ${e.message}")
             }
             resultInitNotNull
-        } ?: throw RuntimeException() // This should not happen
+        }
     }
 
     override fun updateResultInitStatus(updateResultInitStatusCommand: UpdateResultInitStatusCommand): ResultInit? {
         fun logError(e: Exception) = logger.error(
-            "Failed to update status of ResultInit object. Reason: ${e.message}",
-            this::updateResultInitStatus.name
+            "Failed to update status of ResultInit object. Reason: ${e.message}", this::updateResultInitStatus.name
         )
 
         val resultInit = try {
