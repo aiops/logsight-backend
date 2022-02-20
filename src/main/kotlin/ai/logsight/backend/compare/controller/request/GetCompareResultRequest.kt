@@ -13,5 +13,5 @@ data class GetCompareResultRequest(
     @get:NotEmpty(message = "baselineTag must not be empty.")
     val baselineTag: String,
     @get:NotEmpty(message = "compareTag must not be empty.")
-    val compareTag: String
+    val candidateTag: String
 )
