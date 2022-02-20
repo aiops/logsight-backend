@@ -1,80 +1,94 @@
 spring:
+  main:
+    banner-mode: "off"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    username: logsight
+    password: logsight
+    driver-class-name: org.postgresql.Driver
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  datasource:
-    url: jdbc:postgresql://postgres:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
-    username: logsight
-    password: logsight
-  kafka:
-    bootstrap-servers: kafka:9092
-    consumer:
-      group-id: "default"
-
   servlet:
     multipart:
       enabled: true
       max-file-size: 500MB
       max-request-size: 500MB
+  mail:
+    host: mail.privateemail.com
+    port: 587
+    username: support@logsight.ai
+    password: tel12-5DOS
+  thymeleaf:
+    check-template: true
+    check-template-location: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
-email:
-  host: smtp.gmail.com
-  port: 587
-  username: noreply.logsight@gmail.com
-  password: logsight2021123!
+springdoc:
+  swagger-ui:
+    path: '/swagger-ui.html'
 
-user:
-  userAccountBootstrap: true
-  appLimit: 5000
+server:
+  error:
+    include-stacktrace: ON_PARAM
+  forward-headers-strategy: framework
 
-app:
-  baseUrl: http://localhost:4200
-  qualityUrl: http://localhost:5444/
-  baseUrlTry: http://localhost:4200/
+logsight:
+  user: offline
+  common:
+    base-url: "http://localhost:4200"
+    logsight-email: "support@logsight.ai"
 
-kibana.url: kibana:5601
+  application-rpc:
+    zeromq:
+      protocol: "tcp"
+      host: "0.0.0.0"
+      port: 5555
+      timeout: 10000    # Seconds
 
-elasticsearch:
-  url: elasticsearch:9200
-  username: elastic
-  password: elasticsearchpassword
+  logs:
+    stream:
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: 5559
+    control-rpc-in:
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: 5558
+        topic: "result_init"
+    control-rpc-out:
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: 5557
 
-resources:
-  path: /
+  elasticsearch:
+    scheme: "http"
+    host: "localhost"
+    port: "9200"
+    credentials:
+      username: "elastic"
+      password: "elasticsearchpassword"
 
----
-spring.config.activate.on-profile: ide
+  kibana:
+    scheme: "http"
+    host: "localhost"
+    port: "5601"
+    header: "kbn-xsrf"
 
-spring.datasource.url: jdbc:postgresql://localhost:5432/logsight
-spring.kafka.bootstrap-servers: localhost:9093
+  result-api:
+    rest:
+      scheme: "http"
+      host: "localhost"
+      port: 5554
+      compare-path: "api/v1/compare"
 
-elasticsearch.url: localhost:9200
-
-kibana.url: localhost:5601
-
-app:
-  baseUrl: http://localhost:4200
-  qualityUrl: http://data-input-rest-api:5444/
-
-resources.path: src/main/resources/
-
----
-spring.config.activate.on-profile: web-preprod
-
-app:
-  baseUrl: https://demo.logsight.ai/
-  baseUrlTry: https://demo.logsight.ai/
-  qualityUrl: https://demo.logsight.ai:5444/
-
----
-spring.config.activate.on-profile: web-prod
-
-app:
-  baseUrl: https://logsight.ai/
-  baseUrlTry: https://logsight.ai/
-  qualityUrl: https://logsight.ai:5444/
-
-user:
-  userAccountBootstrap: false
-  appLimit: 5
+  token:
+    minutes: 15

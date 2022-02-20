@@ -1,0 +1,27 @@
+spring:
+  jpa:
+    hibernate.ddl-auto: create-drop
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
+  datasource:
+    url: jdbc:postgresql://localhost:5431/logsight_test
+    username: logsight
+    password: logsight
+
+logsight:
+  elasticsearch:
+    host: "localhost"
+    port: "9200"
+    protocol: "http"
+    credentials:
+      username: "elastic"
+      password: "elasticsearchpassword"
+
+  kibana:
+    host: "localhost"
+    port: "5601"
+
+  token:
+    duration: 15
+
+logsight.application-rpc.zeromq.timeout: 200

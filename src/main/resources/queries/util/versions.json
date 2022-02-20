@@ -1,0 +1,38 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "terms": {
+        "field": "tag.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 500
+      }
+    }
+  },
+  "size": 0,
+  "_source": {
+    "excludes": []
+  },
+  "stored_fields": [
+    "*"
+  ],
+  "script_fields": {},
+  "docvalue_fields": [
+    {
+      "field": "@timestamp",
+      "format": "date_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "match_all": {}
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}
