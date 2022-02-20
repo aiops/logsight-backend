@@ -35,14 +35,14 @@ class CompareController(
             applicationName = application.name,
             resultInitId = getCompareResultRequest.flushId,
             baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.compareTag,
+            compareTag = getCompareResultRequest.candidateTag,
             privateKey = application.user.key
         )
         val compareResponse = compareService.getCompareData(compareDTO)
         compareResponse.applicationId = application.id
         compareResponse.flushId = getCompareResultRequest.flushId
-        compareResponse.detailedReportLink =
-            "${commonConfigProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.compareTag}"
+        compareResponse.link =
+            "${commonConfigProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.candidateTag}"
         return compareResponse
     }
 
@@ -56,7 +56,7 @@ class CompareController(
             applicationName = application.name,
             resultInitId = getCompareResultRequest.flushId,
             baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.compareTag,
+            compareTag = getCompareResultRequest.candidateTag,
             privateKey = application.user.key
         )
         return compareService.getCompareDataView(compareDTO)
