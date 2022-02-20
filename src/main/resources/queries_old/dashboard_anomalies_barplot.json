@@ -3,7 +3,7 @@
     "listAggregations": {
       "auto_date_histogram": {
         "field": "@timestamp",
-        "buckets": 10
+        "buckets": 6
       },
       "aggs": {
         "1": {
