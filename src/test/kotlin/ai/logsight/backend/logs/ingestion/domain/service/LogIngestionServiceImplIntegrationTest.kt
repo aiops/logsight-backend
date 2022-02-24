@@ -73,7 +73,7 @@ class LogIngestionServiceImplIntegrationTest {
         private val application2 = applicationEntity2.toApplication()
 
         // The IDE warning can be ignored
-        private val threadPoolContext = newFixedThreadPoolContext(20, "Log Process")
+        private val threadPoolContext = newFixedThreadPoolContext(20, "LogRequest Process")
     }
 
     @Nested

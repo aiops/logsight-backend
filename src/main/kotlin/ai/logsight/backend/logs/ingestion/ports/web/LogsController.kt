@@ -2,7 +2,6 @@ package ai.logsight.backend.logs.ingestion.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
@@ -39,7 +38,6 @@ class LogsController(
             user = userStorageService.findUserByEmail(authentication.name),
             application = applicationStorageService.findApplicationById(logListRequest.applicationId),
             tag = logListRequest.tag,
-            logFormat = logListRequest.logFormats,
             logs = logListRequest.logs,
             source = LogDataSources.REST_BATCH
         )
@@ -56,13 +54,11 @@ class LogsController(
         @RequestPart("file") @NotNull(message = "file must not be empty.") file: MultipartFile,
         @RequestParam("applicationId") @NotNull(message = "applicationId must not be empty.") applicationId: UUID,
         @RequestParam("tag", defaultValue = "default") tag: String,
-        @RequestParam("logFormat", defaultValue = "UNKNOWN_FORMAT") logFormats: LogFormats,
     ): LogsReceiptResponse {
         val logBatchDTO = LogBatchDTO(
             user = userStorageService.findUserByEmail(authentication.name),
             application = applicationStorageService.findApplicationById(applicationId),
             tag = tag,
-            logFormat = logFormats,
             logs = LogFileReader().readFile(file.name, file.inputStream),
             source = LogDataSources.FILE
         )

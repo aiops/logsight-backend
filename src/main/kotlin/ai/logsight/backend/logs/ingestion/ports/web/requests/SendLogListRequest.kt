@@ -10,6 +10,5 @@ data class SendLogListRequest(
     val applicationId: UUID,
     @get:NotEmpty(message = "tag must not be empty")
     val tag: String = "default",
-    val logFormats: LogFormats = LogFormats.UNKNOWN_FORMAT,
-    val logs: List<String> = listOf()
+    val logs: List<LogRequest> = listOf()
 )

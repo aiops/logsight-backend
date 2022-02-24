@@ -1,10 +1,12 @@
 package ai.logsight.backend.logs.utils
 
+import ai.logsight.backend.logs.domain.Log
+import ai.logsight.backend.logs.ingestion.ports.web.requests.LogRequest
 import java.io.InputStream
 
 class LogFileReader {
 
-    fun readFile(fileName: String, inputStream: InputStream): List<String> {
+    fun readFile(fileName: String, inputStream: InputStream): List<LogRequest> {
         val fileContent = readFileContent(fileName, inputStream)
         return logLinesToList(fileContent)
     }
@@ -18,8 +20,8 @@ class LogFileReader {
         }
 
     // TODO (This must be tested)
-    private fun logLinesToList(fileContent: String): List<String> {
-        val logMessages = mutableListOf<String>()
+    private fun logLinesToList(fileContent: String): List<LogRequest> {
+        val logMessages = mutableListOf<LogRequest>()
         val stringBuilder = StringBuilder()
         // Filters empty lines and appends multiline logs to one line based on heuristic that
         // multiline logs start with spaces
@@ -34,16 +36,18 @@ class LogFileReader {
                     .isWhitespace()
                 ) {
                     logMessages.add(
-                        stringBuilder.toString()
-                            .trim()
+                        LogRequest("", stringBuilder.toString()
+                            .trim(), "", "")
+
                     )
                     stringBuilder.clear()
                 }
             }
         if (stringBuilder.isNotEmpty())
             logMessages.add(
-                stringBuilder.toString()
-                    .trim()
+                LogRequest("", stringBuilder.toString()
+                    .trim(), "", "")
+
             )
         return logMessages
     }
