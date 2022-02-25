@@ -19,6 +19,7 @@ import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultB
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
+import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -35,7 +36,8 @@ import kotlin.reflect.full.memberProperties
 class ESChartsServiceImpl(
     private val chartsRepository: ESChartRepository,
     private val applicationStorageService: ApplicationStorageService,
-    private val userStorageService: UserStorageService
+    private val userStorageService: UserStorageService,
+    private val applicationIndicesBuilder: ApplicationIndicesBuilder
 ) : ChartsService {
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -44,7 +46,7 @@ class ESChartsServiceImpl(
 
     override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
         // get the String response from elasticsearch and map it into a HeatMapData Object.
-        val applicationIndices = getApplicationIndexes(
+        val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
@@ -80,7 +82,7 @@ class ESChartsServiceImpl(
 
     override fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
-        val applicationIndices = getApplicationIndexes(
+        val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
@@ -107,7 +109,7 @@ class ESChartsServiceImpl(
 
     override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
-        val applicationIndices = getApplicationIndexes(
+        val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
@@ -133,7 +135,7 @@ class ESChartsServiceImpl(
     }
 
     override fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart {
-        val applicationIndices = getApplicationIndexes(
+        val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
@@ -180,16 +182,4 @@ class ESChartsServiceImpl(
             application = application
         )
     }
-
-    fun getApplicationIndexes(user: User, application: Application?, indexType: String) =
-        applicationStorageService.findAllApplicationsByUser(user)
-            .filter {
-                application?.let { application -> application.id == it.id } ?: true
-            }
-            .joinToString(",") {
-                "${
-                user.key.lowercase()
-                    .filter { it2 -> it2.isLetterOrDigit() }
-                }_${it.name}_$indexType"
-            }
 }
