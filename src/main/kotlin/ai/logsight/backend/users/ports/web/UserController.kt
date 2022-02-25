@@ -58,7 +58,7 @@ class UserController(
 
     @ApiOperation("Delete new user")
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteUser(
         @PathVariable @Pattern(
             regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",

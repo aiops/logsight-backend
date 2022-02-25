@@ -8,6 +8,7 @@ import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import ai.logsight.backend.users.domain.User
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
 import org.json.JSONObject
@@ -29,17 +30,62 @@ class ElasticsearchService(
     fun createESUser(username: String, password: String, roles: String) {
         val esUser = ESUser(username, Collections.singletonList(roles))
         val request = PutUserRequest.withPassword(esUser, roles.toCharArray(), true, RefreshPolicy.NONE)
-        client.security().putUser(request, RequestOptions.DEFAULT)
+        client.security()
+            .putUser(request, RequestOptions.DEFAULT)
+    }
+
+    fun deleteESUser(username: String) {
+        client.security()
+            .deleteUser(DeleteUserRequest(username), RequestOptions.DEFAULT)
+    }
+
+    fun deleteKibanaRole(userKey: String) {
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/api")
+            .path("/security")
+            .path("/role")
+            .path("/$userKey")
+            .build()
+            .toString()
+        kibanaClient.deleteRequest(
+            url = url, credentials = elasticsearchConfig.credentials, query = null, headerName = kibanaConfig.header
+        )
     }
 
     fun createKibanaSpace(userKey: String) {
         val query =
             "{ \"id\": \"kibana_space_${userKey}\", " + "\"name\": \"Logsight\", " + "\"description\" : \"This is your Logsight Space - ${userKey}\" }"
 
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
-            .port(kibanaConfig.port).path("/api").path("/spaces").path("/space").build().toString()
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/api")
+            .path("/spaces")
+            .path("/space")
+            .build()
+            .toString()
         kibanaClient.sendRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
+        )
+    }
+
+    fun deleteKibanaSpace(userKey: String) {
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/api")
+            .path("/spaces")
+            .path("/space")
+            .path("/kibana_space_$userKey")
+            .build()
+            .toString()
+        kibanaClient.deleteRequest(
+            url = url, credentials = elasticsearchConfig.credentials, query = null, headerName = kibanaConfig.header
         )
     }
 
@@ -54,9 +100,16 @@ class ElasticsearchService(
 
         val query =
             "{ \"metadata\" : { \"version\" : 1 }," + "\"elasticsearch\": { \"cluster\" : [ ], " + "\"indices\" : [ {\"names\" : [$userKey*]," + " \"privileges\" : [ \"all\" ]}] }, " + "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " + "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " + "\"spaces\": [ \"kibana_space_${userKey}\" ] } ] }"
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
-            .port(kibanaConfig.port).path("/api").path("/security").path("/role").path("/$userKey")
-            .build().toString()
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/api")
+            .path("/security")
+            .path("/role")
+            .path("/$userKey")
+            .build()
+            .toString()
         kibanaClient.putRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
         )
@@ -65,8 +118,14 @@ class ElasticsearchService(
     fun kibanaLogin(user: User): ResponseEntity<String> {
         val query =
             "{\"providerType\":\"basic\", \"providerName\":\"basic\", \"currentURL\":\"/\", \"params\":{\"username\":\"${user.email}\", \"password\":\"${user.key}\"}}"
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
-            .port(kibanaConfig.port).path("/internal").path("/security").path("/login").build()
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/internal")
+            .path("/security")
+            .path("/login")
+            .build()
             .toString()
         return kibanaClient.postForEntity(
             url = url, credentials = Credentials(user.email, user.key), query = query, headerName = kibanaConfig.header
@@ -96,9 +155,17 @@ class ElasticsearchService(
         delete: Boolean = false
     ) {
 
-        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
-            .port(kibanaConfig.port).path("/s").path("/kibana_space_$userKey").path("/api")
-            .path("/index_patterns").path("/index_pattern").build().toString()
+        val url = UriComponentsBuilder.newInstance()
+            .scheme(kibanaConfig.scheme)
+            .host(kibanaConfig.host)
+            .port(kibanaConfig.port)
+            .path("/s")
+            .path("/kibana_space_$userKey")
+            .path("/api")
+            .path("/index_patterns")
+            .path("/index_pattern")
+            .build()
+            .toString()
         try {
 
             indexPatterns.forEach { pattern ->
@@ -123,7 +190,10 @@ class ElasticsearchService(
             }
         } catch (e: HttpClientErrorException) {
             val msgJson = JSONObject(e.responseBodyAsString)
-            throw ElasticsearchException(msgJson.get("message").toString())
+            throw ElasticsearchException(
+                msgJson.get("message")
+                    .toString()
+            )
         }
     }
 }

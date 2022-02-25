@@ -16,4 +16,10 @@ class ExternalElasticsearch(
         elasticsearchService.createKibanaSpace(user.key)
         elasticsearchService.createKibanaRole(user.key)
     }
+
+    override fun teardown(user: User) {
+        elasticsearchService.deleteKibanaSpace(user.key)
+        elasticsearchService.deleteKibanaRole(user.key)
+        elasticsearchService.deleteESUser(user.email)
+    }
 }

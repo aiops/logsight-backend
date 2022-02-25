@@ -10,6 +10,7 @@ import ai.logsight.backend.token.persistence.TokenType
 import ai.logsight.backend.users.exceptions.*
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
+import ai.logsight.backend.users.ports.out.external.ExternalElasticsearch
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.web.request.*
@@ -63,6 +64,9 @@ class UserControllerIntegrationTest {
 
     @Autowired
     private lateinit var tokenRepository: TokenRepository
+
+    @Autowired
+    private lateinit var externalElasticsearch: ExternalElasticsearch
 
     @MockBean
     private lateinit var emailService: EmailService
@@ -832,8 +836,9 @@ class UserControllerIntegrationTest {
         @Test
         fun `should delete user`() {
             // given
-            val user = newUserEntity
-            user.activated = false
+            val user = UserEntity(email = "testdelete@delete.com", password = "password123")
+            user.activated = true
+            externalElasticsearch.initialize(user.toUser())
             userRepository.save(user)
 
             // when
@@ -843,7 +848,7 @@ class UserControllerIntegrationTest {
             }
             // then
             result.andExpect {
-                status { isOk() }
+                status { isNoContent() }
             }
             assertNull(userRepository.findByIdOrNull(user.id))
         }

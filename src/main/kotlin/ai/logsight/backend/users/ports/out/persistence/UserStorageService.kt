@@ -12,5 +12,5 @@ interface UserStorageService {
     fun activateUser(email: String): User
     fun createUser(email: String, password: String): User
     fun checkEmailExists(email: String): Boolean
-    fun deleteUser(id: UUID)
+    fun deleteUser(id: UUID): User
 }

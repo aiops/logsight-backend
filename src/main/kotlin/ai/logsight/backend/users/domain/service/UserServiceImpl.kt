@@ -77,6 +77,7 @@ class UserServiceImpl(
 
     override fun deleteUser(deleteUserCommand: DeleteUserCommand) {
         val deletedUser = userStorageService.deleteUser(deleteUserCommand.userId)
+        externalServices.teardownServicesForUser(deletedUser)
     }
 
     /**
