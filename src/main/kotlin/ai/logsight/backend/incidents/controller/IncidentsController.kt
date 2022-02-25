@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
-@Api(tags = ["Compare"], description = "Comparison between log data")
+@Api(tags = ["Incidents"], description = "Obtain incidents from log data")
 @RestController
 @RequestMapping("/api/v1/logs/incidents")
 class IncidentsController(
