@@ -5,17 +5,21 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.LogsController
+import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.security.UserDetailsServiceImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import ai.logsight.backend.users.ports.out.persistence.UserType
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import org.joda.time.DateTime
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -63,11 +67,18 @@ internal class LogsControllerUnitTest {
 
         private val logsUriPath = "/api/v1/logs"
 
+        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+        
         private val email = "sasho@sasho.com"
         private val user = createMockUser(email)
         private val appId = UUID.randomUUID()
         private val app = createMockApplication(user = user, id = appId)
-        private val log = "Hello World!"
+        private val log = LogMessage(
+            message = "Hello World!",
+            timestamp = DateTime.now()
+                .toString()
+        )
+
         private val logBatchDTO = createMockLogBatchDTO(user, app, logs = listOf(log))
         private val orderCounter = 1L
         private val source = LogDataSources.REST_BATCH.source
@@ -75,7 +86,7 @@ internal class LogsControllerUnitTest {
             app, orderCounter = orderCounter, logsCount = logBatchDTO.logs.size, source = source
         )
 
-        private val defaultBody = """{"applicationId": "$appId", "logs":["$log"]}"""
+        private val defaultBody = SendLogListRequest(applicationId = appId, logs = listOf(log))
 
         @Test
         fun `should return valid log receipt response`() {
@@ -168,9 +179,9 @@ internal class LogsControllerUnitTest {
             result.andExpect(status().isInternalServerError)
         }
 
-        private fun performRequest(requestBody: String = defaultBody): ResultActions = mockMvc.perform(
+        private fun performRequest(requestBody: SendLogListRequest = defaultBody): ResultActions = mockMvc.perform(
             post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(mapper.writeValueAsString(requestBody))
                 .accept(MediaType.APPLICATION_JSON)
         )
     }
@@ -197,9 +208,14 @@ internal class LogsControllerUnitTest {
         user: User,
         application: Application,
         tag: String = "default",
-        logFormat: LogFormats = LogFormats.UNKNOWN_FORMAT,
-        logs: List<String> = listOf("Hello World!")
-    ) = LogBatchDTO(user, application, tag, logFormat, logs, LogDataSources.SAMPLE)
+        logs: List<LogMessage> = listOf(
+            LogMessage(
+                timestamp = DateTime.now()
+                    .toString(),
+                message = "Hello World!"
+            )
+        )
+    ) = LogBatchDTO(user, application, tag, logs, LogDataSources.SAMPLE)
 
     private fun createMockLogsReceipt(
         application: Application,

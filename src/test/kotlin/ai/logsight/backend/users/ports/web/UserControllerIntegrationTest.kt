@@ -2,6 +2,7 @@ package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.email.domain.service.EmailService
+import ai.logsight.backend.security.authentication.response.GetUserResponse
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
@@ -15,7 +16,6 @@ import ai.logsight.backend.users.ports.web.request.*
 import ai.logsight.backend.users.ports.web.response.ActivateUserResponse
 import ai.logsight.backend.users.ports.web.response.ChangePasswordResponse
 import ai.logsight.backend.users.ports.web.response.CreateUserResponse
-import ai.logsight.backend.security.authentication.response.GetUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -37,11 +38,13 @@ import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.web.bind.MethodArgumentNotValidException
 import java.time.Duration
 import java.util.*
+import kotlin.test.assertNull
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -77,6 +80,7 @@ class UserControllerIntegrationTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class GetUser {
         val getUserEndpoint = "/api/v1/auth/user"
+
         @BeforeAll
         fun setUp() {
             userRepository.deleteAll()
@@ -451,7 +455,8 @@ class UserControllerIntegrationTest {
             // given
             val user = TestInputConfig.baseUser
             val newPassword = "newPassword"
-            val request = ChangePasswordRequest(user.id.toString(), TestInputConfig.basePassword, newPassword, newPassword)
+            val request =
+                ChangePasswordRequest(user.id.toString(), TestInputConfig.basePassword, newPassword, newPassword)
             val response = ChangePasswordResponse(user.id)
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -809,6 +814,59 @@ class UserControllerIntegrationTest {
             }
                 .andReturn().resolvedException
             Assertions.assertThat(exception is UserAlreadyActivatedException)
+        }
+    }
+
+    @Nested
+    @DisplayName("DELETE $getUserEndpoint/{userId}")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @WithMockUser(username = TestInputConfig.baseEmail)
+    inner class DeletePassword {
+        @BeforeAll
+        fun setUp() {
+            userRepository.deleteAll()
+            tokenRepository.deleteAll()
+            userRepository.save(TestInputConfig.baseUserEntity)
+        }
+
+        @Test
+        fun `should delete user`() {
+            // given
+            val user = newUserEntity
+            user.activated = false
+            userRepository.save(user)
+
+            // when
+            val result = mockMvc.delete("$getUserEndpoint/${user.id}") {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isOk() }
+            }
+            assertNull(userRepository.findByIdOrNull(user.id))
+        }
+
+        @Test
+        fun `Bad request when user doesn't exist`() {
+            // given
+            val user = newUser
+            val request = ResendActivationEmailRequest(user.email)
+
+            // when
+            val result = mockMvc.delete("$getUserEndpoint/${UUID.randomUUID()}") {
+                contentType = MediaType.APPLICATION_JSON
+                accept = MediaType.APPLICATION_JSON
+            }
+
+            // then
+            val exception = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is UserNotFoundException)
         }
     }
 }

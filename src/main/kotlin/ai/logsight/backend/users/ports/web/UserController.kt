@@ -16,13 +16,11 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Pattern
 
 @Api(tags = ["Users"], description = "Operations about users")
 @RestController
@@ -56,6 +54,23 @@ class UserController(
         }
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
         return CreateUserResponse(userId = user.id)
+    }
+
+    @ApiOperation("Delete new user")
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteUser(
+        @PathVariable @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String
+    ) {
+        logger.info("Deleting user $userId.", this::deleteUser.name)
+        val deleteUserCommand = DeleteUserCommand(
+            userId = UUID.fromString(userId)
+        )
+        val deletedUser = userService.deleteUser(deleteUserCommand)
+        logger.info("User $userId successfully activated.", this::deleteUser.name)
     }
 
     /**

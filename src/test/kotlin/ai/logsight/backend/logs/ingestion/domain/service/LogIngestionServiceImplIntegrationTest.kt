@@ -7,9 +7,9 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.common.utils.TopicJsonSerializer
-import ai.logsight.backend.logs.domain.Log
+import ai.logsight.backend.logs.domain.LogMessage
+import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
@@ -19,6 +19,7 @@ import com.sun.mail.iap.ConnectionException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
+import org.joda.time.DateTime
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -54,21 +55,24 @@ class LogIngestionServiceImplIntegrationTest {
 
     companion object {
         private const val numMessages = 1000
-        private const val logMessage = "Hello World"
+        private val logMessage = LogMessage(
+            message = "Hello World!",
+            timestamp = DateTime.now()
+                .toString()
+        )
         private val source = LogDataSources.REST_BATCH
         private const val tag = "default"
-        private val format = LogFormats.UNKNOWN_FORMAT
         val topicBuilder = TopicBuilder()
 
         val logMessages = List(numMessages) { logMessage }
 
         val applicationEntity1 = ApplicationEntity(
-            name = "testapp1", status = ApplicationStatus.READY, user = TestInputConfig.baseUserEntity
+            name = "test_app1", status = ApplicationStatus.READY, user = TestInputConfig.baseUserEntity
         )
         private val application1 = applicationEntity1.toApplication()
 
         val applicationEntity2 = ApplicationEntity(
-            name = "testapp2", status = ApplicationStatus.READY, user = TestInputConfig.baseUserEntity
+            name = "test_app2", status = ApplicationStatus.READY, user = TestInputConfig.baseUserEntity
         )
         private val application2 = applicationEntity2.toApplication()
 
@@ -108,7 +112,7 @@ class LogIngestionServiceImplIntegrationTest {
         fun `should return valid log receipt`() {
             // given
             val logBatchDTO = LogBatchDTO(
-                TestInputConfig.baseUser, application1, tag, format, logMessages, source = source
+                TestInputConfig.baseUser, application1, tag, logMessages, source = source
             )
             // when
             val logReceipt = logIngestionServiceImpl.processLogBatch(logBatchDTO)
@@ -130,7 +134,7 @@ class LogIngestionServiceImplIntegrationTest {
             val logReceipts = batches.map { batch ->
                 logIngestionServiceImpl.processLogBatch(
                     LogBatchDTO(
-                        TestInputConfig.baseUser, application1, tag, format, batch, source = source
+                        TestInputConfig.baseUser, application1, tag, batch, source = source
                     )
                 )
             }
@@ -159,7 +163,7 @@ class LogIngestionServiceImplIntegrationTest {
             val logsReceipts = batches.map { batch ->
                 logIngestionServiceImpl.processLogBatch(
                     LogBatchDTO(
-                        TestInputConfig.baseUser, application1, tag, format, batch, source = source
+                        TestInputConfig.baseUser, application1, tag, batch, source = source
                     )
                 )
             }
@@ -188,7 +192,6 @@ class LogIngestionServiceImplIntegrationTest {
                                 TestInputConfig.baseUser,
                                 application1,
                                 tag,
-                                format,
                                 batch,
                                 source = source
                             )
@@ -225,7 +228,6 @@ class LogIngestionServiceImplIntegrationTest {
                                 TestInputConfig.baseUser,
                                 application1,
                                 tag,
-                                format,
                                 batch,
                                 source = source
                             )
@@ -238,7 +240,6 @@ class LogIngestionServiceImplIntegrationTest {
                                 TestInputConfig.baseUser,
                                 application2,
                                 tag,
-                                format,
                                 batch,
                                 source = source
                             )
@@ -257,7 +258,8 @@ class LogIngestionServiceImplIntegrationTest {
             val serializedLogs = List(numBatches * numMessages) {
                 String(zeroMQSocket.recv())
             }
-            val receiptIds = serializedLogs.map { topicJsonSerializer.deserialize(it, Log::class.java).orderCounter }
+            val receiptIds =
+                serializedLogs.map { topicJsonSerializer.deserialize(it, LogsightLog::class.java).orderCounter }
 
             // num. sent logs = num. received logs
             Assertions.assertEquals(receiptIdsExpected.size, logsReceipts.size)

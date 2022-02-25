@@ -3,7 +3,6 @@ package ai.logsight.backend.users.ports.out.persistence
 import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.EmailExistsException
-import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.extensions.toOnlineUser
 import ai.logsight.backend.users.extensions.toUser
@@ -75,6 +74,7 @@ class UserStorageImpl(
             ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
 
     override fun deleteUser(id: UUID) {
-        return userRepository.deleteById(id)
+        val user = findUserById(id)
+        return userRepository.deleteById(user.id)
     }
 }

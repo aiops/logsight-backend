@@ -14,4 +14,5 @@ interface UserService {
     fun generateForgotPasswordTokenAndSendEmail(createTokenCommand: CreateTokenCommand)
     fun createUser(createUserCommand: CreateUserCommand): User
     fun sendActivationEmail(sendActivationEmailCommand: SendActivationEmailCommand)
+    fun deleteUser(deleteUserCommand: DeleteUserCommand)
 }
