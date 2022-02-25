@@ -44,6 +44,7 @@ class LogIngestionServiceImpl(
                     logBatchDTO.application.name,
                     logBatchDTO.application.id.toString(),
                     logBatchDTO.user.key,
+                    logBatchDTO.source,
                     logBatchDTO.tag,
                     logsReceipt!!.orderNum,
                     message

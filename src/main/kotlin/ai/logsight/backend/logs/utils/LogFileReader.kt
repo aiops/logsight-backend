@@ -36,8 +36,12 @@ class LogFileReader {
                     .isWhitespace()
                 ) {
                     logMessages.add(
-                        LogRequest("", stringBuilder.toString()
-                            .trim(), "", "")
+                        LogRequest(
+                            null,
+                            message = stringBuilder.toString()
+                                .trim(),
+                            null, null
+                        )
 
                     )
                     stringBuilder.clear()
@@ -45,9 +49,12 @@ class LogFileReader {
             }
         if (stringBuilder.isNotEmpty())
             logMessages.add(
-                LogRequest("", stringBuilder.toString()
-                    .trim(), "", "")
-
+                LogRequest(
+                    null,
+                    message = stringBuilder.toString()
+                        .trim(),
+                    null, null
+                )
             )
         return logMessages
     }
