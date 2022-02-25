@@ -16,7 +16,7 @@
 //    companion object {
 //        val mapper = ObjectMapper().registerModule(KotlinModule())!!
 //        const val endpoint = "/api/v1/compare"
-//        val request = GetCompareResultRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
+//        val request = GetIncidentResultRequest(applicationId = TestInputConfig.baseApp.id, "base", "compare", "now-180m")
 //    }
 //
 //    @BeforeEach
