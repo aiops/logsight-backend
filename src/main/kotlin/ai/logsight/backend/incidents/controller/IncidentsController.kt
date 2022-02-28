@@ -27,6 +27,6 @@ class IncidentsController(
     fun getIncidentResult(@Valid @RequestBody getIncidentResultRequest: GetIncidentResultRequest): CreateIncidentDataResponse {
         logger.info("Getting result data for incident with query parameters: $getIncidentResultRequest")
         // Create charts command
-        return CreateIncidentDataResponse(incidentService.getIncidentResult(getIncidentResultRequest))
+        return incidentService.getIncidentResult(getIncidentResultRequest)
     }
 }

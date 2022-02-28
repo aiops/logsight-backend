@@ -11,6 +11,8 @@ import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
 import ai.logsight.backend.compare.controller.request.GetIncidentResultRequest
+import ai.logsight.backend.compare.controller.response.CreateIncidentDataResponse
+import ai.logsight.backend.compare.controller.response.IncidentResponse
 import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import ai.logsight.backend.results.domain.service.ResultInitStatus
@@ -21,7 +23,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import java.net.http.HttpClient
-import java.util.*
 
 @Service
 class IncidentService(
@@ -38,7 +39,7 @@ class IncidentService(
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
-    fun getIncidentResult(incidentQuery: GetIncidentResultRequest): List<HitsDataPoint> {
+    fun getIncidentResult(incidentQuery: GetIncidentResultRequest): CreateIncidentDataResponse {
         val application = applicationStorageService.findApplicationById(incidentQuery.applicationId)
         val resultInit = incidentQuery.flushId?.let {
             resultInitStorageService.findResultInitById(it)
@@ -64,6 +65,13 @@ class IncidentService(
         )
         val incidentResultData =
             mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        return incidentResultData.hits.hits
+        val createGetIncidentResultResponse = CreateIncidentDataResponse(
+            incidentResultData.hits.hits.map { incident ->
+                IncidentResponse(
+                    applicationId = getChartDataQuery.application?.id, startTimestamp = incident.source.startTimestamp, stopTimestamp = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
+                )
+            }
+        )
+        return createGetIncidentResultResponse
     }
 }
