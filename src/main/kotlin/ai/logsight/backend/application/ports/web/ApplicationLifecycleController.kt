@@ -36,7 +36,10 @@ class ApplicationLifecycleController(
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
-        @PathVariable userId: String,
+        @PathVariable @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String,
     ): GetAllApplicationsResponse {
         logger.info("Getting the authenticated user object.", this::getApplications.name)
         val user = userService.findUserById(UUID.fromString(userId))

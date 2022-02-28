@@ -2,6 +2,7 @@ package ai.logsight.backend.connectors.rest
 
 import ai.logsight.backend.common.dto.Credentials
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForEntity
@@ -17,8 +18,7 @@ open class RestTemplateConnector {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().basicAuthentication(
             credentials.username, credentials.password
-        )
-            .build()
+        ).build()
         return restTemplate.postForEntity(url, request)
     }
 
@@ -31,8 +31,7 @@ open class RestTemplateConnector {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().basicAuthentication(
             credentials.username, credentials.password
-        )
-            .build()
+        ).build()
         return restTemplate.postForEntity(url, request)
     }
 
@@ -52,8 +51,7 @@ open class RestTemplateConnector {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().basicAuthentication(
             credentials.username, credentials.password
-        )
-            .build()
+        ).build()
         return restTemplate.put(url, request)
     }
 
@@ -63,18 +61,17 @@ open class RestTemplateConnector {
         return restTemplate.put(url, request)
     }
 
-    fun deleteRequest(url: String, credentials: Credentials, query: String, headerName: String? = null) {
+    fun deleteRequest(url: String, credentials: Credentials, query: String?, headerName: String? = null): String {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().basicAuthentication(
             credentials.username, credentials.password
-        )
-            .build()
-        return restTemplate.delete(url, request)
+        ).build()
+        return restTemplate.exchange(url, HttpMethod.DELETE, request, String::class.java).toString()
     }
 
-    fun deleteRequest(url: String, query: String, headerName: String? = null) {
+    fun deleteRequest(url: String, query: String?, headerName: String? = null): String {
         val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
         val restTemplate: RestTemplate = RestTemplateBuilder().build()
-        return restTemplate.delete(url, request)
+        return restTemplate.exchange(url, HttpMethod.DELETE, request, String::class.java).toString()
     }
 }

@@ -75,6 +75,11 @@ class UserServiceImpl(
         emailService.sendActivationEmail(emailContext)
     }
 
+    override fun deleteUser(deleteUserCommand: DeleteUserCommand) {
+        val deletedUser = userStorageService.deleteUser(deleteUserCommand.userId)
+        externalServices.teardownServicesForUser(deletedUser)
+    }
+
     /**
      * Activate the user given the activation link.
      */
@@ -114,10 +119,9 @@ class UserServiceImpl(
             throw PasswordsNotMatchException("Invalid password. Please retype your old password correctly.")
         }
 
-        if (changePasswordCommand.newPassword != changePasswordCommand.confirmNewPassword)
-            throw PasswordsNotMatchException(
-                "Provided passwords do not match. Please retype your password correctly."
-            )
+        if (changePasswordCommand.newPassword != changePasswordCommand.confirmNewPassword) throw PasswordsNotMatchException(
+            "Provided passwords do not match. Please retype your password correctly."
+        )
 
         return userStorageService.changePassword(
             user.id, changePasswordCommand.newPassword, changePasswordCommand.confirmNewPassword

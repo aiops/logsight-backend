@@ -13,4 +13,10 @@ class ExternalServiceManager(
             service.initialize(user)
         }
     }
+
+    fun teardownServicesForUser(user: User) {
+        services.values.forEach { service ->
+            service.teardown(user)
+        }
+    }
 }

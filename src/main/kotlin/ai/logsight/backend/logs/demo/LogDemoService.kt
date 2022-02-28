@@ -60,7 +60,6 @@ class LogDemoService(
                     user,
                     application,
                     SampleLogConstants.SAMPLE_TAG,
-                    LogFormats.UNKNOWN_FORMAT,
                     logMessages,
                     LogDataSources.SAMPLE
                 )

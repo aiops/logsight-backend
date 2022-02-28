@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq
 
 import ai.logsight.backend.common.utils.TopicJsonSerializer
-import ai.logsight.backend.logs.domain.Log
+import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
 import org.springframework.stereotype.Component
 import org.zeromq.ZMQ
@@ -17,6 +17,6 @@ class LogStreamZeroMq(
     }
         .sum()
 
-    override fun serializeAndSend(topic: String, logs: Collection<Log>): Int =
-        send(logs.map { serializer.serialize(topic, it) })
+    override fun serializeAndSend(topic: String, logsightLogs: Collection<LogsightLog>): Int =
+        send(logsightLogs.map { serializer.serialize(topic, it) })
 }

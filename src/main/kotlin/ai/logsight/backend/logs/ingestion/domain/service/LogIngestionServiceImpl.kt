@@ -3,7 +3,7 @@ package ai.logsight.backend.logs.ingestion.domain.service
 import ai.logsight.backend.application.extensions.isReadyOrException
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.TopicBuilder
-import ai.logsight.backend.logs.domain.Log
+import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
@@ -39,18 +39,18 @@ class LogIngestionServiceImpl(
         var sentLogs = 0
         xSync.execute("logs-stream") { // TODO define mutex constants somewhere else
             logsReceipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
-            val logs = logBatchDTO.logs.map { message ->
-                Log(
+            val logsightLogs = logBatchDTO.logs.map { message ->
+                LogsightLog(
                     logBatchDTO.application.name,
                     logBatchDTO.application.id.toString(),
                     logBatchDTO.user.key,
-                    logBatchDTO.logFormat.name,
+                    logBatchDTO.source,
                     logBatchDTO.tag,
                     logsReceipt!!.orderNum,
                     message
                 )
             }
-            sentLogs = logStream.serializeAndSend(topic, logs)
+            sentLogs = logStream.serializeAndSend(topic, logsightLogs)
         }
 
         return logsReceipt?.let { logsReceiptNotNull ->

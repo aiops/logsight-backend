@@ -6,4 +6,8 @@ class ExternalPayment : ExternalService {
     override fun initialize(user: User) {
         println("Initialized ExternalPayment")
     }
+
+    override fun teardown(user: User) {
+        println("teardown ExternalPayment")
+    }
 }

@@ -5,9 +5,9 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.common.utils.TopicBuilder
-import ai.logsight.backend.logs.domain.Log
+import ai.logsight.backend.logs.domain.LogMessage
+import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
@@ -15,6 +15,7 @@ import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStora
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
+import org.joda.time.DateTime
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -48,13 +49,16 @@ internal class LogIngestionServiceImplTestUnit {
     private val user = TestInputConfig.baseUser
     private val app = TestInputConfig.baseApp
     private val topic = "${user.key}_${app.name}_input"
-    private val log = "Hello World!"
+    private val log = LogMessage(
+        message = "Hello World!",
+        timestamp = DateTime.now()
+            .toString()
+    )
     private val logStrings = listOf(log)
-    private val logFormat = LogFormats.UNKNOWN_FORMAT.name
     private val orderCounter = 1L
     private val source = LogDataSources.REST_BATCH.source
     private val logObjects = createMockLogObjects(
-        app.name, app.id.toString(), user.key, logFormat, "default", orderCounter, logStrings
+        app.name, app.id.toString(), user.key, "default", orderCounter, logStrings
     )
 
     @Test
@@ -206,19 +210,17 @@ internal class LogIngestionServiceImplTestUnit {
         appName: String = "testapp",
         appId: String = "testappkey",
         userKey: String = "key",
-        format: String = LogFormats.UNKNOWN_FORMAT.name,
         tag: String = "default",
         orderCounter: Long = 1,
-        logs: List<String> = listOf("Hello World!")
+        logs: List<LogMessage>
     ) = logs.map { log ->
-        Log(appName, appId, userKey, format, tag, orderCounter, log)
+        LogsightLog(appName, appId, userKey, source = LogDataSources.REST_BATCH, tag, orderCounter, log)
     }
 
     private fun createMockLogBatchDTO(
         user: User,
         application: Application,
         tag: String = "default",
-        format: LogFormats = LogFormats.UNKNOWN_FORMAT,
-        logs: List<String> = listOf("Hello World!")
-    ) = LogBatchDTO(user, application, tag, format, logs, LogDataSources.REST_BATCH)
+        logs: List<LogMessage>
+    ) = LogBatchDTO(user, application, tag, logs, LogDataSources.REST_BATCH)
 }
