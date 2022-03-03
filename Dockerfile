@@ -24,4 +24,7 @@ FROM openjdk:11-jre-slim
 WORKDIR /
 COPY --from=build /build/build/libs/logsight-backend-0.0.1-SNAPSHOT.jar ./web-app-backend.jar
 COPY /src/main/resources .
-ENTRYPOINT ["java", "-jar", "web-app-backend.jar"]
+COPY entrypoint.sh .
+ENV LOGSIGHT_HOME=""
+
+ENTRYPOINT [ "./entrypoint.sh" ]
