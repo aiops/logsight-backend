@@ -2,9 +2,9 @@ spring:
   main:
     banner-mode: "off"
   datasource:
-    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
-    username: logsight
-    password: logsight
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/logsight}
+    username: ${SPRING_DATASOURCE_USERNAME:logsight}
+    password: ${SPRING_DATASOURCE_PASSWORD:logsight}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -15,13 +15,13 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: 20MB
+      max-request-size: 20MB
   mail:
     host: mail.privateemail.com
     port: 587
     username: support@logsight.ai
-    password: tel12-5DOS
+    password: tel12-5DOS  # TODO: this is dangerous when we publish the containers
   thymeleaf:
     check-template: true
     check-template-location: true
@@ -39,56 +39,56 @@ server:
   forward-headers-strategy: framework
 
 logsight:
-  user: offline
   common:
-    base-url: "http://localhost:4200"
-    logsight-email: "support@logsight.ai"
+    deployment: ${LOGSIGHT_DEPLOYMENT:stand-alone}  # "web-service"
+    base-url: ${LOGSIGHT_URL:http://localhost:4200}
+    logsight-email: ${LOGSIGHT_EMAIL:support@logsight.ai}
 
   application-rpc:
     zeromq:
       protocol: "tcp"
-      host: "0.0.0.0"
-      port: 5555
-      timeout: 10000    # Seconds
+      host: ${APP_RPC_ZMQ_HOST:0.0.0.0}
+      port: ${APP_RPC_ZMQ_PORT:5555}
+      timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Seconds
 
   logs:
     stream:
       zeromq:
         protocol: "tcp"
         host: "*"
-        port: 5559
+        port: ${LOGS_STREAM_ZMQ_PORT:5559}
     control-rpc-in:
       zeromq:
         protocol: "tcp"
         host: "*"
-        port: 5558
+        port: ${LOGS_CTRL_RPC_IN_ZMQ_PORT:5558}
         topic: "result_init"
     control-rpc-out:
       zeromq:
         protocol: "tcp"
         host: "*"
-        port: 5557
+        port: ${LOGS_CTRL_RPC_OUT_ZMQ_PORT:5557}
 
   elasticsearch:
-    scheme: "http"
-    host: "localhost"
-    port: "9200"
+    scheme: ${ELASTICSEARCH_SCHEME:http}
+    host: ${ELASTICSEARCH_HOST:localhost}
+    port: ${ELASTICSEARCH_PORT:9200}
     credentials:
-      username: "elastic"
-      password: "elasticsearchpassword"
+      username: ${ELASTICSEARCH_USERNAME:elastic}
+      password: ${ELASTICSEARCH_PASSWORD:elasticsearchpassword}
 
   kibana:
-    scheme: "http"
-    host: "localhost"
-    port: "5601"
+    scheme: ${KIBANA_SCHEME:http}
+    host: ${KIBANA_HOST:localhost}
+    port: ${KIBANA_PORT:5601}
     header: "kbn-xsrf"
 
   result-api:
     rest:
-      scheme: "http"
-      host: "localhost"
-      port: 5554
-      compare-path: "api/v1/compare"
+      scheme: ${RESULT_API_SCHEME:http}
+      host: ${RESULT_API_HOST:localhost}
+      port: ${RESULT_API_PORT:5554}
+      compare-path: ${RESULT_API_COMPARE_PATH:api/v1/compare}
 
   token:
     minutes: 15
