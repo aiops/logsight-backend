@@ -17,12 +17,14 @@ internal class CommonConfigPropertiesTest {
     lateinit var commonConfigProperties: CommonConfigProperties
 
     companion object {
+        val deployment = "stand-alone"
         val baseURI = URI("http://localhost:4200")
         const val logsightEmail = "support@logsight.ai"
     }
 
     @Test
     fun `should verify application-config POJO`() {
+        Assertions.assertEquals(deployment, commonConfigProperties.deployment)
         Assertions.assertEquals(baseURI, commonConfigProperties.baseURL)
         Assertions.assertEquals(logsightEmail, commonConfigProperties.logsightEmail)
     }

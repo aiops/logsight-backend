@@ -1,6 +1,7 @@
 package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
+import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.service.UserService
@@ -26,13 +27,11 @@ import javax.validation.constraints.Pattern
 @RestController
 @RequestMapping("/api/v1/users")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
+    private val commonConfigProperties: CommonConfigProperties
 ) {
 
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
-
-    @Value("\${logsight.user}")
-    private val mode: String? = null
 
     /**
      * Register a new user in the system.
@@ -47,10 +46,11 @@ class UserController(
         logger.info(
             "Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name
         )
-        val user = when (mode) {
-            "online" -> userService.createOnlineUser(createUserCommand)
+        val user = when (commonConfigProperties.deployment) {
+            "web-service" -> userService.createOnlineUser(createUserCommand)
                 .toUser()
-            else -> userService.createUser(createUserCommand)
+            "stand-alone" -> userService.createUser(createUserCommand)
+            else -> throw IllegalArgumentException("deployment configuration can be on of [stand-alone,  web-service]")
         }
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
         return CreateUserResponse(userId = user.id)
