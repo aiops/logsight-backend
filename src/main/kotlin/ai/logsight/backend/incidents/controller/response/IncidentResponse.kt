@@ -5,8 +5,8 @@ import java.util.*
 
 data class IncidentResponse(
     val applicationId: UUID?,
-    val startTimestamp: String,
-    val stopTimestamp: String,
+    val startTime: String,
+    val stopTime: String,
     val semanticThreats: JsonNode,
     val totalScore: Int // incident severities
 )

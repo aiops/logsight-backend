@@ -47,10 +47,10 @@ class CompareService(
         try {
             val resultInit = compareDTO.resultInitId?.let { resultInitStorageService.findResultInitById(it) }
             if (resultInit!!.status != ResultInitStatus.DONE) {
-                throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
+                throw ResultInitAlreadyPendingException("Flush is not yet fully executed. Please try again later, by sending new request. If you want immediate results send a request without a flushId to force getting results.")
             }
         } catch (e: Exception) {
-            logger.warn("Result init is null. Getting results anyway!")
+            logger.warn("flushId is null. Getting results anyway!")
         }
 
         val uri = buildCompareEndpointURI(compareDTO)
@@ -74,7 +74,7 @@ class CompareService(
             resultInitStorageService.findResultInitById(it)
         }
         if (resultInit != null && resultInit.status != ResultInitStatus.DONE) {
-            throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
+            throw ResultInitAlreadyPendingException("Flush is not yet fully executed. Please try again later, by sending new request. If you want immediate results send a request without a flushId to force getting results.")
         }
 
         val uri = buildCompareEndpointURI(compareDTO)

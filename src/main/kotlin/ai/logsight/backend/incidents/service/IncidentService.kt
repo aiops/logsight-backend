@@ -5,7 +5,6 @@ import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.ChartsController
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsDataPoint
 import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -68,7 +67,7 @@ class IncidentService(
         val createGetIncidentResultResponse = CreateIncidentDataResponse(
             incidentResultData.hits.hits.map { incident ->
                 IncidentResponse(
-                    applicationId = getChartDataQuery.application?.id, startTimestamp = incident.source.startTimestamp, stopTimestamp = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
+                    applicationId = getChartDataQuery.application?.id, startTime = incident.source.startTimestamp, stopTime = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
                 )
             }
         )

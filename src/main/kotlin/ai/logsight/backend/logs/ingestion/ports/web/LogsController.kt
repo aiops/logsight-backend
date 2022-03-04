@@ -32,7 +32,7 @@ class LogsController(
     @ResponseStatus(HttpStatus.OK)
     fun sendLogList(
         authentication: Authentication,
-        @Valid @RequestBody logListRequest: SendLogListRequest
+        @RequestBody @Valid logListRequest: SendLogListRequest
     ): LogsReceiptResponse {
         val logBatchDTO = LogBatchDTO(
             user = userStorageService.findUserByEmail(authentication.name),
