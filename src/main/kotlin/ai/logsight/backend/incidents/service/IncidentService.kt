@@ -67,7 +67,7 @@ class IncidentService(
         val createGetIncidentResultResponse = CreateIncidentDataResponse(
             incidentResultData.hits.hits.map { incident ->
                 IncidentResponse(
-                    applicationId = getChartDataQuery.application?.id, startTime = incident.source.startTimestamp, stopTime = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
+                    applicationId = getChartDataQuery.application?.id, startTimestamp = incident.source.startTimestamp, stopTimestamp = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
                 )
             }
         )
