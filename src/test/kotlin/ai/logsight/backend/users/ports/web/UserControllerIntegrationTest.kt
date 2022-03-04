@@ -146,7 +146,7 @@ class UserControllerIntegrationTest {
 
             // then
             result.andExpect {
-                status { isForbidden() }
+                status { isUnauthorized() }
             }
         }
     }
