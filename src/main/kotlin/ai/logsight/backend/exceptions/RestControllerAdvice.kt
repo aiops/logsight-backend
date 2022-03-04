@@ -68,18 +68,24 @@ class RestControllerAdvice {
     @ExceptionHandler(
         InvalidFeatureException::class,
         PasswordsNotMatchException::class,
-        UserNotFoundException::class,
         InvalidTokenException::class,
         InvalidTokenTypeException::class,
-        TokenNotFoundException::class,
-        ApplicationNotFoundException::class,
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
         IllegalArgumentException::class,
-        LogsReceiptNotFoundException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)
+    }
+
+    @ExceptionHandler(
+        UserNotFoundException::class,
+        TokenNotFoundException::class,
+        ApplicationNotFoundException::class,
+        LogsReceiptNotFoundException::class
+    )
+    fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
+        return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)
     }
 
     @ExceptionHandler(

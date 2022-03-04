@@ -5,7 +5,6 @@ import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.ChartsController
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsDataPoint
 import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl

@@ -176,7 +176,7 @@ class ApplicationLifecycleControllerTest {
             }
             // then
             val exc = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -329,7 +329,7 @@ class ApplicationLifecycleControllerTest {
             }
             // then
             val exception = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -337,7 +337,7 @@ class ApplicationLifecycleControllerTest {
         }
 
         @Test
-        fun `should return conflict if App doesn't exist in database`() {
+        fun `should return not found if App doesn't exist in database`() {
             // given
             val appId = UUID.randomUUID()
             val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
@@ -348,7 +348,7 @@ class ApplicationLifecycleControllerTest {
             }
             // then
             val exc = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
