@@ -36,6 +36,9 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
             .anyRequest().authenticated().and().addFilter(JWTAuthenticationFilter(authenticationManager()))
             .addFilter(JWTAuthorizationFilter(authenticationManager())).sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and().httpBasic().realmName("My logsight ream").and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     }
 
     @Bean

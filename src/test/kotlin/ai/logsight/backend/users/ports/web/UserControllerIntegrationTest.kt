@@ -119,7 +119,7 @@ class UserControllerIntegrationTest {
 
         @WithMockUser(username = "notexists@mail.com")
         @Test
-        fun `Bad request if user doesn't exist`() {
+        fun `Not found if user doesn't exist`() {
             // given
             // when
             val result = mockMvc.get(getUserEndpoint) {
@@ -129,7 +129,7 @@ class UserControllerIntegrationTest {
 
             // then
             val exception = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -146,7 +146,7 @@ class UserControllerIntegrationTest {
 
             // then
             result.andExpect {
-                status { isForbidden() }
+                status { isUnauthorized() }
             }
         }
     }
@@ -717,7 +717,7 @@ class UserControllerIntegrationTest {
         }
 
         @Test
-        fun `Bad request when user doesn't exist`() {
+        fun `Not found when user doesn't exist`() {
             // given
             val user = newUser
             val request = ForgotPasswordRequest(user.email)
@@ -731,7 +731,7 @@ class UserControllerIntegrationTest {
 
             // then
             val exception = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -777,7 +777,7 @@ class UserControllerIntegrationTest {
         }
 
         @Test
-        fun `Bad request when user doesn't exist`() {
+        fun `Not found when user doesn't exist`() {
             // given
             val user = newUser
             val request = ResendActivationEmailRequest(user.email)
@@ -791,7 +791,7 @@ class UserControllerIntegrationTest {
 
             // then
             val exception = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException
@@ -854,7 +854,7 @@ class UserControllerIntegrationTest {
         }
 
         @Test
-        fun `Bad request when user doesn't exist`() {
+        fun `Not found when user doesn't exist`() {
             // given
             val user = newUser
             val request = ResendActivationEmailRequest(user.email)
@@ -867,7 +867,7 @@ class UserControllerIntegrationTest {
 
             // then
             val exception = result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().resolvedException

@@ -118,7 +118,7 @@ internal class LogsControllerUnitTest {
         }
 
         @Test
-        fun `should return bad request because user is not found`() {
+        fun `should return not found because user is not found`() {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(email))
                 .thenThrow(UserNotFoundException::class.java)
@@ -127,11 +127,11 @@ internal class LogsControllerUnitTest {
             val result = performRequest()
 
             // then
-            result.andExpect(status().isBadRequest)
+            result.andExpect(status().isNotFound)
         }
 
         @Test
-        fun `should return bad request because application is not found`() {
+        fun `should return not found because application is not found`() {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(email))
                 .thenReturn(user)
@@ -142,7 +142,7 @@ internal class LogsControllerUnitTest {
             val result = performRequest()
 
             // then
-            result.andExpect(status().isBadRequest)
+            result.andExpect(status().isNotFound)
         }
 
         @Test

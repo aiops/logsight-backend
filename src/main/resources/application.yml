@@ -49,7 +49,11 @@ logsight:
       protocol: "tcp"
       host: ${APP_RPC_ZMQ_HOST:0.0.0.0}
       port: ${APP_RPC_ZMQ_PORT:5555}
+<<<<<<< HEAD
       timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}
+=======
+      timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Seconds
+>>>>>>> v1.0.0
 
   logs:
     stream:

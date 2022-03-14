@@ -125,7 +125,7 @@ internal class ResultControllerIntegrationTest {
             }
             // then
             result.andExpect {
-                status { isBadRequest() }
+                status { isNotFound() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
                 .andReturn().response.contentAsString
