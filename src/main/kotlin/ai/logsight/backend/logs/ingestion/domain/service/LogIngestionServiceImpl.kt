@@ -1,11 +1,14 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
 import ai.logsight.backend.application.extensions.isReadyOrException
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.TopicBuilder
+import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service
 @Service
 class LogIngestionServiceImpl(
     val logsReceiptStorageService: LogsReceiptStorageService,
+    val applicationStorageService: ApplicationStorageService,
     val logStream: LogStream,
     val xSync: XSync<String>
 ) : LogIngestionService {
@@ -23,6 +27,27 @@ class LogIngestionServiceImpl(
 
     // TODO make configurable
     private var topicPostfix: String = "input"
+
+    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> {
+        val groupLogsByApplication = logSinglesDTO.logs.groupBy { Pair(it.applicationId, it.tag) }
+        val logBatchDTOs = groupLogsByApplication.map { groupedByApplicationId ->
+            LogBatchDTO(
+                user = logSinglesDTO.user,
+                application = applicationStorageService.findApplicationById(groupedByApplicationId.key.first),
+                tag = groupedByApplicationId.key.second,
+                logs = groupedByApplicationId.value.map { sendLogMessage ->
+                    LogMessage(
+                        timestamp = sendLogMessage.timestamp,
+                        message = sendLogMessage.message,
+                        level = sendLogMessage.level,
+                        metadata = sendLogMessage.metadata
+                    )
+                },
+                source = logSinglesDTO.source
+            )
+        }
+        return logBatchDTOs.map { processLogBatch(logBatchDTO = it) }
+    }
 
     override fun processLogBatch(logBatchDTO: LogBatchDTO): LogsReceipt {
         logBatchDTO.application.isReadyOrException()

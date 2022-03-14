@@ -1,10 +1,13 @@
 package ai.logsight.backend.logs.ingestion.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
+import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.logs.ingestion.ports.web.responses.LogsReceiptResponse
 import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
@@ -45,6 +48,29 @@ class LogsController(
         return LogsReceiptResponse(
             logsReceipt.id, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
         )
+    }
+
+    @ApiOperation("Send list of log messages")
+    @PostMapping("/singles")
+    @ResponseStatus(HttpStatus.OK)
+    fun sendLogSingles(
+        authentication: Authentication,
+        @RequestBody @Valid logListRequest: List<SendLogMessage>
+    ): List<LogsReceiptResponse> {
+        val logSinglesDTO = LogSinglesDTO(
+            user = userStorageService.findUserByEmail(authentication.name),
+            logs = logListRequest,
+            source = LogDataSources.REST_BATCH
+        )
+        val logsReceipts = logsService.processLogSingles(logSinglesDTO)
+        return logsReceipts.map { logsReceipt ->
+            LogsReceiptResponse(
+                logsReceipt.id,
+                logsReceipt.logsCount,
+                logsReceipt.source,
+                logsReceipt.application.id
+            )
+        }
     }
 
     @ApiOperation("Send log file for analysis")
