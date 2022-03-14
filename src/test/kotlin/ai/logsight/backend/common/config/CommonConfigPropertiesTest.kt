@@ -17,11 +17,7 @@ internal class CommonConfigPropertiesTest {
     lateinit var commonConfigProperties: CommonConfigProperties
 
     companion object {
-<<<<<<< HEAD
         const val deployment = "stand-alone"
-=======
-        val deployment = "stand-alone"
->>>>>>> v1.0.0
         val baseURI = URI("http://localhost:4200")
         const val logsightEmail = "support@logsight.ai"
     }
