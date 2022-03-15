@@ -259,7 +259,7 @@ class UserControllerIntegrationTest {
         }
 
         @Test
-        fun `Created when user is created but not activated`() {
+        fun `Conflict when user is created but not activated`() {
             // given
             val createdUser = TestInputConfig.baseUser
 
@@ -275,13 +275,15 @@ class UserControllerIntegrationTest {
                 accept = MediaType.APPLICATION_JSON
             }
             val exception = result.andExpect {
-                status { isCreated() }
+                status { isConflict() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is UserNotActivatedException)
         }
 
         @Test
-        fun `Created when the user already exists and is activated`() {
+        fun `Conflict when the user already exists and is activated`() {
             // given
             val createdUser = TestInputConfig.baseUserEntity
             createdUser.activated = true
@@ -299,9 +301,11 @@ class UserControllerIntegrationTest {
                 accept = MediaType.APPLICATION_JSON
             }
             val exception = result.andExpect {
-                status { isCreated() }
+                status { isConflict() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is UserExistsException)
         }
     }
 

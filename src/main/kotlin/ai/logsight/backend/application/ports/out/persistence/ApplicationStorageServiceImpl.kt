@@ -24,7 +24,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
                 "Application with name $applicationName already exists for user ${user.id}.",
                 this::createApplication.name
             )
-            return appRepository.findByUserAndName(userEntity, applicationName)!!.toApplication()
+            throw ApplicationAlreadyCreatedException("Application with name $applicationName already exists for user.")
         }
         val appEntity = ApplicationEntity(
             name = applicationName, status = ApplicationStatus.CREATING, user = userEntity

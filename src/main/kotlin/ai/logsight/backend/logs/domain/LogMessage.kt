@@ -7,7 +7,6 @@ import java.util.*
 import javax.validation.constraints.*
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class LogMessage(
 
     @get:Pattern(
