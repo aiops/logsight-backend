@@ -12,8 +12,10 @@ import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
+import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.sun.mail.iap.ConnectionException
 import kotlinx.coroutines.launch
@@ -269,6 +271,65 @@ class LogIngestionServiceImplIntegrationTest {
                     .zipWithNext { a, b -> a <= b }
                     .all { it }
             }
+        }
+
+        @AfterAll
+        fun teardown() {
+            userRepository.delete(TestInputConfig.baseUserEntity)
+            applicationRepository.delete(applicationEntity1)
+            applicationRepository.delete(applicationEntity2)
+        }
+    }
+
+    @Nested
+    @DisplayName("Process Logs")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class ProcessLogsSingles {
+
+        @BeforeAll
+        fun setupAll() {
+            userRepository.save(TestInputConfig.baseUserEntity)
+            applicationRepository.save(applicationEntity1)
+            applicationRepository.save(applicationEntity2)
+        }
+
+        @BeforeEach
+        fun setupEach() {
+            logsReceiptRepository.deleteAll()
+        }
+
+        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
+            val ctx = ZContext()
+            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
+            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
+            val status = zeroMQSocket.connect(addr)
+            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
+            zeroMQSocket.subscribe(topic)
+            Thread.sleep(3)
+            return zeroMQSocket
+        }
+        val logMessage = SendLogMessage(
+            message = "Hello World!",
+            timestamp = DateTime.now()
+                .toString(),
+            applicationId = application1.id, tag = "default"
+        )
+        val logMessages = List(numMessages) { logMessage }
+
+        @Test
+        fun `should return valid log receipt`() {
+            // given
+            val logBatchSinglesDTO = LogSinglesDTO(
+                user = TestInputConfig.baseUser, logs = logMessages, source = source
+            )
+            // when
+            val logReceipts = logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
+
+            // then
+            Assertions.assertNotNull(logReceipts)
+            Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
+            Assertions.assertEquals(source.name, logReceipts[0].source)
+            Assertions.assertEquals(application1.id, logReceipts[0].application.id)
         }
 
         @AfterAll

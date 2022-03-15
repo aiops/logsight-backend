@@ -42,7 +42,6 @@ class RestControllerAdvice {
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
-        EmailExistsException::class,
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class,

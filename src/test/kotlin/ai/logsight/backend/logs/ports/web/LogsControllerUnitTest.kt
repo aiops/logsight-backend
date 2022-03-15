@@ -12,6 +12,7 @@ import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.LogsController
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
+import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.security.UserDetailsServiceImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.exceptions.UserNotFoundException
@@ -68,7 +69,7 @@ internal class LogsControllerUnitTest {
         private val logsUriPath = "/api/v1/logs"
 
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
-        
+
         private val email = "sasho@sasho.com"
         private val user = createMockUser(email)
         private val appId = UUID.randomUUID()
@@ -180,6 +181,108 @@ internal class LogsControllerUnitTest {
         }
 
         private fun performRequest(requestBody: SendLogListRequest = defaultBody): ResultActions = mockMvc.perform(
+            post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(requestBody))
+                .accept(MediaType.APPLICATION_JSON)
+        )
+    }
+
+    @Nested
+    @DisplayName("Post Logs")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class PostLogsSingles {
+
+        private val logsUriPath = "/api/v1/logs/singles"
+
+        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+
+        private val email = "sasho@sasho.com"
+        private val user = createMockUser(email)
+        private val appId = UUID.randomUUID()
+        private val app = createMockApplication(user = user, id = appId)
+        private val log = SendLogMessage(
+            message = "Hello World!",
+            timestamp = DateTime.now()
+                .toString(),
+            applicationId = app.id,
+            tag = "default"
+        )
+
+        private val logBatchDTO = createMockLogBatchDTO(user, app, logs = listOf(log).map { LogMessage(timestamp = it.timestamp, message = it.message) })
+
+        private val orderCounter = 1L
+        private val source = LogDataSources.REST_BATCH.source
+        private val logsReceipt = createMockLogsReceipt(
+            app, orderCounter = orderCounter, logsCount = logBatchDTO.logs.size, source = source
+        )
+
+        private val defaultBody = listOf(log)
+
+        @Test
+        fun `should return valid log receipt response`() {
+            // given
+            Mockito.`when`(userStorageService.findUserByEmail(email))
+                .thenReturn(user)
+            Mockito.`when`(applicationStorageService.findApplicationById(appId))
+                .thenReturn(app)
+            Mockito.`when`(logsService.processLogBatch(any()))
+                .thenReturn(logsReceipt)
+
+            // when
+            val result = performRequest()
+
+            // then
+            result.andExpect(status().isOk)
+        }
+
+        @Test
+        fun `should return not found because user is not found`() {
+            // given
+            Mockito.`when`(userStorageService.findUserByEmail(email))
+                .thenThrow(UserNotFoundException::class.java)
+
+            // when
+            val result = performRequest()
+
+            // then
+            result.andExpect(status().isNotFound)
+        }
+
+        @Test
+        fun `should return conflict because application is in invalid state`() {
+            // given
+            Mockito.`when`(userStorageService.findUserByEmail(email))
+                .thenReturn(user)
+            Mockito.`when`(applicationStorageService.findApplicationById(appId))
+                .thenReturn(app)
+            Mockito.`when`(logsService.processLogSingles(any()))
+                .thenThrow(ApplicationStatusException::class.java)
+
+            // when
+            val result = performRequest()
+
+            // then
+            result.andExpect(status().isConflict)
+        }
+
+        @Test
+        fun `should return internal server error because application logs processing failed`() {
+            // given
+            Mockito.`when`(userStorageService.findUserByEmail(email))
+                .thenReturn(user)
+            Mockito.`when`(applicationStorageService.findApplicationById(appId))
+                .thenReturn(app)
+            Mockito.`when`(logsService.processLogSingles(any()))
+                .thenThrow(RuntimeException::class.java)
+
+            // when
+            val result = performRequest()
+
+            // then
+            result.andExpect(status().isInternalServerError)
+        }
+
+        private fun performRequest(requestBody: List<SendLogMessage> = defaultBody): ResultActions = mockMvc.perform(
             post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(requestBody))
                 .accept(MediaType.APPLICATION_JSON)

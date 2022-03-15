@@ -4,6 +4,7 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.LogsightLog
@@ -36,6 +37,9 @@ internal class LogIngestionServiceImplTestUnit {
 
     @Mock
     private lateinit var logsReceiptStorageService: LogsReceiptStorageService
+
+    @Mock
+    private lateinit var applicationStorageService: ApplicationStorageService
 
     @Mock
     private lateinit var logStream: LogStream
