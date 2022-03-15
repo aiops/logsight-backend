@@ -184,8 +184,14 @@ class ApplicationLifecycleControllerTest {
         }
 
         @Test
-        fun `should return conflict if App already exists in database`() {
+        fun `should return Created if App already exists in database`() {
             // given
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
+            )
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
+                .thenReturn(response)
+
             val request = CreateApplicationRequest(TestInputConfig.baseAppName)
             // when
             val result = mockMvc.post(createEndpoint) {
@@ -195,11 +201,9 @@ class ApplicationLifecycleControllerTest {
             }
             // then
             val exc = result.andExpect {
-                status { isConflict() }
+                status { isCreated() }
                 content { contentType(MediaType.APPLICATION_JSON) }
             }
-                .andReturn().resolvedException
-            assertThat(exc is ApplicationAlreadyCreatedException)
         }
 
         @Test

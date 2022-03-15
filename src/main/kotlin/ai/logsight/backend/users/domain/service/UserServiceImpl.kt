@@ -13,6 +13,8 @@ import ai.logsight.backend.users.exceptions.PasswordsNotMatchException
 import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
 import ai.logsight.backend.users.exceptions.UserNotActivatedException
+import ai.logsight.backend.users.extensions.toOnlineUser
+import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.slf4j.Logger
@@ -39,7 +41,7 @@ class UserServiceImpl(
         logger.info("Creating online user.")
         if (userStorageService.checkEmailExists(createUserCommand.email)) {
             val user = userStorageService.findUserByEmail(createUserCommand.email)
-            if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
+            if (user.activated) return user.toUserEntity().toOnlineUser() else (throw UserNotActivatedException())
         }
         // create user
         val savedUser = userStorageService.createOnlineUser(createUserCommand.email, createUserCommand.password)
@@ -153,7 +155,7 @@ class UserServiceImpl(
     override fun createUser(createUserCommand: CreateUserCommand): User {
         if (userStorageService.checkEmailExists(createUserCommand.email)) {
             val user = userStorageService.findUserByEmail(createUserCommand.email)
-            if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
+            if (user.activated) return user else (throw UserNotActivatedException())
         }
         val user = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
         externalServices.initializeServicesForUser(user)
