@@ -10,9 +10,11 @@ import ai.logsight.backend.compare.service.CompareService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.*
+import javax.naming.AuthenticationException
 import javax.validation.Valid
 
 @Api(tags = ["Compare"], description = "Comparison between log data")
@@ -27,9 +29,14 @@ class CompareController(
     @ApiOperation("Obtain log compare results between two tags")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
-    fun getCompareResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): CompareDataResponse {
-
+    fun getCompareResults(
+        authentication: Authentication,
+        @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
+    ): CompareDataResponse {
         val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
+        if (application.user.email != authentication.name) {
+            throw AuthenticationException("Unauthorized")
+        }
         val compareDTO = CompareDTO(
             applicationId = application.id,
             applicationName = application.name,
@@ -49,8 +56,14 @@ class CompareController(
     @ApiIgnore
     @PostMapping("/view")
     @ResponseStatus(HttpStatus.OK)
-    fun getCompareViewResults(@Valid @RequestBody getCompareResultRequest: GetCompareResultRequest): String {
+    fun getCompareViewResults(
+        authentication: Authentication,
+        @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
+    ): String {
         val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
+        if (application.user.email != authentication.name) {
+            throw AuthenticationException("Unauthorized")
+        }
         val compareDTO = CompareDTO(
             applicationId = application.id,
             applicationName = application.name,
@@ -66,9 +79,14 @@ class CompareController(
     @GetMapping("/tags")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareTags(
+        authentication: Authentication,
         @RequestParam(required = true) applicationId: UUID,
         @RequestParam(required = true) userId: UUID
     ): MutableList<Tag> {
+        val application = applicationStorageService.findApplicationById(applicationId)
+        if (application.user.email != authentication.name) {
+            throw AuthenticationException("Unauthorized")
+        }
         return compareService.getCompareTags(userId, applicationId) // use response here
     }
 }
