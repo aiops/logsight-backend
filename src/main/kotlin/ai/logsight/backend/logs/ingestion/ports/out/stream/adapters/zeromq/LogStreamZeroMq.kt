@@ -12,10 +12,10 @@ class LogStreamZeroMq(
     val serializer: TopicJsonSerializer,
 ) : LogStream {
 
-    override fun send(serializedLogs: Collection<String>): Int = serializedLogs.map { log ->
-        if (logStreamZeroMqSocket.send(log)) 1 else 0
+    override fun send(serializedLogs: Collection<String>): Int = serializedLogs.sumOf { log ->
+        // The useless cast is needed due to an issue in kotlin: https://youtrack.jetbrains.com/issue/KT-46360
+        if (logStreamZeroMqSocket.send(log)) 1 as Int else 0 as Int
     }
-        .sum()
 
     override fun serializeAndSend(topic: String, logsightLogs: Collection<LogsightLog>): Int =
         send(logsightLogs.map { serializer.serialize(topic, it) })
