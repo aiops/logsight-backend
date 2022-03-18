@@ -12,6 +12,7 @@ import ai.logsight.backend.results.ports.rpc.dto.FlushDTO
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTOOperations
 import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class ResultServiceImpl(
@@ -55,6 +56,10 @@ class ResultServiceImpl(
             }
             resultInitNotNull
         }
+    }
+
+    override fun getResultInit(resultInitId: UUID): ResultInit {
+        return resultInitStorageService.findResultInitById(resultInitId)
     }
 
     override fun updateResultInitStatus(updateResultInitStatusCommand: UpdateResultInitStatusCommand): ResultInit? {

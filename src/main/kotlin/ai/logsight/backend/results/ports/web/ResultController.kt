@@ -5,17 +5,17 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.results.domain.service.ResultService
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
+import ai.logsight.backend.results.ports.web.request.CreateCheckStatusResultInitRequest
 import ai.logsight.backend.results.ports.web.request.CreateResultInitRequest
 import ai.logsight.backend.results.ports.web.response.CreateResultInitResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import java.util.*
 import javax.validation.Valid
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 @Api(tags = ["Control"], description = "Control operations on the data stream")
 @RestController
@@ -50,6 +50,24 @@ class ResultController(
             "ResultInit with id: ${resultInit.id} successfully created.",
             this::createResultInit.name
         )
+        return CreateResultInitResponse(
+            flushId = resultInit.id, status = resultInit.status
+        )
+    }
+
+    @ApiOperation("Get flush object by flushId")
+    @GetMapping("/{flushId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getResultInit(
+        @Valid
+        @NotNull(message = "flushId must not be empty.")
+        @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "flushId must be UUID type."
+        )
+        @PathVariable flushId: String
+    ): CreateResultInitResponse {
+        val resultInit = resultService.getResultInit(UUID.fromString(flushId))
         return CreateResultInitResponse(
             flushId = resultInit.id, status = resultInit.status
         )
