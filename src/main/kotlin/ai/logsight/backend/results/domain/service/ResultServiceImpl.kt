@@ -6,13 +6,13 @@ import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.results.domain.ResultInit
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
 import ai.logsight.backend.results.domain.service.command.UpdateResultInitStatusCommand
+import ai.logsight.backend.results.domain.service.query.FindResultInitQuery
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTO
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTOOperations
 import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class ResultServiceImpl(
@@ -58,8 +58,8 @@ class ResultServiceImpl(
         }
     }
 
-    override fun getResultInit(resultInitId: UUID): ResultInit {
-        return resultInitStorageService.findResultInitById(resultInitId)
+    override fun findResultInit(findResultInitQuery: FindResultInitQuery): ResultInit {
+        return resultInitStorageService.findResultInitById(findResultInitQuery.resultInitId)
     }
 
     override fun updateResultInitStatus(updateResultInitStatusCommand: UpdateResultInitStatusCommand): ResultInit? {

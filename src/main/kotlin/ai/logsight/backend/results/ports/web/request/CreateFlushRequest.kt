@@ -3,7 +3,7 @@ package ai.logsight.backend.results.ports.web.request
 import java.util.*
 import javax.validation.constraints.NotNull
 
-data class CreateCheckStatusResultInitRequest(
+data class CreateFlushRequest(
     @get:NotNull(message = "receiptId must not be empty")
-    val flushId: UUID
+    val receiptId: UUID
 )
