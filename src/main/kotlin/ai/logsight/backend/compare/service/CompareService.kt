@@ -13,9 +13,9 @@ import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.results.domain.service.ResultInitStatus
-import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
-import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
+import ai.logsight.backend.flush.domain.service.FlushStatus
+import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
+import ai.logsight.backend.flush.ports.persistence.FlushStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -33,7 +33,7 @@ class CompareService(
     private val restConfigProperties: CompareRESTConfigProperties,
     private val applicationStorageService: ApplicationStorageService,
     private val chartsRepository: ESChartRepository,
-    private val resultInitStorageService: ResultInitStorageService,
+    private val flushStorageService: FlushStorageService,
     private val chartsService: ChartsService
 ) {
     val resetTemplate = RestTemplateConnector()
@@ -61,11 +61,11 @@ class CompareService(
     }
 
     fun getCompareData(compareDTO: CompareDTO): CompareDataResponse {
-        val resultInit = compareDTO.resultInitId?.let {
-            resultInitStorageService.findResultInitById(it)
+        val flush = compareDTO.flushId?.let {
+            flushStorageService.findFlushById(it)
         }
-        if (resultInit != null && resultInit.status != ResultInitStatus.DONE) {
-            throw ResultInitAlreadyPendingException("Flush is not yet finished. Please retry. Send a request without a flushId to ignore the flush request and get the results immediately.")
+        if (flush != null && flush.status != FlushStatus.DONE) {
+            throw FlushAlreadyPendingException("Flush is not yet finished. Please retry. Send a request without a flushId to ignore the flush request and get the results immediately.")
         }
 
         val uri = buildCompareEndpointURI(compareDTO)

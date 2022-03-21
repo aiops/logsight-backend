@@ -40,7 +40,7 @@ class CompareController(
         val compareDTO = CompareDTO(
             applicationId = application.id,
             applicationName = application.name,
-            resultInitId = getCompareResultRequest.flushId,
+            flushId = getCompareResultRequest.flushId,
             baselineTag = getCompareResultRequest.baselineTag,
             compareTag = getCompareResultRequest.candidateTag,
             privateKey = application.user.key
@@ -67,7 +67,7 @@ class CompareController(
         val compareDTO = CompareDTO(
             applicationId = application.id,
             applicationName = application.name,
-            resultInitId = getCompareResultRequest.flushId,
+            flushId = getCompareResultRequest.flushId,
             baselineTag = getCompareResultRequest.baselineTag,
             compareTag = getCompareResultRequest.candidateTag,
             privateKey = application.user.key

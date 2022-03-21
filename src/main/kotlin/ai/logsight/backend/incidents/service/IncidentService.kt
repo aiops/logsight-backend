@@ -1,4 +1,4 @@
-package ai.logsight.backend.compare.service
+package ai.logsight.backend.incidents.service
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.domain.dto.ChartConfig
@@ -12,39 +12,34 @@ import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
 import ai.logsight.backend.compare.controller.request.GetIncidentResultRequest
 import ai.logsight.backend.compare.controller.response.CreateIncidentDataResponse
 import ai.logsight.backend.compare.controller.response.IncidentResponse
-import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.results.domain.service.ResultInitStatus
-import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
-import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
+import ai.logsight.backend.flush.domain.service.FlushStatus
+import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
+import ai.logsight.backend.flush.ports.persistence.FlushStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
-import java.net.http.HttpClient
 
 @Service
 class IncidentService(
-    private val restConfigProperties: CompareRESTConfigProperties,
     private val applicationStorageService: ApplicationStorageService,
-    private val resultInitStorageService: ResultInitStorageService,
+    private val flushStorageService: FlushStorageService,
     private val chartsRepository: ESChartRepository,
     private val applicationIndicesBuilder: ApplicationIndicesBuilder
 ) {
     val resetTemplate = RestTemplateConnector()
-    private val httpClient: HttpClient = HttpClient.newBuilder()
-        .build()
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
     fun getIncidentResult(incidentQuery: GetIncidentResultRequest): CreateIncidentDataResponse {
         val application = applicationStorageService.findApplicationById(incidentQuery.applicationId)
-        val resultInit = incidentQuery.flushId?.let {
-            resultInitStorageService.findResultInitById(it)
+        val flush = incidentQuery.flushId?.let {
+            flushStorageService.findFlushById(it)
         }
-        if (resultInit != null && resultInit.status != ResultInitStatus.DONE) {
-            throw ResultInitAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
+        if (flush != null && flush.status != FlushStatus.DONE) {
+            throw FlushAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
         }
         val getChartDataQuery = GetChartDataQuery(
             application = application, user = application.user,
@@ -67,7 +62,11 @@ class IncidentService(
         val createGetIncidentResultResponse = CreateIncidentDataResponse(
             incidentResultData.hits.hits.map { incident ->
                 IncidentResponse(
-                    applicationId = getChartDataQuery.application?.id, startTimestamp = incident.source.startTimestamp, stopTimestamp = incident.source.stopTimestamp, semanticThreats = incident.source.semanticAD, totalScore = incident.source.totalScore
+                    applicationId = getChartDataQuery.application?.id,
+                    startTimestamp = incident.source.startTimestamp,
+                    stopTimestamp = incident.source.stopTimestamp,
+                    semanticThreats = incident.source.semanticAD,
+                    totalScore = incident.source.totalScore
                 )
             }
         )

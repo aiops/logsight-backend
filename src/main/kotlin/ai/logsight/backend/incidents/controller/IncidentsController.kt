@@ -1,11 +1,10 @@
 package ai.logsight.backend.compare.controller
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.charts.ports.web.response.CreateChartResponse
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.controller.request.GetIncidentResultRequest
 import ai.logsight.backend.compare.controller.response.CreateIncidentDataResponse
-import ai.logsight.backend.compare.service.IncidentService
+import ai.logsight.backend.incidents.service.IncidentService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus

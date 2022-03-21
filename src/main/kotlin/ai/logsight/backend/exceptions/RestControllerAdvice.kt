@@ -8,8 +8,8 @@ import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.utils.LogFileIOException
-import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
-import ai.logsight.backend.results.exceptions.ResultInitNotFoundException
+import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
+import ai.logsight.backend.flush.exceptions.FlushNotFoundException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -46,7 +46,7 @@ class RestControllerAdvice {
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
-        ResultInitAlreadyPendingException::class,
+        FlushAlreadyPendingException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -83,7 +83,7 @@ class RestControllerAdvice {
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
         LogsReceiptNotFoundException::class,
-        ResultInitNotFoundException::class
+        FlushNotFoundException::class
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)

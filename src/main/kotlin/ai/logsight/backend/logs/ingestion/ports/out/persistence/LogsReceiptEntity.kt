@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.ingestion.ports.out.persistence
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
-import ai.logsight.backend.results.ports.persistence.ResultInitEntity
+import ai.logsight.backend.flush.ports.persistence.FlushEntity
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import java.util.*
@@ -29,6 +29,6 @@ class LogsReceiptEntity(
     val application: ApplicationEntity,
 
     @OneToMany(mappedBy = "logsReceipt", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @Column(name = "result_inits")
-    val resultInits: List<ResultInitEntity> = listOf()
+    @Column(name = "flushs")
+    val flushs: List<FlushEntity> = listOf()
 )
