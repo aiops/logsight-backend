@@ -24,7 +24,7 @@ class FlushMessageConverter(
             } catch (e: Exception) {
                 ErrorMessage(
                     RuntimeException(
-                        "Error during deserialization of payload $payload int FlushMessage. " +
+                        "Error during deserialization of FlushMessage payload $payload. " +
                             "Reason: ${e.message}"
                     )
                 )

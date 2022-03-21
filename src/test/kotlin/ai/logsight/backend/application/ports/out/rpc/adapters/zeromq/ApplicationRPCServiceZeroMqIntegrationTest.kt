@@ -39,7 +39,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
     lateinit var zeroMqConf: ApplicationRPCConfigPropertiesZeroMq
 
     @Autowired
-    lateinit var ApplicationRPCServiceZeroMq: ApplicationRPCServiceZeroMq
+    lateinit var applicationRPCServiceZeroMq: ApplicationRPCServiceZeroMq
 
     companion object {
         private val userEntity = UserEntity(
@@ -113,12 +113,12 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
                 launch {
                     respResults = appDTOs.map {
                         zeroMQRepSocket.recv()
-                        zeroMQRepSocket.send(ApplicationRPCServiceZeroMq.mapper.writeValueAsString(successResponse))
+                        zeroMQRepSocket.send(applicationRPCServiceZeroMq.mapper.writeValueAsString(successResponse))
                     }
                 }
                 appDTOs.forEach { appDTO ->
                     launch {
-                        val rpcResponse = ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
+                        val rpcResponse = applicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
                         responses.add(Pair(appDTO, rpcResponse))
                     }
                 }
@@ -147,16 +147,16 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
                 launch {
                     appDTOs.forEach { _ ->
                         val receivedAppDTOSerialized = zeroMQRepSocket.recv()
-                        val appDTOReceived = ApplicationRPCServiceZeroMq.mapper.readValue<ApplicationDTO>(
+                        val appDTOReceived = applicationRPCServiceZeroMq.mapper.readValue<ApplicationDTO>(
                             receivedAppDTOSerialized.decodeToString()
                         )
                         val resp = RPCResponse(appDTOReceived.id.toString(), appDTOReceived.name, HttpStatus.OK.value())
-                        zeroMQRepSocket.send(ApplicationRPCServiceZeroMq.mapper.writeValueAsString(resp))
+                        zeroMQRepSocket.send(applicationRPCServiceZeroMq.mapper.writeValueAsString(resp))
                     }
                 }
                 appDTOs.forEach { appDTO ->
                     launch {
-                        val rpcResponse = ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
+                        val rpcResponse = applicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
                         responses.add(Pair(appDTO, rpcResponse))
                     }
                 }
@@ -176,7 +176,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
         @Test
         fun `RPC call should timeout`() {
             assertThrows<ApplicationRemoteException> {
-                ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
+                applicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
             }
         }
 
@@ -187,7 +187,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
 
             // when
             assertThrows<ApplicationRemoteException> {
-                ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
+                applicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
             }
             val rpcTestResult = executeApplicationRPCTest(appDTO, successResponse)
 
@@ -207,7 +207,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
 
             // when
             assertThrows<ApplicationRemoteException> {
-                ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTOTimeout)
+                applicationRPCServiceZeroMq.sendZeroMqRPC(appDTOTimeout)
             }
             val rpcTestResult = executeApplicationRPCTest(appDTO, successResponse)
 
@@ -224,13 +224,13 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
         runBlocking(threadPoolContext) {
             launch {
                 val receivedAppDTOSerialized = zeroMQRepSocket.recv()
-                rpcTestResult.receivedAppDTO = ApplicationRPCServiceZeroMq.mapper.readValue(
+                rpcTestResult.receivedAppDTO = applicationRPCServiceZeroMq.mapper.readValue(
                     receivedAppDTOSerialized.decodeToString()
                 )
                 rpcTestResult.replySendStatus =
-                    zeroMQRepSocket.send(ApplicationRPCServiceZeroMq.mapper.writeValueAsString(expectedResponse))
+                    zeroMQRepSocket.send(applicationRPCServiceZeroMq.mapper.writeValueAsString(expectedResponse))
             }
-            rpcTestResult.rpcResponse = ApplicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
+            rpcTestResult.rpcResponse = applicationRPCServiceZeroMq.sendZeroMqRPC(appDTO)
         }
         zeroMQRepSocket.close()
 
