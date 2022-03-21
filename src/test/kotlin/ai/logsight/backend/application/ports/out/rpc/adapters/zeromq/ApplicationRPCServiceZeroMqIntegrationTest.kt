@@ -57,9 +57,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
         private val appDTO = application.toApplicationDTO()
 
         private val successResponse = RPCResponse(appDTO.id.toString(), "Success", HttpStatus.OK.value())
-        private val failResponse = RPCResponse(appDTO.id.toString(), "Failed", HttpStatus.INTERNAL_SERVER_ERROR.value())
 
-        // The IDE warning can be ignored
         private val threadPoolContext = newFixedThreadPoolContext(20, "ZeroMQ RPC")
     }
 
@@ -76,7 +74,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
                 continue
             }
         }
-        Thread.sleep(3)
+        Thread.sleep(5)
         return zeroMQSocket
     }
 

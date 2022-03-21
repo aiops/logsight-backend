@@ -11,6 +11,8 @@ services:
       - cluster.routing.allocation.disk.threshold_enabled=false
       - ELASTIC_PASSWORD=elasticsearchpassword
       - ELASTICSEARCH_USERNAME=elastic
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS="-Xms2g -Xmx2g"
     ports:
       - "9200:9200"
 
