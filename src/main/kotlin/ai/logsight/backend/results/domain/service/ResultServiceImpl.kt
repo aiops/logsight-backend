@@ -6,6 +6,7 @@ import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.results.domain.ResultInit
 import ai.logsight.backend.results.domain.service.command.CreateResultInitCommand
 import ai.logsight.backend.results.domain.service.command.UpdateResultInitStatusCommand
+import ai.logsight.backend.results.domain.service.query.FindResultInitQuery
 import ai.logsight.backend.results.ports.persistence.ResultInitStorageService
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
 import ai.logsight.backend.results.ports.rpc.dto.FlushDTO
@@ -55,6 +56,10 @@ class ResultServiceImpl(
             }
             resultInitNotNull
         }
+    }
+
+    override fun findResultInit(findResultInitQuery: FindResultInitQuery): ResultInit {
+        return resultInitStorageService.findResultInitById(findResultInitQuery.resultInitId)
     }
 
     override fun updateResultInitStatus(updateResultInitStatusCommand: UpdateResultInitStatusCommand): ResultInit? {

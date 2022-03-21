@@ -14,7 +14,7 @@ import ai.logsight.backend.results.exceptions.ResultInitAlreadyPendingException
 import ai.logsight.backend.results.ports.persistence.ResultInitEntity
 import ai.logsight.backend.results.ports.persistence.ResultInitRepository
 import ai.logsight.backend.results.ports.rpc.ResultInitRPCService
-import ai.logsight.backend.results.ports.web.request.CreateResultInitRequest
+import ai.logsight.backend.results.ports.web.request.CreateFlushRequest
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -96,7 +96,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id)
+            val request = CreateFlushRequest(receiptId = receipt.id)
             // when
             val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -116,7 +116,7 @@ internal class ResultControllerIntegrationTest {
         fun `should return error when result init receipt id does not exist`() {
             // given
             val application = appRepository.save(TestInputConfig.baseAppEntity)
-            val request = CreateResultInitRequest(receiptId = application.id) // wrong id
+            val request = CreateFlushRequest(receiptId = application.id) // wrong id
             // when
             val result = mockMvc.post(endpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -143,7 +143,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id)
+            val request = CreateFlushRequest(receiptId = receipt.id)
             resultInitRepository.save(
                 ResultInitEntity(
                     UUID.randomUUID(),
@@ -178,7 +178,7 @@ internal class ResultControllerIntegrationTest {
                     application.toApplication()
                 )
             )
-            val request = CreateResultInitRequest(receiptId = receipt.id)
+            val request = CreateFlushRequest(receiptId = receipt.id)
             Mockito.`when`(resultInitRPCService.flush(any(), any()))
                 .thenThrow(RuntimeException::class.java)
             // when
