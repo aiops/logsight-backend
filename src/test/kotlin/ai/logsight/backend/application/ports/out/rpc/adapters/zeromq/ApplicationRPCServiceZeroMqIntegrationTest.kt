@@ -33,7 +33,6 @@ import kotlin.test.assertTrue
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-
 internal class ApplicationRPCServiceZeroMqIntegrationTest {
     @Autowired
     lateinit var zeroMqConf: ApplicationRPCConfigPropertiesZeroMq

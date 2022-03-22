@@ -6,7 +6,6 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.domain.enums.LogFormats
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
@@ -42,9 +41,7 @@ class LogDemoService(
         // create fresh applications
         val applications = appNames.map { name ->
             applicationLifecycleService.createApplication(
-                CreateApplicationCommand(
-                    name, user
-                )
+                CreateApplicationCommand(name, user)
             )
         }
 
@@ -55,6 +52,7 @@ class LogDemoService(
                 "${SampleLogConstants.SAMPLE_LOG_DIR}/${application.name}"
             )!!
             val logMessages = LogFileReader().readFile(application.name, fileAsInputStream)
+
             logIngestionService.processLogBatch(
                 LogBatchDTO(
                     user,
