@@ -57,13 +57,9 @@ class CompareController(
     @PostMapping("/view")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareViewResults(
-        authentication: Authentication,
         @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
     ): String {
         val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
-        if (application.user.email != authentication.name) {
-            throw AuthenticationException("Unauthorized")
-        }
         val compareDTO = CompareDTO(
             applicationId = application.id,
             applicationName = application.name,
