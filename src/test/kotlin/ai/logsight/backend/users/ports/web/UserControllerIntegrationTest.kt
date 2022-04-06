@@ -1,6 +1,7 @@
 package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.TestInputConfig
+import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.security.authentication.response.GetUserResponse
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -11,6 +12,7 @@ import ai.logsight.backend.users.exceptions.*
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
 import ai.logsight.backend.users.ports.out.external.ExternalElasticsearch
+import ai.logsight.backend.users.ports.out.external.exceptions.ExternalServiceException
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.web.request.*
@@ -27,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -52,6 +55,8 @@ import kotlin.test.assertNull
 @ActiveProfiles("test")
 @DirtiesContext
 class UserControllerIntegrationTest {
+    @Autowired
+    private lateinit var commonConfigProperties: CommonConfigProperties
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -65,7 +70,7 @@ class UserControllerIntegrationTest {
     @Autowired
     private lateinit var tokenRepository: TokenRepository
 
-    @Autowired
+    @MockBean
     private lateinit var externalElasticsearch: ExternalElasticsearch
 
     @MockBean
@@ -152,11 +157,12 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $getUserEndpoint")
+    @DisplayName("POST $getUserEndpoint (online)")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    inner class CreateUser {
+    inner class CreateOnlineUser {
         @BeforeEach
         fun setUp() {
+            commonConfigProperties.deployment = "web-service"
             userRepository.deleteAll()
             tokenRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
@@ -242,6 +248,7 @@ class UserControllerIntegrationTest {
             reason: String,
             request: CreateUserRequest
         ) {
+
             // given
             // when
             val result = mockMvc.post(getUserEndpoint) {
@@ -280,6 +287,136 @@ class UserControllerIntegrationTest {
             }
                 .andReturn().resolvedException
             Assertions.assertThat(exception is UserNotActivatedException)
+        }
+
+        @Test
+        fun `Conflict when the user already exists and is activated`() {
+            // given
+            val createdUser = TestInputConfig.baseUserEntity
+            createdUser.activated = true
+            userRepository.save(createdUser)
+
+            val request = CreateUserRequest(
+                createdUser.email, createdUser.password, createdUser.password
+            )
+
+            // when
+
+            val result = mockMvc.post(getUserEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            val exception = result.andExpect {
+                status { isConflict() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is UserExistsException)
+        }
+    }
+
+    @Nested
+    @DisplayName("POST $getUserEndpoint (offline)")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class CreateUser {
+
+        @BeforeEach
+        fun setUp() {
+            commonConfigProperties.deployment = "stand-alone"
+            userRepository.deleteAll()
+            tokenRepository.deleteAll()
+            userRepository.save(TestInputConfig.baseUserEntity)
+        }
+
+        @Test
+        fun `User created successfully for valid input`() {
+            // given
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+//            Mockito.`when`(externalElasticsearch.initialize(anyOrNull()))
+            // when
+            val result = mockMvc.post(getUserEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(createUserRequest)
+                accept = MediaType.APPLICATION_JSON
+            }
+            val userResult = userRepository.findByEmail(newUser.email)
+            Assertions.assertThat(userResult != null) // user created
+
+            val response = CreateUserResponse(userResult!!.id)
+
+            result.andExpect {
+                status { isCreated() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(response)
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `Throws exception if external services do not work`() {
+            // given
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+            Mockito.`when`(externalElasticsearch.initialize(anyOrNull()))
+                .thenThrow(ExternalServiceException::class.java)
+            // when
+            val result = mockMvc.post(getUserEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(createUserRequest)
+                accept = MediaType.APPLICATION_JSON
+            }
+            val userResult = userRepository.findByEmail(newUser.email)
+            Assertions.assertThat(userResult == null) // user deleted
+
+            val exception = result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is ExternalServiceException)
+        }
+
+        private fun getInvalidRequests(): List<Arguments> {
+            return mapOf(
+                "Not Matching passwords" to CreateUserRequest(
+                    TestInputConfig.baseEmail, "password", "notMatch"
+                ), // not matching passwords,
+                "Invalid email" to CreateUserRequest("invalid.com", "password", "password"),
+                "invalid email and not match password" to CreateUserRequest(
+                    "invalid.com", "password", "notMatch"
+                ), // invalid email and not matching passwords
+                "password less than 8 characters" to CreateUserRequest(
+                    TestInputConfig.baseEmail, "psd", "psd"
+                ), // password less than 8 characters
+                "empty email" to CreateUserRequest("", "password", "password"), // empty email
+                "empty request parameters" to CreateUserRequest("", "", ""), // empty request parameters
+            ).map { x -> Arguments.of(x.key, x.value) }
+        }
+
+        @ParameterizedTest(name = "Bad request for {0}. ")
+        @MethodSource("getInvalidRequests")
+        fun `Bad request for invalid input`(
+            reason: String,
+            request: CreateUserRequest
+        ) {
+
+            // given
+            // when
+            val result = mockMvc.post(getUserEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            val exception = result.andExpect {
+                status { isBadRequest() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertThat(exception is MethodArgumentNotValidException)
         }
 
         @Test

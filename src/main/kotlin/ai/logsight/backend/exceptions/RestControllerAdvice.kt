@@ -6,15 +6,16 @@ import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
-import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
-import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.exceptions.FlushNotFoundException
+import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
+import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.exceptions.TokenNotFoundException
 import ai.logsight.backend.users.exceptions.*
+import ai.logsight.backend.users.ports.out.external.exceptions.ExternalServiceException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import org.elasticsearch.ElasticsearchException
 import org.springframework.http.HttpStatus
@@ -59,7 +60,8 @@ class RestControllerAdvice {
         LogFileIOException::class,
         ApplicationRemoteException::class,
         Exception::class, // Wildcard,
-        RemoteCompareException::class
+        RemoteCompareException::class,
+        ExternalServiceException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

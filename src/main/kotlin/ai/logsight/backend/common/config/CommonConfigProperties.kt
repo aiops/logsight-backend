@@ -17,5 +17,5 @@ data class CommonConfigProperties(
         regexp = "stand-alone|web-service",
         message = "deployment configuration can be on of [stand-alone,  web-service]"
     ) // TODO: enum would be better
-    val deployment: String,
+    var deployment: String,
 )
