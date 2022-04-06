@@ -12,6 +12,8 @@ import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
 import org.json.JSONObject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
@@ -25,9 +27,12 @@ class ElasticsearchService(
     val kibanaConfig: KibanaConfigProperties,
     val elasticsearchConfig: ElasticsearchConfigProperties
 ) {
+    val logger: Logger = LoggerFactory.getLogger(ElasticsearchService::class.java)
+
     private val kibanaClient = RestTemplateConnector()
 
     fun createESUser(username: String, password: String, roles: String) {
+        logger.debug("Creating elasticsearch user $username.")
         val esUser = ESUser(username, Collections.singletonList(roles))
         val request = PutUserRequest.withPassword(esUser, roles.toCharArray(), true, RefreshPolicy.NONE)
         client.security()
@@ -35,11 +40,13 @@ class ElasticsearchService(
     }
 
     fun deleteESUser(username: String) {
+        logger.info("Deleting elasticsearch user.")
         client.security()
             .deleteUser(DeleteUserRequest(username), RequestOptions.DEFAULT)
     }
 
     fun deleteKibanaRole(userKey: String) {
+        logger.info("Deleting kibana roles for user $userKey.")
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)
             .host(kibanaConfig.host)
@@ -56,6 +63,7 @@ class ElasticsearchService(
     }
 
     fun createKibanaSpace(userKey: String) {
+        logger.info("Creating kibana space $userKey.")
         val query =
             "{ \"id\": \"kibana_space_${userKey}\", " + "\"name\": \"Logsight\", " + "\"description\" : \"This is your Logsight Space - ${userKey}\" }"
 
@@ -74,6 +82,7 @@ class ElasticsearchService(
     }
 
     fun deleteKibanaSpace(userKey: String) {
+        logger.info("Creating kibana space $userKey.")
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)
             .host(kibanaConfig.host)
@@ -90,6 +99,7 @@ class ElasticsearchService(
     }
 
     fun createKibanaRole(userKey: String) {
+        logger.info("Creating kibana role $userKey.")
         //        val givePermissionQuery =
 //            "{ \"metadata\" : { \"version\" : 1 }, " +
 //                    "\"elasticsearch\": { \"cluster\" : [ ], " +
@@ -137,6 +147,7 @@ class ElasticsearchService(
         applicationName: String,
         indexPatterns: List<String>
     ) {
+        logger.info("Creating kibana index patterns for user $userKey.")
         performKibanaIndexPatternAction(userKey, applicationName, indexPatterns, delete = false)
     }
 
@@ -145,6 +156,7 @@ class ElasticsearchService(
         applicationName: String,
         indexPatterns: List<String>
     ) {
+        logger.info("Deleting kibana index patterns for user $userKey.")
         performKibanaIndexPatternAction(userKey, applicationName, indexPatterns, delete = true)
     }
 

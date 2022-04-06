@@ -15,7 +15,6 @@ import ai.logsight.backend.users.ports.web.response.CreateUserResponse
 import ai.logsight.backend.users.ports.web.response.ResetPasswordResponse
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -28,7 +27,7 @@ import javax.validation.constraints.Pattern
 @RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService,
-    private val commonConfigProperties: CommonConfigProperties
+    val commonConfigProperties: CommonConfigProperties
 ) {
 
     private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
@@ -69,7 +68,7 @@ class UserController(
         val deleteUserCommand = DeleteUserCommand(
             userId = UUID.fromString(userId)
         )
-        val deletedUser = userService.deleteUser(deleteUserCommand)
+        userService.deleteUser(deleteUserCommand)
         logger.info("User $userId successfully activated.", this::deleteUser.name)
     }
 
