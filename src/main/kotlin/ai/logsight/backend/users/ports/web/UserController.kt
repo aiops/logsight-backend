@@ -69,7 +69,7 @@ class UserController(
             userId = UUID.fromString(userId)
         )
         userService.deleteUser(deleteUserCommand)
-        logger.info("User $userId successfully activated.", this::deleteUser.name)
+        logger.info("User $userId successfully deleted.", this::deleteUser.name)
     }
 
     /**

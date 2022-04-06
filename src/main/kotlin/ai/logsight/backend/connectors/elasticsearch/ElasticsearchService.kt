@@ -40,13 +40,13 @@ class ElasticsearchService(
     }
 
     fun deleteESUser(username: String) {
-        logger.info("Deleting elasticsearch user.")
+        logger.info("Deleting elasticsearch user $username.")
         client.security()
             .deleteUser(DeleteUserRequest(username), RequestOptions.DEFAULT)
     }
 
     fun deleteKibanaRole(userKey: String) {
-        logger.info("Deleting kibana roles for user $userKey.")
+        logger.info("Deleting kibana roles for personal space and index patterns for user $userKey.")
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)
             .host(kibanaConfig.host)
@@ -82,7 +82,7 @@ class ElasticsearchService(
     }
 
     fun deleteKibanaSpace(userKey: String) {
-        logger.info("Creating kibana space $userKey.")
+        logger.info("Deleting kibana space $userKey.")
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)
             .host(kibanaConfig.host)
@@ -99,7 +99,7 @@ class ElasticsearchService(
     }
 
     fun createKibanaRole(userKey: String) {
-        logger.info("Creating kibana role $userKey.")
+        logger.info("Creating kibana role $userKey for personal space and index patterns.")
         //        val givePermissionQuery =
 //            "{ \"metadata\" : { \"version\" : 1 }, " +
 //                    "\"elasticsearch\": { \"cluster\" : [ ], " +
@@ -147,7 +147,6 @@ class ElasticsearchService(
         applicationName: String,
         indexPatterns: List<String>
     ) {
-        logger.info("Creating kibana index patterns for user $userKey.")
         performKibanaIndexPatternAction(userKey, applicationName, indexPatterns, delete = false)
     }
 
@@ -166,6 +165,8 @@ class ElasticsearchService(
         indexPatterns: List<String>,
         delete: Boolean = false
     ) {
+        val action = if (delete) "Deleting" else "Creating"
+        logger.info("$action kibana index patterns ${indexPatterns.joinToString(",")} for user $userKey.")
 
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)

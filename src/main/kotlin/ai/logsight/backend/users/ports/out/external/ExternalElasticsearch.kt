@@ -35,6 +35,7 @@ class ExternalElasticsearch(
             throw ExternalServiceException("Unable to connect to elasticsearch service.")
         } catch (e: Exception) {
             logger.error(e.message)
+            throw ExternalServiceException("Unhandled elasticsearch exception ${e.message}")
         }
     }
 
