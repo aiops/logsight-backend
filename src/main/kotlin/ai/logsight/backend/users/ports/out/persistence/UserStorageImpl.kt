@@ -64,11 +64,11 @@ class UserStorageImpl(
     }
 
     override fun findUserById(userId: UUID): User = userRepository.findById(userId)
-        .orElseThrow { UserNotFoundException("User with email $userId doesn't exist in database.") }
+        .orElseThrow { UserNotFoundException("User with id $userId not found.") }
         .toUser()
 
     override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
-        ?.toUser() ?: throw UserNotFoundException("User with email $email doesn't exist in database.")
+        ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
 
     override fun deleteUser(id: UUID): User {
         val user = findUserById(id)
