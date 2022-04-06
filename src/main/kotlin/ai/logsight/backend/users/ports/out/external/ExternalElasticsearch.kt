@@ -17,7 +17,7 @@ class ExternalElasticsearch(
     val logger: Logger = LoggerFactory.getLogger(ExternalElasticsearch::class.java)
 
     override fun initialize(user: User) {
-        logger.info("Initializing elasticsearch services for user.")
+        logger.info("Initializing elasticsearch services for user. ${user.email}")
         try {
 
             elasticsearchService.createESUser(

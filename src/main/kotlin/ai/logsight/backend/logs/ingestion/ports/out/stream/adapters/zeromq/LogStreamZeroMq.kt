@@ -17,7 +17,7 @@ class LogStreamZeroMq(
 
     override fun send(serializedLogs: Collection<String>): Int = serializedLogs.sumOf { log ->
         // The useless cast is needed due to an issue in kotlin: https://youtrack.jetbrains.com/issue/KT-46360
-        logger.info("sending message $log to host ${logStreamZeroMqSocket.lastEndpoint}")
+        logger.debug("sending message $log to host ${logStreamZeroMqSocket.lastEndpoint}")
         if (logStreamZeroMqSocket.send(log)) 1 as Int else 0 as Int
     }
 
