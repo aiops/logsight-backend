@@ -30,7 +30,7 @@ class ChartsController(
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
+        logger.debug("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createHeatMap(query))
@@ -45,7 +45,7 @@ class ChartsController(
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
+        logger.debug("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createBarChart(query))
@@ -60,7 +60,7 @@ class ChartsController(
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
+        logger.debug("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createPieChart(query))
@@ -75,7 +75,7 @@ class ChartsController(
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createChartRequest: ChartRequest
     ): CreateChartResponse {
-        logger.info("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
+        logger.debug("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
         val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createTableChart(query))
