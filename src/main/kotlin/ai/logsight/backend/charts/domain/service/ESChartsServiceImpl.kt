@@ -51,15 +51,15 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-        logger.info("Obtained application indices: $applicationIndices.", this::createHeatMap.name)
+        logger.debug("Obtained application indices: $applicationIndices.", this::createHeatMap.name)
         val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        logger.info(
+        logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createHeatMap.name
         )
         // map the HeatMapDataObject into HeatMapChart Object
         val heatMapSeries = mutableListOf<ChartSeries>()
-        logger.info("Mapping the data to an output chart.", this::createHeatMap.name)
+        logger.debug("Mapping the data to an output chart.", this::createHeatMap.name)
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
@@ -87,15 +87,15 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-        logger.info("Obtained application indices: $applicationIndices.", this::createBarChart.name)
+        logger.debug("Obtained application indices: $applicationIndices.", this::createBarChart.name)
         val barChartData =
             mapper.readValue<BarChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        logger.info(
+        logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createBarChart.name
         )
         // map the BarChartData into BarChart Object
-        logger.info("Mapping the data to an output chart.", this::createBarChart.name)
+        logger.debug("Mapping the data to an output chart.", this::createBarChart.name)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -114,14 +114,14 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-        logger.info("Obtained application indices: $applicationIndices.", this::createPieChart.name)
+        logger.debug("Obtained application indices: $applicationIndices.", this::createPieChart.name)
         val pieChartData =
             mapper.readValue<PieChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        logger.info(
+        logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createPieChart.name
         )
-        logger.info("Mapping the data to an output chart.", this::createPieChart.name)
+        logger.debug("Mapping the data to an output chart.", this::createPieChart.name)
         val pieChartSeries = mutableListOf<ChartSeriesPoint>()
         pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
             pieChartSeries.add(
@@ -140,17 +140,18 @@ class ESChartsServiceImpl(
             getChartDataQuery.application,
             getChartDataQuery.chartConfig.indexType
         )
-        logger.info("Obtained application indices: $applicationIndices.", this::createTableChart.name)
+        logger.debug("Obtained application indices: $applicationIndices.", this::createTableChart.name)
         val tableChartData =
             mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        logger.info(
+        logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createTableChart.name
         )
-        logger.info("Mapping the data to an output chart.", this::createTableChart.name)
+        logger.debug("Mapping the data to an output chart.", this::createTableChart.name)
+        tableChartData.hits.hits.sortedByDescending { it.source.totalScore }
 
         return TableChart(
-            data = tableChartData.hits.hits.map {
+            data = tableChartData.hits.hits.take(getChartDataQuery.chartConfig.numElements?:tableChartData.hits.hits.size).map {
                 IncidentRow(
                     applicationId = it.source.applicationId,
                     indexName = it.indexName,
