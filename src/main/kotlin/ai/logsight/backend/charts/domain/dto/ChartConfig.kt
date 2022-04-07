@@ -1,5 +1,7 @@
 package ai.logsight.backend.charts.domain.dto
 
+import org.springframework.beans.factory.annotation.Value
+import javax.validation.constraints.Min
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
@@ -35,5 +37,7 @@ data class ChartConfig(
         message = "indexType must be one of ['log_ad', 'log_agg', 'incidents']."
     )
     @get:NotEmpty(message = "indexType must not be empty.")
-    val indexType: String
+    val indexType: String,
+    @get:Min(value = 0)
+    val numElements: Int? = null
 )

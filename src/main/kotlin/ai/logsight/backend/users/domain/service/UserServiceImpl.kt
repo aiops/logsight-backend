@@ -14,14 +14,13 @@ import ai.logsight.backend.users.exceptions.UserAlreadyActivatedException
 import ai.logsight.backend.users.exceptions.UserExistsException
 import ai.logsight.backend.users.exceptions.UserNotActivatedException
 import ai.logsight.backend.users.ports.out.external.ExternalServiceManager
+import ai.logsight.backend.users.ports.out.external.exceptions.ExternalServiceException
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.mail.MailException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
 
 @Service
 class UserServiceImpl(
@@ -94,14 +93,7 @@ class UserServiceImpl(
         tokenService.checkActivationToken(activationToken)
 
         // initialize external services
-        // TODO("This can produce an error, what then? @Petar Check if implemented right")
-        try {
-            externalServices.initializeServicesForUser(user)
-        } catch (e: HttpClientErrorException) {
-            if (e.statusCode.value() != HttpStatus.CONFLICT.value()) {
-                throw RuntimeException("External services (kibana, elasticsearch) are not reachable.")
-            }
-        }
+        externalServices.initializeServicesForUser(user) // this will throw an error
 
         // setup predefined timestamps
         timeSelectionService.createPredefinedTimeSelections(user)
@@ -156,8 +148,12 @@ class UserServiceImpl(
             if (user.activated) throw UserExistsException() else (throw UserNotActivatedException())
         }
         val user = userStorageService.createUser(createUserCommand.email, createUserCommand.password)
-        externalServices.initializeServicesForUser(user)
-
+        try {
+            externalServices.initializeServicesForUser(user)
+        } catch (e: ExternalServiceException) {
+            userStorageService.deleteUser(user.id)
+            throw ExternalServiceException(e.message)
+        }
         // setup predefined timestamps
         timeSelectionService.createPredefinedTimeSelections(user)
         return user
