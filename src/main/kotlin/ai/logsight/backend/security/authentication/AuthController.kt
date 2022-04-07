@@ -29,6 +29,7 @@ class AuthController(
      */
     @ApiOperation("Login user")
     @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
     fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): LoginResponse {
         logger.info("Login initiated for user ${loginUserRequest.email}.")
         val user = userService.findUserByEmail(loginUserRequest.email)
