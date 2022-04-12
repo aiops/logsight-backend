@@ -44,6 +44,7 @@ class LogsController(
             logs = logListRequest.logs,
             source = LogDataSources.REST_BATCH
         )
+        //print(logListRequest.logs)
         val logsReceipt = logsService.processLogBatch(logBatchDTO)
         return LogsReceiptResponse(
             logsReceipt.id, logsReceipt.logsCount, logsReceipt.source, logsReceipt.application.id
