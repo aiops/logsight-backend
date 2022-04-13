@@ -37,7 +37,6 @@ class ApplicationLifecycleServiceImpl(
         }
         // create application in backend
         try {
-
             val response = applicationRPCServiceZeroMq.createApplication(application.toApplicationDTO())
             if (response.status != HttpStatus.OK) {
                 // rollback changes

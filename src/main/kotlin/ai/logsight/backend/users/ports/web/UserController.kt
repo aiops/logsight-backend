@@ -153,17 +153,4 @@ class UserController(
         logger.info("Sending activation link ${resendActivationEmailRequest.email}.", this::forgotPassword.name)
         userService.sendActivationEmail(SendActivationEmailCommand(resendActivationEmailRequest.email))
     }
-
-//    @EventListener
-//    fun createSampleUser(event: ApplicationReadyEvent) {
-//        try {
-//            userService.createLocalUser(
-//                CreateUserCommand(
-//                    email = "clientadmin@logsight.ai", password = "samplepassword"
-//                )
-//            )
-//        } catch (e: Exception) {
-//            logger.warn("${e.message}", this::createSampleUser.name)
-//        }
-//    }
 }
