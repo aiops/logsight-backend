@@ -2,9 +2,12 @@ package ai.logsight.backend.logs.ingestion.domain.service
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
+import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
+import ai.logsight.backend.application.ports.out.rpc.RPCService
+import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.common.utils.TopicJsonSerializer
 import ai.logsight.backend.logs.domain.LogMessage
@@ -12,10 +15,12 @@ import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesAutoDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
+import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessageAuto
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.sun.mail.iap.ConnectionException
 import kotlinx.coroutines.launch
@@ -23,9 +28,13 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.junit.jupiter.api.*
+import org.mockito.Mockito
+import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.zeromq.SocketType
@@ -54,6 +63,9 @@ class LogIngestionServiceImplIntegrationTest {
 
     @Autowired
     lateinit var zeroMqConf: LogStreamZeroMqConfigProperties
+
+    @MockBean
+    private lateinit var applicationRPCServiceZeroMq: RPCService
 
     companion object {
         private const val numMessages = 1000
@@ -330,6 +342,173 @@ class LogIngestionServiceImplIntegrationTest {
             Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
             Assertions.assertEquals(source.name, logReceipts[0].source)
             Assertions.assertEquals(application1.id, logReceipts[0].application.id)
+        }
+
+        @AfterAll
+        fun teardown() {
+            userRepository.delete(TestInputConfig.baseUserEntity)
+            applicationRepository.delete(applicationEntity1)
+            applicationRepository.delete(applicationEntity2)
+        }
+    }
+
+    @Nested
+    @WithMockUser(username = TestInputConfig.baseEmail)
+    @DisplayName("Process LogSingles Auto")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    inner class ProcessLogsSinglesAuto {
+
+        @BeforeAll
+        fun setupAll() {
+            userRepository.save(TestInputConfig.baseUserEntity)
+            applicationRepository.save(applicationEntity1)
+            applicationRepository.save(applicationEntity2)
+        }
+
+        @BeforeEach
+        fun setupEach() {
+            logsReceiptRepository.deleteAll()
+        }
+
+        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
+            val ctx = ZContext()
+            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
+            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
+            val status = zeroMQSocket.connect(addr)
+            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
+            zeroMQSocket.subscribe(topic)
+            Thread.sleep(3)
+            return zeroMQSocket
+        }
+        val logMessage = SendLogMessageAuto(
+            applicationName = "test_app1",
+            message = "Hello World!",
+            timestamp = DateTime.now()
+                .toString(),
+            tag = "default"
+        )
+        val logMessages = List(numMessages) { logMessage }
+
+        @Test
+        fun `should return valid log receipt`() {
+            // given
+            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+                user = TestInputConfig.baseUser, logs = logMessages, source = source
+            )
+            // when
+            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+
+            // then
+            Assertions.assertNotNull(logReceipts)
+            Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
+            Assertions.assertEquals(source.name, logReceipts[0].source)
+            Assertions.assertEquals(application1.id, logReceipts[0].application.id)
+        }
+
+        @Test
+        fun `should return valid log receipt when application name does not exists, it should create the app first`() {
+            // given
+            val logMessage =
+                SendLogMessageAuto(
+                    applicationName = "test_app_new_name",
+                    message = "Hello World!",
+                    timestamp = DateTime.now()
+                        .toString(),
+                    tag = "default"
+                )
+            val logMessages = List(numMessages) { logMessage }
+            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+                user = TestInputConfig.baseUser, logs = logMessages, source = source
+            )
+
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
+            )
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
+                .thenReturn(response)
+            // when
+            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+
+            // then
+            Assertions.assertNotNull(logReceipts)
+            Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
+            Assertions.assertEquals(source.name, logReceipts[0].source)
+            Assertions.assertEquals("test_app_new_name", logReceipts[0].application.name)
+        }
+
+        @Test
+        fun `should return valid receipt when applicationId or applicationName are in the request`() {
+            // given
+            val logMessage1 = listOf<SendLogMessageAuto>(
+                SendLogMessageAuto(
+                    applicationName = "test_app_new_name",
+                    message = "Hello World!",
+                    timestamp = DateTime.now()
+                        .toString(),
+                    tag = "default"
+                )
+            )
+
+            val logMessage2 = listOf<SendLogMessageAuto>(
+                SendLogMessageAuto(
+                    applicationId = application1.id,
+                    message = "Hello World!",
+                    timestamp = DateTime.now()
+                        .toString(),
+                    tag = "default"
+                )
+            )
+
+            val logMessages = logMessage1 + logMessage2
+            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+                user = TestInputConfig.baseUser, logs = logMessages, source = source
+            )
+
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "message", 200
+            )
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
+                .thenReturn(response)
+            // when
+            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+
+            // then
+            Assertions.assertNotNull(logReceipts)
+            Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
+            Assertions.assertEquals(source.name, logReceipts[0].source)
+            Assertions.assertEquals("test_app_new_name", logReceipts[0].application.name)
+        }
+
+        @Test
+        fun `should return error when application is not in READY state`() {
+            // given
+            val logMessage =
+                SendLogMessageAuto(
+                    applicationName = "test_app_new_name",
+                    message = "Hello World!",
+                    timestamp = DateTime.now()
+                        .toString(),
+                    tag = "default"
+                )
+            val logMessages = List(numMessages) { logMessage }
+            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+                user = TestInputConfig.baseUser, logs = logMessages, source = source
+            )
+
+            val response = RPCResponse(
+                TestInputConfig.baseAppEntity.id.toString(), "Timeout", 400
+            )
+            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
+                .thenReturn(response)
+            // when
+            var exception = false
+            try {
+                logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+            } catch (e: ApplicationNotFoundException) {
+                exception = true
+            }
+            Assertions.assertTrue(exception)
+            // then
         }
 
         @AfterAll
