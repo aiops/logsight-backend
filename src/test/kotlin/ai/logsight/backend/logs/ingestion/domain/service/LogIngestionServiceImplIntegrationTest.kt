@@ -3,6 +3,7 @@ package ai.logsight.backend.logs.ingestion.domain.service
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
+import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
@@ -15,12 +16,10 @@ import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesAutoDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
 import ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
-import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessageAuto
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.sun.mail.iap.ConnectionException
 import kotlinx.coroutines.launch
@@ -380,7 +379,7 @@ class LogIngestionServiceImplIntegrationTest {
             Thread.sleep(3)
             return zeroMQSocket
         }
-        val logMessage = SendLogMessageAuto(
+        val logMessage = SendLogMessage(
             applicationName = "test_app1",
             message = "Hello World!",
             timestamp = DateTime.now()
@@ -392,11 +391,11 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return valid log receipt`() {
             // given
-            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+            val logBatchSinglesDTO = LogSinglesDTO(
                 user = TestInputConfig.baseUser, logs = logMessages, source = source
             )
             // when
-            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+            val logReceipts = logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -409,7 +408,7 @@ class LogIngestionServiceImplIntegrationTest {
         fun `should return valid log receipt when application name does not exists, it should create the app first`() {
             // given
             val logMessage =
-                SendLogMessageAuto(
+                SendLogMessage(
                     applicationName = "test_app_new_name",
                     message = "Hello World!",
                     timestamp = DateTime.now()
@@ -417,7 +416,7 @@ class LogIngestionServiceImplIntegrationTest {
                     tag = "default"
                 )
             val logMessages = List(numMessages) { logMessage }
-            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+            val logBatchSinglesDTO = LogSinglesDTO(
                 user = TestInputConfig.baseUser, logs = logMessages, source = source
             )
 
@@ -427,7 +426,7 @@ class LogIngestionServiceImplIntegrationTest {
             Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenReturn(response)
             // when
-            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+            val logReceipts = logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -439,8 +438,8 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return valid receipt when applicationId or applicationName are in the request`() {
             // given
-            val logMessage1 = listOf<SendLogMessageAuto>(
-                SendLogMessageAuto(
+            val logMessage1 = listOf<SendLogMessage>(
+                SendLogMessage(
                     applicationName = "test_app_new_name",
                     message = "Hello World!",
                     timestamp = DateTime.now()
@@ -449,8 +448,8 @@ class LogIngestionServiceImplIntegrationTest {
                 )
             )
 
-            val logMessage2 = listOf<SendLogMessageAuto>(
-                SendLogMessageAuto(
+            val logMessage2 = listOf<SendLogMessage>(
+                SendLogMessage(
                     applicationId = application1.id,
                     message = "Hello World!",
                     timestamp = DateTime.now()
@@ -460,7 +459,7 @@ class LogIngestionServiceImplIntegrationTest {
             )
 
             val logMessages = logMessage1 + logMessage2
-            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+            val logBatchSinglesDTO = LogSinglesDTO(
                 user = TestInputConfig.baseUser, logs = logMessages, source = source
             )
 
@@ -470,11 +469,10 @@ class LogIngestionServiceImplIntegrationTest {
             Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenReturn(response)
             // when
-            val logReceipts = logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
-
+            val logReceipts = logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
             // then
             Assertions.assertNotNull(logReceipts)
-            Assertions.assertEquals(numMessages, logReceipts[0].logsCount)
+            Assertions.assertEquals(logMessages.size, logReceipts.size)
             Assertions.assertEquals(source.name, logReceipts[0].source)
             Assertions.assertEquals("test_app_new_name", logReceipts[0].application.name)
         }
@@ -483,27 +481,27 @@ class LogIngestionServiceImplIntegrationTest {
         fun `should return error when application is not in READY state`() {
             // given
             val logMessage =
-                SendLogMessageAuto(
-                    applicationName = "test_app_new_name",
+                SendLogMessage(
+                    applicationName = "test_app_new_app",
                     message = "Hello World!",
                     timestamp = DateTime.now()
                         .toString(),
                     tag = "default"
                 )
             val logMessages = List(numMessages) { logMessage }
-            val logBatchSinglesAutoDTO = LogSinglesAutoDTO(
+            val logBatchSinglesDTO = LogSinglesDTO(
                 user = TestInputConfig.baseUser, logs = logMessages, source = source
             )
 
             val response = RPCResponse(
-                TestInputConfig.baseAppEntity.id.toString(), "Timeout", 400
+                "", "Timeout", 400
             )
             Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenReturn(response)
             // when
             var exception = false
             try {
-                logIngestionServiceImpl.processLogSinglesAuto(logBatchSinglesAutoDTO)
+                logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
             } catch (e: ApplicationNotFoundException) {
                 exception = true
             }

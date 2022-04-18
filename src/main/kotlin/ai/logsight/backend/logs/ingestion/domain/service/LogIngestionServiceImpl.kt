@@ -12,11 +12,11 @@ import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesAutoDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
+import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
 import kotlinx.serialization.builtins.serializer
 import org.springframework.stereotype.Service
@@ -36,75 +36,54 @@ class LogIngestionServiceImpl(
     // TODO make configurable
     private var topicPostfix: String = "input"
 
-    override fun processLogSinglesAuto(logSinglesAutoDTO: LogSinglesAutoDTO): List<LogsReceipt> {
-        val groupLogsByApplicationName = logSinglesAutoDTO.logs.groupBy { Pair(it.applicationName, it.tag) }
-        val logBatchDTOs = mutableListOf<LogBatchDTO>()
-        groupLogsByApplicationName.forEach { groupedByApplicationName ->
-            if (groupedByApplicationName.key.first != null) {
-                val application = try {
-                    applicationStorageService.findApplicationByUserAndName(logSinglesAutoDTO.user, groupedByApplicationName.key.first!!)!!
-                } catch (e: ApplicationNotFoundException) {
-                    applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(groupedByApplicationName.key.first!!, logSinglesAutoDTO.user))
-                }
-                logBatchDTOs.add(
-                    LogBatchDTO(
-                        user = logSinglesAutoDTO.user,
-                        application = application,
-                        tag = groupedByApplicationName.key.second,
-                        logs = groupedByApplicationName.value.map { sendLogMessage ->
-                            LogMessage(
-                                timestamp = sendLogMessage.timestamp,
-                                message = sendLogMessage.message,
-                                level = sendLogMessage.level,
-                                metadata = sendLogMessage.metadata
-                            )
-                        },
-                        source = logSinglesAutoDTO.source
-                    )
-                )
-            }
+    private fun handleApplicationAutoCreate(user: User, applicationName: String): Application {
+        return try {
+            applicationStorageService.findApplicationByUserAndName(user, applicationName)
+        } catch (e: ApplicationNotFoundException) {
+            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationName, user))
         }
-        val groupLogsByApplicationId = logSinglesAutoDTO.logs.groupBy { Pair(it.applicationId, it.tag) }
-        groupLogsByApplicationId.map { groupedByApplicationId ->
-            if (groupedByApplicationId.key.first != null) {
-                val application = applicationStorageService.findApplicationById(groupedByApplicationId.key.first!!)
-                logBatchDTOs.add(
-                    LogBatchDTO(
-                        user = logSinglesAutoDTO.user,
-                        application = application,
-                        tag = groupedByApplicationId.key.second,
-                        logs = groupedByApplicationId.value.map { sendLogMessage ->
-                            LogMessage(
-                                timestamp = sendLogMessage.timestamp,
-                                message = sendLogMessage.message,
-                                level = sendLogMessage.level,
-                                metadata = sendLogMessage.metadata
-                            )
-                        },
-                        source = logSinglesAutoDTO.source
-                    )
-                )
-            }
-        }
-        return logBatchDTOs.map { processLogBatch(logBatchDTO = it) }
     }
-
     override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> {
-        val groupLogsByApplication = logSinglesDTO.logs.groupBy { Pair(it.applicationId, it.tag) }
-        val logBatchDTOs = groupLogsByApplication.map { groupedByApplicationId ->
-            LogBatchDTO(
-                user = logSinglesDTO.user,
-                application = applicationStorageService.findApplicationById(groupedByApplicationId.key.first),
-                tag = groupedByApplicationId.key.second,
-                logs = groupedByApplicationId.value.map { sendLogMessage ->
-                    LogMessage(
-                        timestamp = sendLogMessage.timestamp,
-                        message = sendLogMessage.message,
-                        level = sendLogMessage.level,
-                        metadata = sendLogMessage.metadata
-                    )
-                },
-                source = logSinglesDTO.source
+        val groupLogsByApplicationNameAndTag = logSinglesDTO.logs.filter { it.applicationName != null }.groupBy { Pair(it.applicationName, it.tag) }
+        val groupLogsByApplicationIdAndTag = logSinglesDTO.logs.filter { it.applicationId != null }.groupBy { Pair(it.applicationId, it.tag) }
+        val logBatchDTOs = mutableListOf<LogBatchDTO>()
+
+        groupLogsByApplicationNameAndTag.forEach { groupedByApplicationName ->
+            val application = handleApplicationAutoCreate(logSinglesDTO.user, groupedByApplicationName.key.first!!)
+            logBatchDTOs.add(
+                LogBatchDTO(
+                    user = logSinglesDTO.user,
+                    application = application,
+                    tag = groupedByApplicationName.key.second,
+                    logs = groupedByApplicationName.value.map { sendLogMessage ->
+                        LogMessage(
+                            timestamp = sendLogMessage.timestamp,
+                            message = sendLogMessage.message,
+                            level = sendLogMessage.level,
+                            metadata = sendLogMessage.metadata
+                        )
+                    },
+                    source = logSinglesDTO.source
+                )
+            )
+        }
+        groupLogsByApplicationIdAndTag.map { groupedByApplicationId ->
+            val application = applicationStorageService.findApplicationById(groupedByApplicationId.key.first!!)
+            logBatchDTOs.add(
+                LogBatchDTO(
+                    user = logSinglesDTO.user,
+                    application = application,
+                    tag = groupedByApplicationId.key.second,
+                    logs = groupedByApplicationId.value.map { sendLogMessage ->
+                        LogMessage(
+                            timestamp = sendLogMessage.timestamp,
+                            message = sendLogMessage.message,
+                            level = sendLogMessage.level,
+                            metadata = sendLogMessage.metadata
+                        )
+                    },
+                    source = logSinglesDTO.source
+                )
             )
         }
         return logBatchDTOs.map { processLogBatch(logBatchDTO = it) }

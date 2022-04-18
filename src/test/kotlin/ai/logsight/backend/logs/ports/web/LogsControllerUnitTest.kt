@@ -255,7 +255,7 @@ internal class LogsControllerUnitTest {
                 .thenReturn(user)
             Mockito.`when`(applicationStorageService.findApplicationById(appId))
                 .thenReturn(app)
-            Mockito.`when`(logsService.processLogSinglesAuto(any()))
+            Mockito.`when`(logsService.processLogSingles(any()))
                 .thenThrow(ApplicationStatusException::class.java)
 
             // when
@@ -272,7 +272,7 @@ internal class LogsControllerUnitTest {
                 .thenReturn(user)
             Mockito.`when`(applicationStorageService.findApplicationById(appId))
                 .thenReturn(app)
-            Mockito.`when`(logsService.processLogSinglesAuto(any()))
+            Mockito.`when`(logsService.processLogSingles(any()))
                 .thenThrow(RuntimeException::class.java)
 
             // when
