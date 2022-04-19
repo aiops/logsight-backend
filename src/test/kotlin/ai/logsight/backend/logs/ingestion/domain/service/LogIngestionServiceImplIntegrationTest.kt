@@ -3,7 +3,6 @@ package ai.logsight.backend.logs.ingestion.domain.service
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
@@ -319,6 +318,7 @@ class LogIngestionServiceImplIntegrationTest {
             Thread.sleep(3)
             return zeroMQSocket
         }
+
         val logMessage = SendLogMessage(
             message = "Hello World!",
             timestamp = DateTime.now()
@@ -379,6 +379,7 @@ class LogIngestionServiceImplIntegrationTest {
             Thread.sleep(3)
             return zeroMQSocket
         }
+
         val logMessage = SendLogMessage(
             applicationName = "test_app1",
             message = "Hello World!",

@@ -18,9 +18,7 @@ import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStora
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
-import kotlinx.serialization.builtins.serializer
 import org.springframework.stereotype.Service
-import org.thymeleaf.util.ListUtils
 
 @Service
 class LogIngestionServiceImpl(
@@ -43,51 +41,37 @@ class LogIngestionServiceImpl(
             applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationName, user))
         }
     }
-    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> {
-        val groupLogsByApplicationNameAndTag = logSinglesDTO.logs.filter { it.applicationName != null }.groupBy { Pair(it.applicationName, it.tag) }
-        val groupLogsByApplicationIdAndTag = logSinglesDTO.logs.filter { it.applicationId != null }.groupBy { Pair(it.applicationId, it.tag) }
-        val logBatchDTOs = mutableListOf<LogBatchDTO>()
 
-        groupLogsByApplicationNameAndTag.forEach { groupedByApplicationName ->
-            val application = handleApplicationAutoCreate(logSinglesDTO.user, groupedByApplicationName.key.first!!)
-            logBatchDTOs.add(
-                LogBatchDTO(
-                    user = logSinglesDTO.user,
-                    application = application,
-                    tag = groupedByApplicationName.key.second,
-                    logs = groupedByApplicationName.value.map { sendLogMessage ->
-                        LogMessage(
-                            timestamp = sendLogMessage.timestamp,
-                            message = sendLogMessage.message,
-                            level = sendLogMessage.level,
-                            metadata = sendLogMessage.metadata
-                        )
-                    },
-                    source = logSinglesDTO.source
-                )
+    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> = logSinglesDTO.logs
+        .map { log ->
+            // Get all logs where application name is set and application ID is not set
+            // These applications need an auto-creation handling (see handleApplicationAutoCreate)
+            val application = if (log.applicationId == null && log.applicationName != null) {
+                handleApplicationAutoCreate(logSinglesDTO.user, log.applicationName)
+                // Get all logs where the application ID is set. These apps are assumed to be already created
+            } else {
+                applicationStorageService.findApplicationById(log.applicationId!!)
+            }
+            log.toLogMessageDTO(application)
+        }
+        .groupBy { Pair(it.application, it.tag) }
+        .map { groupedByApplicationIdAndTag ->
+            LogBatchDTO(
+                user = logSinglesDTO.user,
+                application = groupedByApplicationIdAndTag.key.first,
+                tag = groupedByApplicationIdAndTag.key.second,
+                logs = groupedByApplicationIdAndTag.value.map { logMessageDTO ->
+                    LogMessage(
+                        timestamp = logMessageDTO.timestamp,
+                        message = logMessageDTO.message,
+                        level = logMessageDTO.level,
+                        metadata = logMessageDTO.metadata
+                    )
+                },
+                source = logSinglesDTO.source
             )
         }
-        groupLogsByApplicationIdAndTag.map { groupedByApplicationId ->
-            val application = applicationStorageService.findApplicationById(groupedByApplicationId.key.first!!)
-            logBatchDTOs.add(
-                LogBatchDTO(
-                    user = logSinglesDTO.user,
-                    application = application,
-                    tag = groupedByApplicationId.key.second,
-                    logs = groupedByApplicationId.value.map { sendLogMessage ->
-                        LogMessage(
-                            timestamp = sendLogMessage.timestamp,
-                            message = sendLogMessage.message,
-                            level = sendLogMessage.level,
-                            metadata = sendLogMessage.metadata
-                        )
-                    },
-                    source = logSinglesDTO.source
-                )
-            )
-        }
-        return logBatchDTOs.map { processLogBatch(logBatchDTO = it) }
-    }
+        .map { processLogBatch(logBatchDTO = it) }
 
     override fun processLogBatch(logBatchDTO: LogBatchDTO): LogsReceipt {
         logBatchDTO.application.isReadyOrException()
