@@ -20,11 +20,9 @@ import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import junit.framework.TestCase.assertFalse
 import org.joda.time.DateTime
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,6 +38,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 import java.util.*
+import javax.validation.ConstraintViolation
+import javax.validation.Validation
+import javax.validation.ValidatorFactory
 
 @WithMockUser(username = "sasho@sasho.com")
 @WebMvcTest(LogsController::class)
@@ -196,6 +197,9 @@ internal class LogsControllerUnitTest {
 
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
+        val factory: ValidatorFactory = Validation.buildDefaultValidatorFactory()
+        val validator = factory.getValidator()
+
         private val email = "sasho@sasho.com"
         private val user = createMockUser(email)
         private val appId = UUID.randomUUID()
@@ -280,6 +284,41 @@ internal class LogsControllerUnitTest {
 
             // then
             result.andExpect(status().isInternalServerError)
+        }
+
+        @Test
+        fun `should check validity in SendLogMessage`() {
+            // given
+            val logsPass = listOf(
+                SendLogMessage(message = "Hello World!", timestamp = DateTime.now().toString(), applicationId = app.id, tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876Z", applicationId = app.id, tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14Z", applicationId = app.id, tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876", applicationId = app.id, tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876+02:00", applicationId = app.id, tag = "default"),
+            )
+            val logsFail = listOf(
+                SendLogMessage(message = "Hello World!", timestamp = DateTime.now().toString(), tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876+02:00Z", applicationId = app.id, tag = "default"),
+                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T12:", applicationId = app.id, tag = "default")
+            )
+
+            // when
+            val violationsPass = mutableListOf<Set<ConstraintViolation<SendLogMessage>>>()
+            logsPass.forEach { log -> {
+                violationsPass.add(validator.validate(log))
+            } }
+            val violationsFail = mutableListOf<Set<ConstraintViolation<SendLogMessage>>>()
+            logsFail.forEach { log -> {
+                violationsFail.add(validator.validate(log))
+            } }
+
+            // then
+            violationsPass.forEach { violation -> {
+                Assertions.assertTrue(violation.isEmpty())
+            } }
+            violationsFail.forEach { violation -> {
+                Assertions.assertFalse(violation.isEmpty())
+            } }
         }
 
         private fun performRequest(requestBody: List<SendLogMessage> = defaultBody): ResultActions = mockMvc.perform(
