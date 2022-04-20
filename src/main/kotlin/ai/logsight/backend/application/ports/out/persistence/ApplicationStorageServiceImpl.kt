@@ -47,14 +47,9 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return this.findApplicationByIdPrivate(applicationId).toApplication()
     }
 
-    override fun findApplicationByUserAndName(user: User, applicationName: String): Application {
-        val application = appRepository.findByUserAndName(user.toUserEntity(), applicationName)
-        if (application != null) {
-            return application.toApplication()
-        } else {
-            throw ApplicationNotFoundException()
-        }
-    }
+    override fun findApplicationByUserAndName(user: User, applicationName: String): Application =
+        appRepository.findByUserAndName(user.toUserEntity(), applicationName)?.toApplication()
+            ?: throw ApplicationNotFoundException("Application $applicationName does not exist for user ${user.id}.")
 
     override fun findAllApplicationsByUser(user: User): List<Application> {
         return appRepository.findAllByUser(user.toUserEntity()).map { it.toApplication() }
