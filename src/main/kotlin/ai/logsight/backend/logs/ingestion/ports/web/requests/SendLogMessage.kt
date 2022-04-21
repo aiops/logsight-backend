@@ -31,8 +31,8 @@ data class SendLogMessage(
     val timestamp: String,
     val message: String,
     @get:Pattern(
-        regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$",
-        message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE"
+        regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$|^info$|^warning$|^warn$|^finer$|^fine$|^debug$|^error$|^err$|^exception$|^severe$",
+        message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE or lowerletter variant of them."
     )
     val level: String? = null,
     val metadata: String? = null,
