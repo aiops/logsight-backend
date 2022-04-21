@@ -4,6 +4,7 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.logs.ingestion.domain.dto.LogMessageDTO
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
+import org.springframework.validation.annotation.Validated
 import java.util.*
 import javax.validation.constraints.AssertTrue
 import javax.validation.constraints.NotEmpty
@@ -12,11 +13,8 @@ import javax.validation.constraints.Pattern
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SendLogMessage(
-
-    @get:Pattern(
-        regexp = "^[a-z0-9_]*$",
-        message = "applicationName must contain only lowercase letters, numbers ([a-z0-9_]), an underscore is allowed."
-    )
+    @get:NotEmpty(message = "applicationName must not be empty string or null.")
+    @get:Pattern(regexp = "^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\$", message = "applicationName must follow the following regex pattern ^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\\\$.")
     val applicationName: String? = null,
 
     val applicationId: UUID? = null,
