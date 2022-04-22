@@ -16,6 +16,7 @@ import java.util.*
 @Service
 class ApplicationStorageServiceImpl(private val appRepository: ApplicationRepository) : ApplicationStorageService {
     private val logger = LoggerImpl(ApplicationStorageServiceImpl::class.java)
+    private val nameParser = NameParser()
 
     override fun createApplication(applicationName: String, user: User): Application {
         val userEntity = user.toUserEntity()
@@ -29,7 +30,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         }
         val appEntity = ApplicationEntity(
             name = applicationName, status = ApplicationStatus.CREATING, user = userEntity,
-            applicationKey = NameParser().slugify(applicationName)
+            applicationKey = nameParser.slugify(applicationName)
         )
         return appRepository.save(appEntity).toApplication()
     }
