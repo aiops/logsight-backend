@@ -12,10 +12,9 @@ import javax.validation.constraints.Pattern
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SendLogMessage(
-
-    @get:Pattern(
-        regexp = "^[a-z0-9_]*$",
-        message = "applicationName must contain only lowercase letters, numbers ([a-z0-9_]), an underscore is allowed."
+    @get: Pattern(
+        regexp = "^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\$",
+        message = "applicationName must follow the following regex pattern ^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\\\$."
     )
     val applicationName: String? = null,
 
@@ -32,9 +31,10 @@ data class SendLogMessage(
     @get:NotEmpty(message = "timestamp must not be null or empty")
     val timestamp: String,
     val message: String,
+
     @get:Pattern(
-        regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$",
-        message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE"
+        regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$|^info$|^warning$|^warn$|^finer$|^fine$|^debug$|^error$|^err$|^exception$|^severe$",
+        message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE or lowerletter variant of them."
     )
     val level: String? = null,
     val metadata: String? = null,

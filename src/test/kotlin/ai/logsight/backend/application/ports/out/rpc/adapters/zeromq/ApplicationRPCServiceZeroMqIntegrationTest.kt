@@ -136,7 +136,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
             val testSize = 1000
             appDTO.action = ApplicationDTOActions.CREATE
             val appDTOs = IntArray(testSize) { it }.map {
-                ApplicationDTO(UUID.randomUUID(), it.toString(), "key", ApplicationDTOActions.CREATE)
+                ApplicationDTO(UUID.randomUUID(), it.toString(), it.toString(), "key", ApplicationDTOActions.CREATE)
             }
             val zeroMQRepSocket = getZeroMqRepTestSocket()
 
@@ -200,7 +200,7 @@ internal class ApplicationRPCServiceZeroMqIntegrationTest {
         fun `send after timeout for different apps`() {
             // given
             val appDTOTimeout = ApplicationDTO(
-                UUID.randomUUID(), "test", "key", ApplicationDTOActions.CREATE
+                UUID.randomUUID(), "test", "test", "key", ApplicationDTOActions.CREATE
             )
             appDTO.action = ApplicationDTOActions.CREATE
 
