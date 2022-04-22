@@ -135,8 +135,8 @@ class ApplicationLifecycleControllerTest {
             return mapOf(
                 "Empty String" to "",
                 "Invalid symbol '!'" to "application!",
-                "Invalid symbol '?'" to "Application?",
-                "dash in beginning" to "-application-32"
+                "uppercase letter" to "Application",
+                "dash in name" to "application-32"
             ).map { x -> Arguments.of(x.key, x.value) }
         }
 

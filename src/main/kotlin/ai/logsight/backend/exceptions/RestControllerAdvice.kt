@@ -27,7 +27,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import javax.naming.AuthenticationException
-import javax.naming.InvalidNameException
 import javax.servlet.http.HttpServletRequest
 
 @ControllerAdvice
@@ -76,7 +75,6 @@ class RestControllerAdvice {
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
         IllegalArgumentException::class,
-        InvalidNameException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)

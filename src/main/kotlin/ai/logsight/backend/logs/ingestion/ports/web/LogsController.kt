@@ -1,6 +1,7 @@
 package ai.logsight.backend.logs.ingestion.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.logs.domain.LogMessage
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
@@ -14,18 +15,14 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 import javax.validation.Valid
-import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-
 
 @Api(tags = ["Logs"], description = "Send logs")
 @RestController
-@Validated
 @RequestMapping("/api/v1/logs")
 class LogsController(
     val logsService: LogIngestionService,
@@ -58,7 +55,7 @@ class LogsController(
     @ResponseStatus(HttpStatus.OK)
     fun sendLogSingles(
         authentication: Authentication,
-        @RequestBody @Valid logListRequest: MutableList<SendLogMessage>
+        @RequestBody @Valid logListRequest: List<SendLogMessage>
     ): List<LogsReceiptResponse> {
         val logSinglesDTO = LogSinglesDTO(
             user = userStorageService.findUserByEmail(authentication.name),
