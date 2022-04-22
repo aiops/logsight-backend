@@ -28,7 +28,6 @@ fun Application.toApplicationDTO() = ApplicationDTO(
     id = this.id,
     userKey = this.user.key,
     name = this.name,
-    applicationKey = this.applicationKey
 )
 
 fun Application.toApplicationRPCResponse() = ApplicationRPCResponse(

@@ -6,7 +6,6 @@ import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedExcep
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.application.utils.NameParser
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -16,7 +15,6 @@ import java.util.*
 @Service
 class ApplicationStorageServiceImpl(private val appRepository: ApplicationRepository) : ApplicationStorageService {
     private val logger = LoggerImpl(ApplicationStorageServiceImpl::class.java)
-    private val nameParser = NameParser()
 
     override fun createApplication(applicationName: String, user: User): Application {
         val userEntity = user.toUserEntity()
@@ -29,8 +27,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
             throw ApplicationAlreadyCreatedException("Application with name $applicationName already exists for user.")
         }
         val appEntity = ApplicationEntity(
-            name = applicationName, status = ApplicationStatus.CREATING, user = userEntity,
-            applicationKey = nameParser.slugify(applicationName)
+            name = applicationName, status = ApplicationStatus.CREATING, user = userEntity
         )
         return appRepository.save(appEntity).toApplication()
     }
