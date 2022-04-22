@@ -4,7 +4,6 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.logs.ingestion.domain.dto.LogMessageDTO
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
-import org.springframework.validation.annotation.Validated
 import java.util.*
 import javax.validation.constraints.AssertTrue
 import javax.validation.constraints.NotEmpty
@@ -13,8 +12,10 @@ import javax.validation.constraints.Pattern
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SendLogMessage(
-    @get:NotEmpty(message = "applicationName must not be empty string or null.")
-    @get:Pattern(regexp = "^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\$", message = "applicationName must follow the following regex pattern ^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\\\$.")
+    @get: Pattern(
+        regexp = "^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\$",
+        message = "applicationName must follow the following regex pattern ^[a-zA-Z0-9][ a-zA-Z0-9_.-]+\\\$."
+    )
     val applicationName: String? = null,
 
     val applicationId: UUID? = null,
@@ -30,6 +31,7 @@ data class SendLogMessage(
     @get:NotEmpty(message = "timestamp must not be null or empty")
     val timestamp: String,
     val message: String,
+
     @get:Pattern(
         regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$|^info$|^warning$|^warn$|^finer$|^fine$|^debug$|^error$|^err$|^exception$|^severe$",
         message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE or lowerletter variant of them."
