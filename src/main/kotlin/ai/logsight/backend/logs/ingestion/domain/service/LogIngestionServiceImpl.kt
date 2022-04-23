@@ -34,11 +34,30 @@ class LogIngestionServiceImpl(
     // TODO make configurable
     private var topicPostfix: String = "input"
 
+    // Pool for random application name
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
+    private fun generateRandomApplicationName(): String {
+        return (1..10)
+            .map { _ -> kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+    }
+
+    private fun validateApplicationName(applicationName: String): String {
+        var applicationNameValidated = applicationName.lowercase().replace(("[^\\w_-]").toRegex(), "")
+        if (applicationNameValidated.isEmpty()) {
+            applicationNameValidated = generateRandomApplicationName()
+        }
+        return applicationNameValidated
+    }
+
     private fun handleApplicationAutoCreate(user: User, applicationName: String): Application {
+        val applicationNameValidated = validateApplicationName(applicationName)
         return try {
-            applicationStorageService.findApplicationByUserAndName(user, applicationName)
+            applicationStorageService.findApplicationByUserAndName(user, applicationNameValidated)
         } catch (e: ApplicationNotFoundException) {
-            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationName, user))
+            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationNameValidated, user))
         }
     }
 

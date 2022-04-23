@@ -55,7 +55,7 @@ class LogsController(
     @ResponseStatus(HttpStatus.OK)
     fun sendLogSingles(
         authentication: Authentication,
-        @RequestBody @Valid logListRequest: List<SendLogMessage>
+        @RequestBody @Valid logListRequest: MutableList<SendLogMessage>
     ): List<LogsReceiptResponse> {
         val logSinglesDTO = LogSinglesDTO(
             user = userStorageService.findUserByEmail(authentication.name),

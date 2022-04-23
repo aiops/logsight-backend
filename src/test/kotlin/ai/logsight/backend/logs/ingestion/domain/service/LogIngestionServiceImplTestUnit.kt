@@ -208,6 +208,8 @@ internal class LogIngestionServiceImplTestUnit {
         assertNotNull(exception)
     }
 
+
+
     private fun createMockLogsReceipt(
         application: Application,
         id: UUID = UUID.randomUUID(),

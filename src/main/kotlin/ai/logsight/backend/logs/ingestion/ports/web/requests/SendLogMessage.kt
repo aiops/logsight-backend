@@ -13,10 +13,6 @@ import javax.validation.constraints.Pattern
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SendLogMessage(
 
-    @get:Pattern(
-        regexp = "^[a-z0-9_]*$",
-        message = "applicationName must contain only lowercase letters, numbers ([a-z0-9_]), an underscore is allowed."
-    )
     val applicationName: String? = null,
 
     val applicationId: UUID? = null,
