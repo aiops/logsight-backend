@@ -34,11 +34,30 @@ class LogIngestionServiceImpl(
     // TODO make configurable
     private var topicPostfix: String = "input"
 
+    // Pool for random application name
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
+    private fun generateRandomApplicationName(): String {
+        return (1..10)
+            .map { _ -> kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+    }
+
+    private fun validateApplicationName(applicationName: String): String {
+        var applicationNameValidated = applicationName.lowercase().replace(("[^\\w_-]").toRegex(), "")
+        if (applicationNameValidated.isEmpty()) {
+            applicationNameValidated = generateRandomApplicationName()
+        }
+        return applicationNameValidated
+    }
+
     private fun handleApplicationAutoCreate(user: User, applicationName: String): Application {
+        val applicationNameValidated = validateApplicationName(applicationName)
         return try {
-            applicationStorageService.findApplicationByUserAndName(user, applicationName)
+            applicationStorageService.findApplicationByUserAndName(user, applicationNameValidated)
         } catch (e: ApplicationNotFoundException) {
-            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationName, user))
+            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationNameValidated, user))
         }
     }
 
@@ -47,7 +66,7 @@ class LogIngestionServiceImpl(
             // Get all logs where application name is set and application ID is not set
             // These applications need an auto-creation handling (see handleApplicationAutoCreate)
             val application = if (log.applicationId == null && log.applicationName != null) {
-                handleApplicationAutoCreate(logSinglesDTO.user, log.applicationName.lowercase().replace(("[^\\w_-]").toRegex(), ""))
+                handleApplicationAutoCreate(logSinglesDTO.user, log.applicationName)
                 // Get all logs where the application ID is set. These apps are assumed to be already created
             } else {
                 applicationStorageService.findApplicationById(log.applicationId!!)
