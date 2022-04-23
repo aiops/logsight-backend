@@ -47,7 +47,6 @@ class LogIngestionServiceImpl(
             // Get all logs where application name is set and application ID is not set
             // These applications need an auto-creation handling (see handleApplicationAutoCreate)
             val application = if (log.applicationId == null && log.applicationName != null) {
-                println(log.applicationName.lowercase().replace(("[^\\w_-]").toRegex(), ""))
                 handleApplicationAutoCreate(logSinglesDTO.user, log.applicationName.lowercase().replace(("[^\\w_-]").toRegex(), ""))
                 // Get all logs where the application ID is set. These apps are assumed to be already created
             } else {
