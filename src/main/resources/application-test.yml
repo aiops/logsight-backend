@@ -3,8 +3,8 @@ spring:
     hibernate.ddl-auto: create-drop
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
-#      hibernate.format_sql: true
-#    show-sql: true
+      hibernate.format_sql: true
+    show-sql: true
 
   datasource:
     url: jdbc:postgresql://localhost:5431/logsight_test

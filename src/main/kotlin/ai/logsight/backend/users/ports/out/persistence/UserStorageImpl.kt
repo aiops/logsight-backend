@@ -8,7 +8,6 @@ import ai.logsight.backend.users.extensions.toOnlineUser
 import ai.logsight.backend.users.extensions.toUser
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 

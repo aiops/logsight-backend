@@ -10,7 +10,6 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
