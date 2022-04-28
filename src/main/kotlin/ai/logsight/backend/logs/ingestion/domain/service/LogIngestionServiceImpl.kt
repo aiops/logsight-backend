@@ -15,6 +15,7 @@ import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
+import ai.logsight.backend.logs.ingestion.ports.out.stream.LogQueue
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
@@ -25,7 +26,7 @@ class LogIngestionServiceImpl(
     val logsReceiptStorageService: LogsReceiptStorageService,
     val applicationStorageService: ApplicationStorageService,
     val applicationLifeCycleServiceImpl: ApplicationLifecycleServiceImpl,
-    val logStream: LogStream,
+    val logQueue: LogQueue,
     val xSync: XSync<String>
 ) : LogIngestionService {
     val logger: LoggerImpl = LoggerImpl(LogIngestionServiceImpl::class.java)
@@ -104,7 +105,6 @@ class LogIngestionServiceImpl(
 
         // Order and transmission to logsight core are synchronized via mutex
         var logsReceipt: LogsReceipt? = null
-        var sentLogs = 0
         xSync.execute("logs-stream") { // TODO define mutex constants somewhere else
             logsReceipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
             val logsightLogs = logBatchDTO.logs.map { message ->
@@ -118,20 +118,8 @@ class LogIngestionServiceImpl(
                     message
                 )
             }
-            sentLogs = logStream.serializeAndSend(topic, logsightLogs)
+            logQueue.addAll(topic, logsightLogs)
         }
-
-        return logsReceipt?.let { logsReceiptNotNull ->
-            when (sentLogs) {
-                logBatchDTO.logs.size -> logsReceiptNotNull
-                else -> { // If not all messages were successfully transmitted to logsight core
-                    logger.warn(
-                        "Not all log messages were transmitted for analysis. " +
-                            "Received: ${logBatchDTO.logs.size}. Transmitted: $sentLogs."
-                    )
-                    logsReceiptStorageService.updateLogsCount(logsReceiptNotNull, sentLogs)
-                }
-            }
-        } ?: throw RuntimeException() // This should not happen
+        return logsReceipt?: throw RuntimeException()
     }
 }

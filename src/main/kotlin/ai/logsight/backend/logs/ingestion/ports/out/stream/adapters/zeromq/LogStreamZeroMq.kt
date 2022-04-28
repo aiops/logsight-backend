@@ -15,12 +15,11 @@ class LogStreamZeroMq(
 ) : LogStream {
     private val logger = LoggerImpl(ApplicationLifecycleServiceImpl::class.java)
 
-    override fun send(serializedLogs: Collection<String>): Int = serializedLogs.sumOf { log ->
-        // The useless cast is needed due to an issue in kotlin: https://youtrack.jetbrains.com/issue/KT-46360
-        logger.debug("sending message $log to host ${logStreamZeroMqSocket.lastEndpoint}")
-        if (logStreamZeroMqSocket.send(log)) 1 as Int else 0 as Int
+    override fun send(serializedLog: String): Boolean {
+        logger.debug("sending message $serializedLog to host ${logStreamZeroMqSocket.lastEndpoint}")
+        return logStreamZeroMqSocket.send(serializedLog)
     }
 
-    override fun serializeAndSend(topic: String, logsightLogs: Collection<LogsightLog>): Int =
-        send(logsightLogs.map { serializer.serialize(topic, it) })
+    override fun serializeAndSendAll(topic: String, logsightLog: LogsightLog): Boolean =
+        send(serializer.serialize(topic, logsightLog))
 }

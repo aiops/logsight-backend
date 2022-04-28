@@ -81,7 +81,7 @@ internal class LogIngestionServiceImplTestUnit {
         )
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .doReturn(mockLogsReceipt)
-        Mockito.`when`(logStream.serializeAndSend(topic, logObjects))
+        Mockito.`when`(logStream.serializeAndSendAll(topic, logObjects))
             .thenReturn(logObjects.size)
 
         val logBatch = createMockLogBatchDTO(user, app, logs = logStrings)
@@ -168,7 +168,7 @@ internal class LogIngestionServiceImplTestUnit {
 
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(mockLogsReceipt)
-        Mockito.`when`(logStream.serializeAndSend(topic, logObjects))
+        Mockito.`when`(logStream.serializeAndSendAll(topic, logObjects))
             .thenReturn(logObjects.size - 1)
         Mockito.`when`(logsReceiptStorageService.updateLogsCount(mockLogsReceipt, logObjects.size - 1))
             .thenReturn(logsReceiptMismatch)
@@ -196,7 +196,7 @@ internal class LogIngestionServiceImplTestUnit {
             .thenReturn(topic)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .thenReturn(mockLogsReceipt)
-        Mockito.`when`(logStream.serializeAndSend(topic, logObjects))
+        Mockito.`when`(logStream.serializeAndSendAll(topic, logObjects))
             .thenReturn(logObjects.size - 1)
         Mockito.`when`(logsReceiptStorageService.updateLogsCount(mockLogsReceipt, logObjects.size - 1))
             .thenThrow(RuntimeException::class.java)
