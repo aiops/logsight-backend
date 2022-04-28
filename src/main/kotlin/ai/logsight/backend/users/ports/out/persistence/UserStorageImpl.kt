@@ -69,7 +69,6 @@ class UserStorageImpl(
     override fun findUserByEmail(email: String): User {
 
         val user = userRepository.findByEmail(email)
-        println(user?.toUser().toString())
         return user?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
     }
 
