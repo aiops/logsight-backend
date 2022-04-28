@@ -7,14 +7,12 @@ import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundExceptio
 import ai.logsight.backend.logs.ingestion.extensions.toLogsReceipt
 import ai.logsight.backend.logs.ingestion.extensions.toLogsReceiptEntity
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 class LogsReceiptStorageServiceImpl(
     private val logsReceiptRepository: LogsReceiptRepository
 ) : LogsReceiptStorageService {
-    @Transactional
     override fun saveLogsReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogsReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
             logsCount = createLogsReceiptCommand.logsCount,
@@ -28,7 +26,6 @@ class LogsReceiptStorageServiceImpl(
     override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {
         return findLogsReceiptByIdPrivate(logReceiptId).toLogsReceipt()
     }
-    @Transactional
     override fun updateLogsCount(logsReceipt: LogsReceipt, logsCount: Int): LogsReceipt {
         val logsReceiptEntity = logsReceipt.toLogsReceiptEntity()
         logsReceiptEntity.logsCount = logsCount
