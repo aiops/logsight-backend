@@ -8,6 +8,7 @@ import ai.logsight.backend.users.extensions.toOnlineUser
 import ai.logsight.backend.users.extensions.toUser
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
@@ -62,13 +63,15 @@ class UserStorageImpl(
         return userRepository.save(userEntity)
             .toUser()
     }
-
     override fun findUserById(userId: UUID): User = userRepository.findById(userId)
         .orElseThrow { UserNotFoundException("User with id $userId not found.") }
         .toUser()
+    override fun findUserByEmail(email: String): User {
 
-    override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
-        ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
+        val user = userRepository.findByEmail(email)
+        println(user?.toUser().toString())
+        return user?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
+    }
 
     override fun deleteUser(id: UUID): User {
         val user = findUserById(id)

@@ -10,6 +10,7 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -42,11 +43,9 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return appRepository.findById(applicationId)
             .orElseThrow { ApplicationNotFoundException("Application $applicationId does not exist for user.") }
     }
-
     override fun findApplicationById(applicationId: UUID): Application {
         return this.findApplicationByIdPrivate(applicationId).toApplication()
     }
-
     override fun findApplicationByUserAndName(user: User, applicationName: String): Application =
         appRepository.findByUserAndName(user.toUserEntity(), applicationName)?.toApplication()
             ?: throw ApplicationNotFoundException("Application $applicationName does not exist for user ${user.id}.")
@@ -56,7 +55,7 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
     }
 
     override fun saveApplication(application: Application): Application {
-        return appRepository.save<ApplicationEntity?>(application.toApplicationEntity()).toApplication()
+        return appRepository.save(application.toApplicationEntity()).toApplication()
     }
 
     override fun setApplicationStatus(application: Application, applicationStatus: ApplicationStatus): Application {
