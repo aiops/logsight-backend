@@ -10,5 +10,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 data class LogStreamZeroMqConfigProperties(
     val protocol: String,
     val host: String,
-    val port: Int
+    val port: Int,
+    val hwm: Int
 )
