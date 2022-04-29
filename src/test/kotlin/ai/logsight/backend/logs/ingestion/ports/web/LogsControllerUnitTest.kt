@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ports.web
+package ai.logsight.backend.logs.ingestion.ports.web
 
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
@@ -10,7 +10,6 @@ import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
-import ai.logsight.backend.logs.ingestion.ports.web.LogsController
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.security.UserDetailsServiceImpl
@@ -20,7 +19,6 @@ import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import junit.framework.TestCase.assertFalse
 import org.joda.time.DateTime
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -40,6 +38,7 @@ import java.time.LocalDateTime
 import java.util.*
 import javax.validation.ConstraintViolation
 import javax.validation.Validation
+import javax.validation.Validator
 import javax.validation.ValidatorFactory
 
 @WithMockUser(username = "sasho@sasho.com")
@@ -195,10 +194,10 @@ internal class LogsControllerUnitTest {
 
         private val logsUriPath = "/api/v1/logs/singles"
 
-        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+        private val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
         val factory: ValidatorFactory = Validation.buildDefaultValidatorFactory()
-        val validator = factory.getValidator()
+        private val validator: Validator = factory.validator
 
         private val email = "sasho@sasho.com"
         private val user = createMockUser(email)
@@ -212,7 +211,11 @@ internal class LogsControllerUnitTest {
             tag = "default"
         )
 
-        private val logBatchDTO = createMockLogBatchDTO(user, app, logs = listOf(log).map { LogMessage(timestamp = it.timestamp, message = it.message) })
+        private val logBatchDTO = createMockLogBatchDTO(
+            user,
+            app,
+            logs = listOf(log).map { LogMessage(timestamp = it.timestamp, message = it.message) }
+        )
 
         private val orderCounter = 1L
         private val source = LogDataSources.REST_BATCH.source
@@ -290,35 +293,78 @@ internal class LogsControllerUnitTest {
         fun `should check validity in SendLogMessage`() {
             // given
             val logsPass = listOf(
-                SendLogMessage(message = "Hello World!", timestamp = DateTime.now().toString(), applicationId = app.id, tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876Z", applicationId = app.id, tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14Z", applicationId = app.id, tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876", applicationId = app.id, tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876+02:00", applicationId = app.id, tag = "default"),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = DateTime.now().toString(),
+                    applicationId = app.id,
+                    tag = "default"
+                ),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T15:54:14.876Z",
+                    applicationId = app.id,
+                    tag = "default"
+                ),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T15:54:14Z",
+                    applicationId = app.id,
+                    tag = "default"
+                ),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T15:54:14.876",
+                    applicationId = app.id,
+                    tag = "default"
+                ),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T15:54:14.876+02:00",
+                    applicationId = app.id,
+                    tag = "default"
+                ),
             )
             val logsFail = listOf(
                 SendLogMessage(message = "Hello World!", timestamp = DateTime.now().toString(), tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T15:54:14.876+02:00Z", applicationId = app.id, tag = "default"),
-                SendLogMessage(message = "Hello World!", timestamp = "2016-05-24T12:", applicationId = app.id, tag = "default")
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T15:54:14.876+02:00Z",
+                    applicationId = app.id,
+                    tag = "default"
+                ),
+                SendLogMessage(
+                    message = "Hello World!",
+                    timestamp = "2016-05-24T12:",
+                    applicationId = app.id,
+                    tag = "default"
+                )
             )
 
             // when
             val violationsPass = mutableListOf<Set<ConstraintViolation<SendLogMessage>>>()
-            logsPass.forEach { log -> {
-                violationsPass.add(validator.validate(log))
-            } }
+            logsPass.forEach { log ->
+                run {
+                    violationsPass.add(validator.validate(log))
+                }
+            }
             val violationsFail = mutableListOf<Set<ConstraintViolation<SendLogMessage>>>()
-            logsFail.forEach { log -> {
-                violationsFail.add(validator.validate(log))
-            } }
+            logsFail.forEach { log ->
+                run {
+                    violationsFail.add(validator.validate(log))
+                }
+            }
 
             // then
-            violationsPass.forEach { violation -> {
-                Assertions.assertTrue(violation.isEmpty())
-            } }
-            violationsFail.forEach { violation -> {
-                Assertions.assertFalse(violation.isEmpty())
-            } }
+            violationsPass.forEach { violation ->
+                run {
+                    Assertions.assertTrue(violation.isEmpty())
+                }
+            }
+            violationsFail.forEach { violation ->
+                run {
+                    Assertions.assertFalse(violation.isEmpty())
+                }
+            }
         }
 
         private fun performRequest(requestBody: List<SendLogMessage> = defaultBody): ResultActions = mockMvc.perform(

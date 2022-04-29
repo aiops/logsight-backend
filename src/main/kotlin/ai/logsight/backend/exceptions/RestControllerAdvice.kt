@@ -5,9 +5,12 @@ import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
+import ai.logsight.backend.common.logging.Logger
+import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.exceptions.FlushNotFoundException
+import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
@@ -26,11 +29,15 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import java.io.IOException
 import javax.naming.AuthenticationException
 import javax.servlet.http.HttpServletRequest
 
 @ControllerAdvice
 class RestControllerAdvice {
+
+    private val logger: Logger = LoggerImpl(RestControllerAdvice::class.java)
+
 
     @ExceptionHandler(
         BadCredentialsException::class, AuthenticationException::class
@@ -92,6 +99,13 @@ class RestControllerAdvice {
     }
 
     @ExceptionHandler(
+        LogQueueCapacityLimitReached::class
+    )
+    fun handleTooManyRequests(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
+        return generateErrorResponse(HttpStatus.TOO_MANY_REQUESTS, request, e)
+    }
+
+    @ExceptionHandler(
         MethodArgumentNotValidException::class
     )
     fun handleValidationException(
@@ -124,6 +138,6 @@ class RestControllerAdvice {
 //            else -> stackTrace // default behavior
 //        }
 
-        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTrace), status)
+        return ResponseEntity(ErrorResponse(status, message, requestPath), status)
     }
 }

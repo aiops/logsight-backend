@@ -11,16 +11,15 @@ import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCRespo
 import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.common.utils.TopicJsonSerializer
 import ai.logsight.backend.logs.domain.LogMessage
-import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.domain.enums.LogDataSources
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
+import ai.logsight.backend.logs.ingestion.ports.out.stream.LogQueue
 import ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq.config.LogStreamZeroMqConfigProperties
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
-import com.sun.mail.iap.ConnectionException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
@@ -35,9 +34,8 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.zeromq.SocketType
-import org.zeromq.ZContext
-import org.zeromq.ZMQ
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -107,17 +105,7 @@ class LogIngestionServiceImplIntegrationTest {
         @BeforeEach
         fun setupEach() {
             logsReceiptRepository.deleteAll()
-        }
-
-        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
-            val ctx = ZContext()
-            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
-            val status = zeroMQSocket.connect(addr)
-            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
-            zeroMQSocket.subscribe(topic)
-            Thread.sleep(3)
-            return zeroMQSocket
+            logIngestionServiceImpl.logQueue.blockingLogQueue.clear()
         }
 
         @Test
@@ -139,8 +127,8 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return ordered order counter`() {
             // given
-            val numBatches = 5
-            val batches = List(numBatches) { logMessages }
+            val numLogs = 5
+            val batches = List(numLogs) { logMessages }
 
             // when
             val logReceipts = batches.map { batch ->
@@ -152,7 +140,7 @@ class LogIngestionServiceImplIntegrationTest {
             }
 
             // then
-            Assertions.assertEquals(logReceipts.size, numBatches)
+            Assertions.assertEquals(logReceipts.size, numLogs)
             // assert that values are sorted asc
             Assertions.assertTrue {
                 logReceipts.map { it.orderNum }
@@ -163,13 +151,10 @@ class LogIngestionServiceImplIntegrationTest {
         }
 
         @Test
-        fun `should transmit order to zeromq`() {
+        fun `should maintain a specific order when adding the logs to the queue`() {
             // given
-            val topic = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application1.name))
-            val zeroMQSocket = getZeroMqTestSocket(topic)
-
-            val numBatches = 5
-            val batches = List(numBatches) { logMessages }
+            val numLogs = 5
+            val batches = List(numLogs) { logMessages }
 
             // when
             val logsReceipts = batches.map { batch ->
@@ -181,18 +166,14 @@ class LogIngestionServiceImplIntegrationTest {
             }
 
             // then
-            verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
-            zeroMQSocket.close()
+            verifyLogOrderInQueue(logIngestionServiceImpl.logQueue, logsReceipts)
         }
 
         @Test
-        fun `should transmit order to zeromq concurrent`() {
+        fun `should maintain a specific order when adding the logs to the queue concurrency test`() {
             // given
-            val topic = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application1.name))
-            val zeroMQSocket = getZeroMqTestSocket(topic)
-
-            val numBatches = 20
-            val batches = List(numBatches) { logMessages }
+            val numLogs = 20
+            val batches = List(numLogs) { logMessages }
 
             // when
             val logsReceipts = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
@@ -214,20 +195,14 @@ class LogIngestionServiceImplIntegrationTest {
             }
 
             // then
-            verifyZeroMqOrder(zeroMQSocket, logsReceipts, numBatches)
-            zeroMQSocket.close()
+            verifyLogOrderInQueue(logIngestionServiceImpl.logQueue, logsReceipts)
         }
 
         @Test
-        fun `should not block zeromq concurrent transfer for different apps`() {
+        fun `should maintain a specific order when adding the logs to the queue concurrency test with different apps`() {
             // given
-            val topic1 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application1.name))
-            val topic2 = topicBuilder.buildTopic(listOf(TestInputConfig.baseUser.key, application2.name))
-            val zeroMQSocket1 = getZeroMqTestSocket(topic1)
-            val zeroMQSocket2 = getZeroMqTestSocket(topic2)
-
-            val numBatches = 5
-            val batches = List(numBatches) { logMessages }
+            val numLogs = 5
+            val batches = List(numLogs) { logMessages }
 
             // when
             val logsReceipts1 = java.util.Collections.synchronizedList(mutableListOf<LogsReceipt>())
@@ -261,23 +236,19 @@ class LogIngestionServiceImplIntegrationTest {
                 }
             }
             // then
-            verifyZeroMqOrder(zeroMQSocket1, logsReceipts1, numBatches)
-            verifyZeroMqOrder(zeroMQSocket2, logsReceipts2, numBatches)
+            verifyLogOrderInQueue(logIngestionServiceImpl.logQueue, logsReceipts1)
+            verifyLogOrderInQueue(logIngestionServiceImpl.logQueue, logsReceipts2)
         }
 
-        private fun verifyZeroMqOrder(zeroMQSocket: ZMQ.Socket, logsReceipts: List<LogsReceipt>, numBatches: Int) {
+        private fun verifyLogOrderInQueue(queue: LogQueue, logsReceipts: List<LogsReceipt>) {
             val receiptIdsExpected = logsReceipts.map { it.orderNum }
-            val serializedLogs = List(numBatches * numMessages) {
-                String(zeroMQSocket.recv())
-            }
-            val receiptIds =
-                serializedLogs.map { topicJsonSerializer.deserialize(it, LogsightLog::class.java).orderCounter }
+            val receiptIdsActual = queue.blockingLogQueue.map { it.second.orderCounter }.toList()
 
             // num. sent logs = num. received logs
             Assertions.assertEquals(receiptIdsExpected.size, logsReceipts.size)
             // assert that values are sorted asc
             Assertions.assertTrue {
-                receiptIds.asSequence()
+                receiptIdsActual.asSequence()
                     .zipWithNext { a, b -> a <= b }
                     .all { it }
             }
@@ -308,24 +279,13 @@ class LogIngestionServiceImplIntegrationTest {
             logsReceiptRepository.deleteAll()
         }
 
-        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
-            val ctx = ZContext()
-            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
-            val status = zeroMQSocket.connect(addr)
-            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
-            zeroMQSocket.subscribe(topic)
-            Thread.sleep(3)
-            return zeroMQSocket
-        }
-
-        val logMessage = SendLogMessage(
+        private val logMessage = SendLogMessage(
             message = "Hello World!",
-            timestamp = DateTime.now()
-                .toString(),
-            applicationId = application1.id, tag = "default"
+            timestamp = DateTime.now().toString(),
+            applicationId = application1.id,
+            tag = "default"
         )
-        val logMessages = List(numMessages) { logMessage }
+        private val logMessages = List(numMessages) { logMessage }
 
         @Test
         fun `should return valid log receipt`() {
@@ -369,25 +329,13 @@ class LogIngestionServiceImplIntegrationTest {
             logsReceiptRepository.deleteAll()
         }
 
-        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
-            val ctx = ZContext()
-            val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
-            val status = zeroMQSocket.connect(addr)
-            if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
-            zeroMQSocket.subscribe(topic)
-            Thread.sleep(3)
-            return zeroMQSocket
-        }
-
-        val logMessage = SendLogMessage(
+        private val logMessage = SendLogMessage(
             applicationName = "test_app1",
             message = "Hello World!",
-            timestamp = DateTime.now()
-                .toString(),
+            timestamp = DateTime.now().toString(),
             tag = "default"
         )
-        val logMessages = List(numMessages) { logMessage }
+        private val logMessages = List(numMessages) { logMessage }
 
         @Test
         fun `should return valid log receipt`() {
@@ -412,8 +360,7 @@ class LogIngestionServiceImplIntegrationTest {
                 SendLogMessage(
                     applicationName = "test_app_new_name",
                     message = "Hello World!",
-                    timestamp = DateTime.now()
-                        .toString(),
+                    timestamp = DateTime.now().toString(),
                     tag = "default"
                 )
             val logMessages = List(numMessages) { logMessage }
@@ -439,7 +386,7 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return valid receipt when applicationId or applicationName are in the request`() {
             // given
-            val logMessage1 = listOf<SendLogMessage>(
+            val logMessage1 = listOf(
                 SendLogMessage(
                     applicationName = "test_app_new_name",
                     message = "Hello World!",
@@ -449,7 +396,7 @@ class LogIngestionServiceImplIntegrationTest {
                 )
             )
 
-            val logMessage2 = listOf<SendLogMessage>(
+            val logMessage2 = listOf(
                 SendLogMessage(
                     applicationId = application1.id,
                     message = "Hello World!",
@@ -498,15 +445,14 @@ class LogIngestionServiceImplIntegrationTest {
             )
             Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
                 .thenReturn(response)
+
             // when
-            var exception = false
-            try {
+            val exception = assertFailsWith<ApplicationNotFoundException> {
                 logIngestionServiceImpl.processLogSingles(logBatchSinglesDTO)
-            } catch (e: ApplicationNotFoundException) {
-                exception = true
             }
-            Assertions.assertTrue(exception)
+
             // then
+            assertNotNull(exception)
         }
 
         @AfterAll
