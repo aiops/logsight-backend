@@ -39,9 +39,6 @@ springdoc:
   swagger-ui:
     path: '/swagger-ui.html'
 
-logging.level.com.zaxxer.hikari.HikariConfig: DEBUG
-logging.level.com.zaxxer.hikari: TRACE
-
 server:
   error:
     include-stacktrace: ON_PARAM

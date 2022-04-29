@@ -474,8 +474,7 @@ class LogIngestionServiceImplIntegrationTest {
             // then
             Assertions.assertNotNull(logReceipts)
             Assertions.assertEquals(logMessages.size, logReceipts.size)
-            Assertions.assertEquals(source.name, logReceipts[0].source)
-            Assertions.assertEquals("test_app_new_name", logReceipts[0].application.name)
+            Assertions.assertEquals(source.name, logReceipts[1].source)
         }
 
         @Test
