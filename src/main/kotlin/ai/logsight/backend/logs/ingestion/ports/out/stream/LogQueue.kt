@@ -2,27 +2,27 @@ package ai.logsight.backend.logs.ingestion.ports.out.stream
 
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
 import javax.transaction.Transactional
 
-open class LogQueue(maxSize: Int) {
-    val queue: BlockingQueue<Pair<String, LogsightLog>>
-
-    init {
-        queue = LinkedBlockingQueue(maxSize)
-    }
-
+@Component
+class LogQueue(
+    val blockingLogQueue: BlockingQueue<Pair<String, LogsightLog>>
+) {
     @Transactional
-    open fun addAll(topic: String, logs: Collection<LogsightLog>) {
-        if (logs.size > queue.remainingCapacity()) {
+    fun addAll(topic: String, logs: Collection<LogsightLog>) {
+        if (logs.size > blockingLogQueue.remainingCapacity()) {
             throw LogQueueCapacityLimitReached(
                 "log queue capacity limit reached. required capacity: ${logs.size}. " +
-                    "remaining capacity: ${queue.remainingCapacity()}."
+                    "remaining capacity: ${blockingLogQueue.remainingCapacity()}."
             )
         }
-        queue.addAll(logs.map { Pair(topic, it) })
+        blockingLogQueue.addAll(logs.map { Pair(topic, it) })
     }
 
-    fun take(): Pair<String, LogsightLog> = queue.take()
+    fun take(): Pair<String, LogsightLog> {
+        return blockingLogQueue.take()
+    }
 }

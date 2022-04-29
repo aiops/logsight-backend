@@ -8,7 +8,6 @@ spring:
     username: logsight
     password: logsight
 
-logsight:
   elasticsearch:
     host: "localhost"
     port: "9200"

@@ -4,5 +4,5 @@ import ai.logsight.backend.logs.domain.LogsightLog
 
 interface LogStream {
     fun send(serializedLog: String): Boolean
-    fun serializeAndSendAll(topic: String, logsightLog: LogsightLog): Boolean
+    fun serializeAndSend(topic: String, logsightLog: LogsightLog): Boolean
 }

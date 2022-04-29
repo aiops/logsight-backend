@@ -16,10 +16,10 @@ import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.logs.ingestion.ports.out.stream.LogQueue
-import ai.logsight.backend.logs.ingestion.ports.out.stream.LogStream
 import ai.logsight.backend.users.domain.User
 import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
+import java.util.concurrent.BlockingQueue
 
 @Service
 class LogIngestionServiceImpl(
@@ -120,6 +120,6 @@ class LogIngestionServiceImpl(
             }
             logQueue.addAll(topic, logsightLogs)
         }
-        return logsReceipt?: throw RuntimeException()
+        return logsReceipt ?: throw RuntimeException()
     }
 }

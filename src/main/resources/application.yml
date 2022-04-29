@@ -53,6 +53,8 @@ logsight:
 
   logs:
     stream:
+      queue:
+        max_size: 1000000
       zeromq:
         protocol: "tcp"
         host: "*"

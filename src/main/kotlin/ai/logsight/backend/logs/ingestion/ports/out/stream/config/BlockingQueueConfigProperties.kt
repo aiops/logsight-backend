@@ -7,6 +7,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @ConfigurationProperties(prefix = "logsight.logs.stream.queue")
 @ConstructorBinding
 @EnableConfigurationProperties
-class LogQueueConfigProperties(
+class BlockingQueueConfigProperties(
     val maxSize: Int
 )

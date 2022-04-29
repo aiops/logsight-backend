@@ -20,6 +20,6 @@ class LogStreamZeroMq(
         return logStreamZeroMqSocket.send(serializedLog)
     }
 
-    override fun serializeAndSendAll(topic: String, logsightLog: LogsightLog): Boolean =
+    override fun serializeAndSend(topic: String, logsightLog: LogsightLog): Boolean =
         send(serializer.serialize(topic, logsightLog))
 }

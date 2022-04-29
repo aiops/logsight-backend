@@ -21,8 +21,7 @@ final class QueuedLogStreamTransmission(
     override fun run() {
         while (!stopReading) {
             val topicAndLog = logQueue.take()
-            println("${topicAndLog.first}: ${topicAndLog.second.message}")
-            // logStream.serializeAndSendAll(topicAndLog.first, topicAndLog.second)
+            logStream.serializeAndSend(topicAndLog.first, topicAndLog.second)
         }
     }
 
