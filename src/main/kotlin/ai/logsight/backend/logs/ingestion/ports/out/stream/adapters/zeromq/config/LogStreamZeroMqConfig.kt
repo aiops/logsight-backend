@@ -15,7 +15,7 @@ class LogStreamZeroMqConfig(
     fun logStreamZeroMqSocket(): ZMQ.Socket {
         val ctx = ZContext()
         val zeroMQSocket = ctx.createSocket(SocketType.PUB)
-        zeroMQSocket.sndHWM = 100000000
+        zeroMQSocket.sndHWM = 10000000
         zeroMQSocket.setXpubNoDrop(true)
         val addr = "${logStreamZeroMqConfig.protocol}://${logStreamZeroMqConfig.host}:${logStreamZeroMqConfig.port}"
         val status = zeroMQSocket.bind(addr)
