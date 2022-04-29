@@ -6,12 +6,6 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:logsight}
     password: ${SPRING_DATASOURCE_PASSWORD:logsight}
     driver-class-name: org.postgresql.Driver
-    hikari.minimumIdle: 50
-    hikari.maximumPoolSize: 20
-    hikari.idleTimeout: 30000
-    hikari.poolName: SpringBootJPAHikariCP
-    hikari.maxLifetime: 2000000
-    hikari.connectionTimeout: 30000
   jpa:
     hibernate:
       ddl-auto: update

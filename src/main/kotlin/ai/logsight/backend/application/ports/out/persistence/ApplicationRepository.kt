@@ -22,7 +22,15 @@ interface ApplicationRepository : JpaRepository<ApplicationEntity, UUID> {
         ]
     )
     override fun <S : ApplicationEntity> save(entity: S): S
-
+    @Override
+    @Caching(
+        evict = [
+            CacheEvict(
+                value = ["applications_name"],
+                key = "{#entity.user, #entity.name}"
+            ), CacheEvict(value = ["applications_id"], key = "#entity.id")
+        ]
+    )
     override fun delete(entity: ApplicationEntity)
 
     @Override
