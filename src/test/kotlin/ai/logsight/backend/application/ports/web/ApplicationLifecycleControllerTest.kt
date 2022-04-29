@@ -6,6 +6,7 @@ import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedExcep
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
+import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.out.rpc.RPCService
@@ -227,6 +228,17 @@ class ApplicationLifecycleControllerTest {
             assertThat(exc is ApplicationRemoteException)
             // check if it is deleted
             Assertions.assertNull(appRepository.findByUserAndName(TestInputConfig.baseUserEntity, appName))
+        }
+
+        @Test
+        fun `should use caching correcty on finding application by user and name`() {
+            for (i in 0..9) {
+                val application = appRepository.findByUserAndName(TestInputConfig.baseUserEntity, TestInputConfig.baseAppName)
+            }
+            appRepository.save(TestInputConfig.baseAppEntity)
+            for (i in 0..50) {
+                val application = appRepository.findById(TestInputConfig.baseAppEntity.id)
+            }
         }
     }
 

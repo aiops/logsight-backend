@@ -13,7 +13,6 @@ import java.util.*
 class LogsReceiptStorageServiceImpl(
     private val logsReceiptRepository: LogsReceiptRepository
 ) : LogsReceiptStorageService {
-
     override fun saveLogsReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogsReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
             logsCount = createLogsReceiptCommand.logsCount,
@@ -27,7 +26,6 @@ class LogsReceiptStorageServiceImpl(
     override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {
         return findLogsReceiptByIdPrivate(logReceiptId).toLogsReceipt()
     }
-
     override fun updateLogsCount(logsReceipt: LogsReceipt, logsCount: Int): LogsReceipt {
         val logsReceiptEntity = logsReceipt.toLogsReceiptEntity()
         logsReceiptEntity.logsCount = logsCount

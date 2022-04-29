@@ -62,11 +62,9 @@ class UserStorageImpl(
         return userRepository.save(userEntity)
             .toUser()
     }
-
     override fun findUserById(userId: UUID): User = userRepository.findById(userId)
         .orElseThrow { UserNotFoundException("User with id $userId not found.") }
         .toUser()
-
     override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
         ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
 

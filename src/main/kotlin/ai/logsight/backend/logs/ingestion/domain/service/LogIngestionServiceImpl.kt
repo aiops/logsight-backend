@@ -60,37 +60,53 @@ class LogIngestionServiceImpl(
             applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationNameValidated, user))
         }
     }
-
-    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> = logSinglesDTO.logs
-        .map { log ->
-            // Get all logs where application name is set and application ID is not set
-            // These applications need an auto-creation handling (see handleApplicationAutoCreate)
-            val application = if (log.applicationId == null && log.applicationName != null) {
-                handleApplicationAutoCreate(logSinglesDTO.user, log.applicationName)
-                // Get all logs where the application ID is set. These apps are assumed to be already created
-            } else {
-                applicationStorageService.findApplicationById(log.applicationId!!)
+    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> {
+        val logReceiptsApplicationId = logSinglesDTO.logs
+            .filter { it.applicationId != null }
+            .groupBy { Pair(it.applicationId, it.tag) }
+            .map { groupedByApplicationIdAndTag ->
+                val application = applicationStorageService.findApplicationById(groupedByApplicationIdAndTag.key.first!!)
+                LogBatchDTO(
+                    user = logSinglesDTO.user,
+                    application = application,
+                    tag = groupedByApplicationIdAndTag.key.second,
+                    logs = groupedByApplicationIdAndTag.value.map { logMessageDTO ->
+                        LogMessage(
+                            timestamp = logMessageDTO.timestamp,
+                            message = logMessageDTO.message,
+                            level = logMessageDTO.level,
+                            metadata = logMessageDTO.metadata
+                        )
+                    },
+                    source = logSinglesDTO.source
+                )
             }
-            log.toLogMessageDTO(application)
-        }
-        .groupBy { Pair(it.application, it.tag) }
-        .map { groupedByApplicationIdAndTag ->
-            LogBatchDTO(
-                user = logSinglesDTO.user,
-                application = groupedByApplicationIdAndTag.key.first,
-                tag = groupedByApplicationIdAndTag.key.second,
-                logs = groupedByApplicationIdAndTag.value.map { logMessageDTO ->
-                    LogMessage(
-                        timestamp = logMessageDTO.timestamp,
-                        message = logMessageDTO.message,
-                        level = logMessageDTO.level,
-                        metadata = logMessageDTO.metadata
-                    )
-                },
-                source = logSinglesDTO.source
-            )
-        }
-        .map { processLogBatch(logBatchDTO = it) }
+            .map { processLogBatch(logBatchDTO = it) }
+
+        val logReceiptsApplicationName = logSinglesDTO.logs
+            .filter { it.applicationName != null }
+            .groupBy { Pair(it.applicationName, it.tag) }
+            .map { groupedByApplicationNameAndTag ->
+                val application = handleApplicationAutoCreate(logSinglesDTO.user, groupedByApplicationNameAndTag.key.first!!)
+                LogBatchDTO(
+                    user = logSinglesDTO.user,
+                    application = application,
+                    tag = groupedByApplicationNameAndTag.key.second,
+                    logs = groupedByApplicationNameAndTag.value.map { logMessageDTO ->
+                        LogMessage(
+                            timestamp = logMessageDTO.timestamp,
+                            message = logMessageDTO.message,
+                            level = logMessageDTO.level,
+                            metadata = logMessageDTO.metadata
+                        )
+                    },
+                    source = logSinglesDTO.source
+                )
+            }
+            .map { processLogBatch(logBatchDTO = it) }
+
+        return logReceiptsApplicationId + logReceiptsApplicationName
+    }
 
     override fun processLogBatch(logBatchDTO: LogBatchDTO): LogsReceipt {
         logBatchDTO.application.isReadyOrException()
