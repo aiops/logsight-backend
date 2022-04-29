@@ -8,6 +8,7 @@ import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.exceptions.FlushNotFoundException
+import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
@@ -89,6 +90,13 @@ class RestControllerAdvice {
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)
+    }
+
+    @ExceptionHandler(
+        LogQueueCapacityLimitReached::class
+    )
+    fun handleTooManyRequests(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
+        return generateErrorResponse(HttpStatus.TOO_MANY_REQUESTS, request, e)
     }
 
     @ExceptionHandler(
