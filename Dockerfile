@@ -1,3 +1,5 @@
+# docker build -t logsight/logsight-backend .
+
 FROM gradle:6.8.3-jdk11 as cache
 RUN mkdir -p /home/gradle/cache_home
 ENV GRADLE_USER_HOME /home/gradle/cache_home
@@ -20,6 +22,9 @@ RUN gradle bootJar -i --stacktrace
 
 FROM openjdk:11-jre-slim
 WORKDIR /
-COPY --from=build /build/build/libs/logsight-0.0.1-SNAPSHOT.jar ./web-app-backend.jar
+COPY --from=build /build/build/libs/logsight-backend-0.0.1-SNAPSHOT.jar ./web-app-backend.jar
 COPY /src/main/resources .
-ENTRYPOINT ["java", "-jar", "web-app-backend.jar"]
+COPY entrypoint.sh .
+ENV LOGSIGHT_HOME=""
+
+ENTRYPOINT [ "./entrypoint.sh" ]

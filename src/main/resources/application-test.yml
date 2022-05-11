@@ -1,44 +1,26 @@
 spring:
   jpa:
+    hibernate.ddl-auto: create-drop
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    # show-sql: true
+      hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
   datasource:
-    url: jdbc:postgresql://postgres:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
+    url: jdbc:postgresql://localhost:5431/logsight_test
     username: logsight
     password: logsight
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 550MB
-      max-request-size: 550MB
+  elasticsearch:
+    host: "localhost"
+    port: "9200"
+    protocol: "http"
+    credentials:
+      username: "elastic"
+      password: "elasticsearchpassword"
 
-email:
-  host: smtp.gmail.com
-  port: 587
-  username: noreply.logsight@gmail.com
-  password: logsight2021123!
+  kibana:
+    host: "localhost"
+    port: "5601"
 
-app:
-  baseUrl: https://demo.logsight.ai/
-  baseUrlTry: https://demo.logsight.ai/
-  qualityUrl: http://data-input-rest-api:5444/
+  token:
+    duration: 15
 
-stripe:
-  sk: "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
-  whSec: "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
-
-kafka:
-  bootstrapAddress: kafka:9092 # localhost:9093
-  groupId: 1
-
-elasticsearch:
-  url: elasticsearch:9200
-
-kibana:
-  url: kibana:5601
-
-resources:
-  path: /
+logsight.application-rpc.zeromq.timeout: 200
