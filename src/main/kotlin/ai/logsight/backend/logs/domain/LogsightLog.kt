@@ -4,5 +4,5 @@ data class LogsightLog(
     val id: String? = null,
     val event: LogEvent,
     val metadata: Map<String, String>? = null,
-    val tags: List<String> = listOf("default")
+    val tags: Map<String, String> = mapOf("default" to "default")
 )

@@ -36,7 +36,7 @@ class LogsController(
         authentication: Authentication,
         @RequestBody @Valid logListRequest: SendLogListRequest
     ): LogsReceiptResponse {
-        val logs = logListRequest.logs.map { LogsightLog(tags = listOf(logListRequest.tag), event = it) }
+        val logs = logListRequest.logs.map { LogsightLog(tags = logListRequest.tags, event = it) }
         val logBatchDTO = LogBatch(
             application = applicationStorageService.findApplicationById(logListRequest.applicationId),
             logs = logs

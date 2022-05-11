@@ -10,7 +10,7 @@ data class SendLogListRequest(
     @get:NotNull(message = "applicationId must be defined")
     val applicationId: UUID,
     @get:NotEmpty(message = "tag must not be empty")
-    val tag: String = "default",
+    val tags: Map<String, String> = mapOf("default" to "default"),
     @get:Valid
     val logs: List<LogEvent> = listOf()
 )

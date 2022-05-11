@@ -19,7 +19,7 @@ data class SendLogMessage(
     val applicationId: UUID? = null,
 
     @get:NotEmpty(message = "tag must not be empty")
-    val tags: List<String> = listOf("default"),
+    val tags: Map<String, String> = mapOf("default" to "default"),
 
     @get:Pattern(
         regexp = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(([+-]\\d{2}:\\d{2})|Z)?\$",
