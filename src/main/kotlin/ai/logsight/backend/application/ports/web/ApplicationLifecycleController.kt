@@ -67,7 +67,9 @@ class ApplicationLifecycleController(
     ): CreateApplicationResponse {
         val user = userService.findUserById(UUID.fromString(userId))
         val createApplicationCommand = CreateApplicationCommand(
-            applicationName = createApplicationRequest.applicationName, user = user
+            applicationName = createApplicationRequest.applicationName,
+            user = user,
+            displayName = createApplicationRequest.displayName
         )
         logger.info(
             "Creating application ${createApplicationRequest.applicationName} for user ${user.id}.",

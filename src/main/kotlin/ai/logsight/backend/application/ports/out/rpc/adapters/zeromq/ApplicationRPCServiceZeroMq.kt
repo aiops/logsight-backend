@@ -4,7 +4,6 @@ import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.ports.out.rpc.RPCService
 import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTO
-import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
 import ai.logsight.backend.common.logging.LoggerImpl
 import com.antkorwin.xsync.XSync
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -25,12 +24,10 @@ class ApplicationRPCServiceZeroMq(
     private val logger = LoggerImpl(ApplicationRPCServiceZeroMq::class.java)
 
     override fun createApplication(createApplicationDTO: ApplicationDTO): RPCResponse {
-        createApplicationDTO.action = ApplicationDTOActions.CREATE
         return sendZeroMqRPC(createApplicationDTO)
     }
 
     override fun deleteApplication(deleteApplicationDTO: ApplicationDTO): RPCResponse {
-        deleteApplicationDTO.action = ApplicationDTOActions.DELETE
         return sendZeroMqRPC(deleteApplicationDTO)
     }
 

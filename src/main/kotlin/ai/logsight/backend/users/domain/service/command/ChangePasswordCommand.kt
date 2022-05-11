@@ -12,7 +12,4 @@ data class ChangePasswordCommand(
 
     @get:Size(min = 8)
     val newPassword: String,
-
-    @get:Size(min = 8)
-    val confirmNewPassword: String
 )

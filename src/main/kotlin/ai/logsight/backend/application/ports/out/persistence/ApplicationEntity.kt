@@ -16,6 +16,12 @@ class ApplicationEntity(
     @Column(name = "application_key", nullable = false)
     var applicationKey: String = KeyGenerator.generate(),
 
+    @Column(name = "display_name", nullable = true)
+    val displayName: String? = null,
+
+    @Column(name = "index")
+    val index: String,
+
     @Column(name = "name")
     val name: String,
 

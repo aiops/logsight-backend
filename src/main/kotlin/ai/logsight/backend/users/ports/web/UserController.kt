@@ -92,7 +92,7 @@ class UserController(
      * Change the user password.
      */
     @ApiOperation("Change password to existing and logged in user")
-    @PostMapping("/change_password")
+    @PostMapping("/password/change")
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(
         @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
@@ -102,7 +102,6 @@ class UserController(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,
             newPassword = changePasswordRequest.newPassword,
-            confirmNewPassword = changePasswordRequest.repeatNewPassword
         )
         logger.info("Starting the process for changing password of a user ${user.id}.", this::changePassword.name)
         val modifiedUser = userService.changePassword(changePasswordCommand)
@@ -114,12 +113,11 @@ class UserController(
      * Receive the token from the link sent via email and display form to reset password
      */
     @ApiOperation("Reset password, when the user forgets it")
-    @PostMapping("/reset_password")
+    @PostMapping("/password/reset")
     @ResponseStatus(HttpStatus.OK)
     fun resetPassword(@Valid @RequestBody resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse {
         val resetPasswordCommand = ResetPasswordCommand(
             password = resetPasswordRequest.password,
-            repeatPassword = resetPasswordRequest.repeatPassword,
             passwordResetToken = resetPasswordRequest.passwordResetToken,
             id = resetPasswordRequest.userId
         )
@@ -136,7 +134,7 @@ class UserController(
      * Generate a password-reset token and send it by email.
      */
     @ApiOperation("Send reset password link")
-    @PostMapping("/forgot_password")
+    @PostMapping("/password/forgot")
     @ResponseStatus(HttpStatus.OK)
     fun forgotPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
         logger.info("Sending password reset link a user ${forgotPasswordRequest.email}.", this::forgotPassword.name)

@@ -4,6 +4,5 @@ import ai.logsight.backend.application.domain.Application
 
 data class CreateLogsReceiptCommand(
     val logsCount: Int,
-    val source: String,
     val application: Application
 )

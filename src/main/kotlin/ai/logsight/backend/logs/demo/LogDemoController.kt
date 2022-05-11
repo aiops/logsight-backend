@@ -25,7 +25,6 @@ class LogDemoController(
             LogsReceiptResponse(
                 logsReceipt.id,
                 logsReceipt.logsCount,
-                logsReceipt.source,
                 logsReceipt.application.id
             )
         }

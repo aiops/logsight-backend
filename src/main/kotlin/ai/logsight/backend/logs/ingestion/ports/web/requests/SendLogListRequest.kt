@@ -1,6 +1,6 @@
 package ai.logsight.backend.logs.ingestion.ports.web.requests
 
-import ai.logsight.backend.logs.domain.LogMessage
+import ai.logsight.backend.logs.domain.LogEvent
 import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -12,5 +12,5 @@ data class SendLogListRequest(
     @get:NotEmpty(message = "tag must not be empty")
     val tag: String = "default",
     @get:Valid
-    val logs: List<LogMessage> = listOf()
+    val logs: List<LogEvent> = listOf()
 )

@@ -9,8 +9,8 @@ import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.extensions.toApplicationDTO
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.out.rpc.RPCService
+import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
 import ai.logsight.backend.common.logging.LoggerImpl
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 
@@ -24,7 +24,9 @@ class ApplicationLifecycleServiceImpl(
     override fun createApplication(createApplicationCommand: CreateApplicationCommand): Application {
         // Create application
         val application = applicationStorageService.createApplication(
-            createApplicationCommand.applicationName, createApplicationCommand.user
+            createApplicationCommand.applicationName,
+            createApplicationCommand.user,
+            displayName = createApplicationCommand.displayName
         )
 
         fun handleException(message: String) {
@@ -37,7 +39,8 @@ class ApplicationLifecycleServiceImpl(
         }
         // create application in backend
         try {
-            val response = applicationRPCServiceZeroMq.createApplication(application.toApplicationDTO())
+            val response =
+                applicationRPCServiceZeroMq.createApplication(application.toApplicationDTO(action = ApplicationDTOActions.CREATE))
             if (response.status != HttpStatus.OK) {
                 // rollback changes
                 handleException(response.message)
@@ -67,7 +70,8 @@ class ApplicationLifecycleServiceImpl(
 
         try {
 
-            val response = applicationRPCServiceZeroMq.deleteApplication(application.toApplicationDTO())
+            val response =
+                applicationRPCServiceZeroMq.deleteApplication(application.toApplicationDTO(action = ApplicationDTOActions.DELETE))
             if (response.status != HttpStatus.OK) {
                 throw ApplicationRemoteException(response.message)
             }

@@ -25,7 +25,7 @@ class FlushRPCServiceZeroMQ(
                 "Sending RPC request via ZeroMQ for Flush object ${flushDTO.id} to logsight core.",
                 this::flush.name
             )
-            flushRPCSocketPub.send(serializer.serialize(topic, flushDTO))
+            flushRPCSocketPub.send(serializer.serialize(flushDTO))
         }
     }
 }

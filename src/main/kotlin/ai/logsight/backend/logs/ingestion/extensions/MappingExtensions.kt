@@ -9,7 +9,6 @@ fun LogsReceiptEntity.toLogsReceipt() = LogsReceipt(
     id = this.id,
     orderNum = this.orderNum,
     logsCount = this.logsCount,
-    source = this.source,
     application = this.application.toApplication()
 )
 
@@ -17,6 +16,5 @@ fun LogsReceipt.toLogsReceiptEntity() = LogsReceiptEntity(
     id = this.id,
     orderNum = this.orderNum,
     logsCount = this.logsCount,
-    source = this.source,
     application = this.application.toApplicationEntity()
 )
