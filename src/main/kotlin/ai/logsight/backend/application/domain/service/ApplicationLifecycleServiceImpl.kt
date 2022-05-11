@@ -7,11 +7,13 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.logging.LoggerImpl
+import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import org.springframework.stereotype.Service
 
 @Service
 class ApplicationLifecycleServiceImpl(
-    val applicationStorageService: ApplicationStorageService
+    val applicationStorageService: ApplicationStorageService,
+    val elasticsearchService: ElasticsearchService,
 ) : ApplicationLifecycleService {
     private val logger = LoggerImpl(ApplicationLifecycleServiceImpl::class.java)
 
@@ -35,6 +37,8 @@ class ApplicationLifecycleServiceImpl(
             this::deleteApplication.name
         )
         applicationStorageService.setApplicationStatus(application, ApplicationStatus.DELETING)
+        elasticsearchService.deleteKibanaIndexPatterns(application.index, application.user.key)
+        elasticsearchService.deleteESIndices(application.index)
         applicationStorageService.deleteApplication(applicationId = application.id)
     }
 }

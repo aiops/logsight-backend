@@ -28,10 +28,11 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
             )
             throw ApplicationAlreadyCreatedException("Application with name $applicationName already exists for user.")
         }
+        val esIndex = "${user.key}_${nameParser.toElasticsearchStandard(applicationName)}"
         val appEntity = ApplicationEntity(
             displayName = displayName,
             name = applicationName,
-            index = nameParser.toElasticsearchStandard(applicationName),
+            index = esIndex,
             status = ApplicationStatus.CREATING,
             user = userEntity,
         )
