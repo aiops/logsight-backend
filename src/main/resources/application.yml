@@ -1,52 +1,97 @@
 spring:
+  main:
+    banner-mode: "off"
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/logsight}
+    username: ${SPRING_DATASOURCE_USERNAME:logsight}
+    password: ${SPRING_DATASOURCE_PASSWORD:logsight}
+    driver-class-name: org.postgresql.Driver
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    # show-sql: true
-  datasource:
-    url: jdbc:postgresql://localhost:5432/logsight   # jdbc:postgresql://localhost:5432/logsight
-    username: logsight
-    password: logsight
-
   servlet:
     multipart:
       enabled: true
-      max-file-size: 500MB
-      max-request-size: 500MB
+      max-file-size: 20MB
+      max-request-size: 20MB
+  mail:
+    host: mail.privateemail.com
+    port: 587
+    username: support@logsight.ai
+    password: tel12-5DOS  # TODO: this is dangerous when we publish the containers
+  thymeleaf:
+    check-template: true
+    check-template-location: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
-email:
-  host: smtp.gmail.com
-  port: 587
-  username: logsight.ai.noreply@gmail.com
-  password: makedonija123
+springdoc:
+  swagger-ui:
+    path: '/swagger-ui.html'
 
-app:
-  baseUrl: http://localhost:4200
-  qualityUrl: http://localhost:5444/
-  baseUrlTry: http://localhost:4200/
+server:
+  error:
+    include-stacktrace: ON_PARAM
+  forward-headers-strategy: framework
 
-stripe:
-  sk: "sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t"
-  whSec: "whsec_oDJqklbPr9Dg90UBsnTbhHxvGRLbLye4"
+logsight:
+  common:
+    deployment: ${LOGSIGHT_DEPLOYMENT:stand-alone}  # "web-service"
+    base-url: ${LOGSIGHT_URL:http://localhost:4200}
+    logsight-email: ${LOGSIGHT_EMAIL:support@logsight.ai}
 
+  application-rpc:
+    zeromq:
+      protocol: "tcp"
+      host: ${APP_RPC_ZMQ_HOST:0.0.0.0}
+      port: ${APP_RPC_ZMQ_PORT:5555}
+      timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Milliseconds
 
-kafka:
-  bootstrapAddress: localhost:9093 # localhost:9093
-  groupId: 1
+  logs:
+    stream:
+      queue:
+        max-size: 1000000
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: ${LOGS_STREAM_ZMQ_PORT:5559}
+        hwm: 10000000
+    control-rpc-in:
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: ${LOGS_CTRL_RPC_IN_ZMQ_PORT:5558}
+        topic: "result_init"
+    control-rpc-out:
+      zeromq:
+        protocol: "tcp"
+        host: "*"
+        port: ${LOGS_CTRL_RPC_OUT_ZMQ_PORT:5557}
 
-elasticsearch:
-  url: localhost:9200
-  username: elastic
-  password: elasticsearchpassword
+  elasticsearch:
+    scheme: ${ELASTICSEARCH_SCHEME:http}
+    host: ${ELASTICSEARCH_HOST:localhost}
+    port: ${ELASTICSEARCH_PORT:9200}
+    credentials:
+      username: ${ELASTICSEARCH_USERNAME:elastic}
+      password: ${ELASTICSEARCH_PASSWORD:elasticsearchpassword}
 
-kibana:
-  url: localhost:5601
+  kibana:
+    scheme: ${KIBANA_SCHEME:http}
+    host: ${KIBANA_HOST:localhost}
+    port: ${KIBANA_PORT:5601}
+    header: "kbn-xsrf"
 
-resources:
-  path: src/main/resources/
+  result-api:
+    rest:
+      scheme: ${RESULT_API_SCHEME:http}
+      host: ${RESULT_API_HOST:localhost}
+      port: ${RESULT_API_PORT:5554}
+      compare-path: ${RESULT_API_COMPARE_PATH:api/v1/compare}
 
-logging.level.org.springframework.web: DEBUG
-logging:
-  level:
-    =DEBUG:
+  token:
+    minutes: 15

@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    container_name: elasticsearch7.16.2
+    environment:
+      - xpack.security.enabled=true
+      - discovery.type=single-node
+      - network.host=0.0.0.0
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - ELASTIC_PASSWORD=elasticsearchpassword
+      - ELASTICSEARCH_USERNAME=elastic
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.16.2
+    container_name: kibana7.16.2
+    environment:
+      - network.host=0.0.0.0
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=elasticsearchpassword
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  postgres:
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=logsight
+      - POSTGRES_PASSWORD=logsight
+      - POSTGRES_DB=logsight
+    ports:
+      - "5432:5432"
+
+  postgres-test:
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=logsight
+      - POSTGRES_PASSWORD=logsight
+      - POSTGRES_DB=logsight_test
+    ports:
+      - "5431:5432"
