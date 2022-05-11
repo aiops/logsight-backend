@@ -16,7 +16,6 @@ class LogsReceiptStorageServiceImpl(
     override fun saveLogsReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogsReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
             logsCount = createLogsReceiptCommand.logsCount,
-            source = createLogsReceiptCommand.source,
             application = createLogsReceiptCommand.application.toApplicationEntity()
         )
         return logsReceiptRepository.save(logsReceiptEntity)
@@ -26,6 +25,7 @@ class LogsReceiptStorageServiceImpl(
     override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {
         return findLogsReceiptByIdPrivate(logReceiptId).toLogsReceipt()
     }
+
     override fun updateLogsCount(logsReceipt: LogsReceipt, logsCount: Int): LogsReceipt {
         val logsReceiptEntity = logsReceipt.toLogsReceiptEntity()
         logsReceiptEntity.logsCount = logsCount

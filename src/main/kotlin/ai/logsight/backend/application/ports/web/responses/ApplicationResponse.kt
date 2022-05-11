@@ -4,5 +4,6 @@ import java.util.*
 
 data class ApplicationResponse(
     val applicationId: UUID,
-    val name: String
+    val name: String,
+    val displayName: String
 )

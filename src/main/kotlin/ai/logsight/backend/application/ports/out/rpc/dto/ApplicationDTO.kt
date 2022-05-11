@@ -5,15 +5,16 @@ import java.util.*
 data class ApplicationDTO(
     val id: UUID,
     val name: String,
+    val index: String,
     val userKey: String,
-    var action: ApplicationDTOActions? = null,
+    val action: ApplicationDTOActions,
 )
 
 enum class ApplicationDTOActions(val action: String) {
-    CREATE("CREATE"), DELETE("DELETE");
+    CREATE("CREATE"),
+    DELETE("DELETE");
 
     override fun toString(): String {
         return action
     }
 }
-

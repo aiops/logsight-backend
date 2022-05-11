@@ -9,13 +9,13 @@ import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartDa
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
-import ai.logsight.backend.compare.controller.request.GetIncidentResultRequest
 import ai.logsight.backend.compare.controller.response.CreateIncidentDataResponse
 import ai.logsight.backend.compare.controller.response.IncidentResponse
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import ai.logsight.backend.flush.domain.service.FlushStatus
 import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.ports.persistence.FlushStorageService
+import ai.logsight.backend.incidents.controller.request.GetIncidentResultRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue

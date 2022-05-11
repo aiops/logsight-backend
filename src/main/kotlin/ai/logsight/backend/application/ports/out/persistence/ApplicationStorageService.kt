@@ -6,11 +6,12 @@ import ai.logsight.backend.users.domain.User
 import java.util.*
 
 interface ApplicationStorageService {
-    fun createApplication(applicationName: String, user: User): Application
+    fun createApplication(applicationName: String, user: User, displayName: String? = null): Application
     fun deleteApplication(applicationId: UUID)
     fun findApplicationById(applicationId: UUID): Application
     fun findApplicationByUserAndName(user: User, applicationName: String): Application
     fun findAllApplicationsByUser(user: User): List<Application>
     fun saveApplication(application: Application): Application
     fun setApplicationStatus(application: Application, applicationStatus: ApplicationStatus): Application
+    fun autoCreateApplication(applicationName: String, user: User, displayName: String? = null): Application
 }

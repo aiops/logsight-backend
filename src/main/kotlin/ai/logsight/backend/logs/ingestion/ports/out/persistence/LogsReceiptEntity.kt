@@ -21,9 +21,6 @@ class LogsReceiptEntity(
     @Column(name = "logs_count", nullable = false)
     var logsCount: Int,
 
-    @Column(name = "source")
-    val source: String,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")
     val application: ApplicationEntity,
