@@ -64,7 +64,12 @@ class ElasticsearchService(
     }
 
     fun deleteESIndices(index: String) {
-        client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
+        try {
+            client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
+        }
+        catch(e: Exception){
+            logger.error(e.toString())
+        }
     }
 
     fun createKibanaSpace(userKey: String) {
@@ -202,6 +207,7 @@ class ElasticsearchService(
                 )
             }
         } catch (e: HttpClientErrorException) {
+
             val msgJson = JSONObject(e.responseBodyAsString)
             throw ElasticsearchException(
                 msgJson.get("message")

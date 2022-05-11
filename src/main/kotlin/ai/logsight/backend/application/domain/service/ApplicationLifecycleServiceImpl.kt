@@ -37,7 +37,6 @@ class ApplicationLifecycleServiceImpl(
             this::deleteApplication.name
         )
         applicationStorageService.setApplicationStatus(application, ApplicationStatus.DELETING)
-        elasticsearchService.deleteKibanaIndexPatterns(application.index, application.user.key)
         elasticsearchService.deleteESIndices(application.index)
         applicationStorageService.deleteApplication(applicationId = application.id)
     }
