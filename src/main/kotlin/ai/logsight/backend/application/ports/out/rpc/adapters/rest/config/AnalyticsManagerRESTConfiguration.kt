@@ -1,6 +1,0 @@
-package ai.logsight.backend.application.ports.out.rpc.adapters.rest.config
-
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-
-@EnableConfigurationProperties(AnalyticsManagerRESTConfigurationProperties::class)
-class AnalyticsManagerRESTConfiguration

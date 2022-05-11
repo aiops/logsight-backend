@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @ConfigurationProperties(prefix = "logsight.logs.stream.zeromq")
 @ConstructorBinding
 @EnableConfigurationProperties
-data class LogStreamZeroMqConfigProperties(
+data class LogSinkZeroMqConfigProperties(
     val protocol: String,
     val host: String,
     val port: Int,

@@ -4,20 +4,14 @@ import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
-import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
-import ai.logsight.backend.application.extensions.toApplicationDTO
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.application.ports.out.rpc.RPCService
-import ai.logsight.backend.application.ports.out.rpc.dto.ApplicationDTOActions
 import ai.logsight.backend.common.logging.LoggerImpl
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 
 @Service
 class ApplicationLifecycleServiceImpl(
-    val applicationStorageService: ApplicationStorageService,
-    val applicationRPCServiceZeroMq: RPCService
+    val applicationStorageService: ApplicationStorageService
 ) : ApplicationLifecycleService {
     private val logger = LoggerImpl(ApplicationLifecycleServiceImpl::class.java)
 
@@ -28,32 +22,6 @@ class ApplicationLifecycleServiceImpl(
             createApplicationCommand.user,
             displayName = createApplicationCommand.displayName
         )
-
-        fun handleException(message: String) {
-            logger.error(
-                "Creating application went wrong. Rolling back changes and deleting application. $message",
-                this::createApplication.name
-            )
-            applicationStorageService.deleteApplication(applicationId = application.id)
-            throw ApplicationRemoteException(message)
-        }
-        // create application in backend
-        try {
-            val response =
-                applicationRPCServiceZeroMq.createApplication(application.toApplicationDTO(action = ApplicationDTOActions.CREATE))
-            if (response.status != HttpStatus.OK) {
-                // rollback changes
-                handleException(response.message)
-            }
-        } catch (ex: ApplicationRemoteException) {
-            // rollback changes
-            handleException(ex.message.toString())
-        }
-        logger.info(
-            "Application ${application.name} created successfully in logsight core. Setting applicationStatus to ${ApplicationStatus.READY}",
-            this::createApplication.name
-        )
-        Thread.sleep(2000)
         return applicationStorageService.setApplicationStatus(application, ApplicationStatus.READY)
     }
 
@@ -67,20 +35,6 @@ class ApplicationLifecycleServiceImpl(
             this::deleteApplication.name
         )
         applicationStorageService.setApplicationStatus(application, ApplicationStatus.DELETING)
-
-        try {
-
-            val response =
-                applicationRPCServiceZeroMq.deleteApplication(application.toApplicationDTO(action = ApplicationDTOActions.DELETE))
-            if (response.status != HttpStatus.OK) {
-                throw ApplicationRemoteException(response.message)
-            }
-        } catch (ex: ApplicationRemoteException) {
-            logger.error(ex.message.toString())
-            // rollback changes
-            throw ApplicationRemoteException(ex.message)
-        } finally {
-            applicationStorageService.deleteApplication(applicationId = application.id)
-        }
+        applicationStorageService.deleteApplication(applicationId = application.id)
     }
 }
