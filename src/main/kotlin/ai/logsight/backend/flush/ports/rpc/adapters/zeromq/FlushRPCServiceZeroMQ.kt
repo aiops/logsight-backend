@@ -4,7 +4,7 @@ import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.flush.ports.rpc.FlushRPCService
 import ai.logsight.backend.flush.ports.rpc.dto.FlushDTO
-import ai.logsight.backend.logs.ingestion.ports.out.sink.serializers.TopicBatchSerializer
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogBatchJsonSerializer
 import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
@@ -12,7 +12,7 @@ import org.zeromq.ZMQ
 @Service
 class FlushRPCServiceZeroMQ(
     val flushRPCSocketPub: ZMQ.Socket,
-    val serializer: TopicBatchSerializer,
+    val serializer: LogBatchJsonSerializer,
     val xSync: XSync<String>
 ) : FlushRPCService {
 

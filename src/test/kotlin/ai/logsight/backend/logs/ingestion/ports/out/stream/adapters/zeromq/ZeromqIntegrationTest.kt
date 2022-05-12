@@ -1,18 +1,13 @@
 package ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq
 
 import ai.logsight.backend.TestInputConfig.logBatch
-import ai.logsight.backend.common.utils.TopicBuilder
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogBatchJsonSerializer
 import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.ZeroMqSink
 import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.config.LogSinkZeroMqConfigProperties
-import ai.logsight.backend.logs.ingestion.ports.out.sink.serializers.TopicBatchSerializer
 import com.sun.mail.iap.ConnectionException
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
@@ -35,24 +30,20 @@ class ZeromqIntegrationTest {
     lateinit var zeroMqConf: LogSinkZeroMqConfigProperties
 
     @Autowired
-    lateinit var topicBatchSerializer: TopicBatchSerializer
-
-    companion object {
-        private val topicBuilder = TopicBuilder()
-    }
+    lateinit var logBatchJsonSerializer: LogBatchJsonSerializer
 
     @Nested
     @DisplayName("Process Logs")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ProcessLogs {
 
-        private fun getZeroMqTestSocket(topic: String): ZMQ.Socket {
+        private fun getZeroMqTestSocket(): ZMQ.Socket {
             val ctx = ZContext()
             val zeroMQSocket = ctx.createSocket(SocketType.SUB)
             val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
             val status = zeroMQSocket.connect(addr)
             if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
-            zeroMQSocket.subscribe(topic)
+            zeroMQSocket.subscribe("")
             Thread.sleep(5)
             return zeroMQSocket
         }
@@ -72,7 +63,7 @@ class ZeromqIntegrationTest {
             // given
             val numLogs = 1000
             val logs = List(numLogs) { logBatch.toLogBatchDTO() }
-            val zeroMQSocket = getZeroMqTestSocket("test")
+            val zeroMQSocket = getZeroMqTestSocket()
 
             // when
             val successes = logs.map {
@@ -87,7 +78,7 @@ class ZeromqIntegrationTest {
         private fun verifyZeroMqTransmission(zeroMQSocket: ZMQ.Socket, sentLogs: List<LogBatchDTO>) {
             val serializedLogs = List(sentLogs.size) { String(zeroMQSocket.recv()) }
             val receivedLogs =
-                serializedLogs.map { topicBatchSerializer.deserialize(it, LogBatchDTO::class.java) }
+                serializedLogs.map { logBatchJsonSerializer.deserialize(it) }
 
             // num. sent logs = num. received logs
             Assertions.assertEquals(receivedLogs.size, sentLogs.size)
