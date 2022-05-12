@@ -4,13 +4,9 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationRemoteException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
-import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.application.ports.out.rpc.RPCService
-import ai.logsight.backend.application.ports.out.rpc.adapters.repsponse.RPCResponse
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
@@ -23,13 +19,10 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.Mockito
-import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
@@ -56,9 +49,6 @@ class ApplicationLifecycleControllerTest {
 
     @Autowired
     private lateinit var appRepository: ApplicationRepository
-
-    @MockBean
-    private lateinit var applicationRPCServiceZeroMq: RPCService
 
     companion object {
         const val endpoint = "/api/v1/users"
@@ -91,12 +81,7 @@ class ApplicationLifecycleControllerTest {
             // given
             val request = CreateApplicationRequest("application")
 
-            val response = RPCResponse(
-                TestInputConfig.baseAppEntity.id.toString(), "message", 200
-            )
-            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
-                .thenReturn(response)
-            // when\
+            // when
             val result = mockMvc.post(createEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
@@ -136,8 +121,6 @@ class ApplicationLifecycleControllerTest {
             return mapOf(
                 "Empty String" to "",
                 "Invalid symbol '!'" to "application!",
-                "uppercase letter" to "Application",
-                "dash in name" to "application-32"
             ).map { x -> Arguments.of(x.key, x.value) }
         }
 
@@ -204,42 +187,17 @@ class ApplicationLifecycleControllerTest {
         }
 
         @Test
-        fun `should delete application if backend fails`() {
-            // given
-            val appName = "valid_app"
-            val request = CreateApplicationRequest(appName)
-
-            // when
-            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
-                .thenThrow(ApplicationRemoteException())
-
-            val result = mockMvc.post(createEndpoint) {
-                contentType = MediaType.APPLICATION_JSON
-                content = mapper.writeValueAsString(request)
-                accept = MediaType.APPLICATION_JSON
-            }
-
-            // then
-            val exc = result.andExpect {
-                status { isInternalServerError() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-            }
-                .andReturn().resolvedException
-            assertThat(exc is ApplicationRemoteException)
-            // check if it is deleted
-            Assertions.assertNull(appRepository.findByUserAndName(TestInputConfig.baseUserEntity, appName))
-        }
-
-        @Test
-        fun `should use caching correcty on finding application by user and name`() {
+        fun `should use caching correctly on finding application by user and name`() {
             for (i in 0..9) {
-                val application = appRepository.findByUserAndName(TestInputConfig.baseUserEntity, TestInputConfig.baseAppName)
+                val application =
+                    appRepository.findByUserAndName(TestInputConfig.baseUserEntity, TestInputConfig.baseAppName)
             }
             appRepository.save(TestInputConfig.baseAppEntity)
             for (i in 0..50) {
                 val application = appRepository.findById(TestInputConfig.baseAppEntity.id)
             }
         }
+        // TODO: 11.05.22  @Sasho Please write assertions for this
     }
 
     @Nested
@@ -273,12 +231,7 @@ class ApplicationLifecycleControllerTest {
             // given
             val appId = TestInputConfig.baseApp.id
             val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
-            val response = RPCResponse(
-                TestInputConfig.baseAppEntity.id.toString(), "message", 200
-            )
-            Mockito.`when`(applicationRPCServiceZeroMq.deleteApplication(any()))
-                .thenReturn(response)
-            // when\
+            // when
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 accept = MediaType.APPLICATION_JSON
@@ -310,11 +263,7 @@ class ApplicationLifecycleControllerTest {
             val invalidId = "application"
             val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$invalidId"
             // when
-            val response = RPCResponse(
-                TestInputConfig.baseAppEntity.id.toString(), "message", 200
-            )
-            Mockito.`when`(applicationRPCServiceZeroMq.deleteApplication(any()))
-                .thenReturn(response)
+
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 accept = MediaType.APPLICATION_JSON
@@ -368,32 +317,6 @@ class ApplicationLifecycleControllerTest {
         }
 
         @Test
-        fun `should delete application and throw error if backend fails`() {
-            // given
-            val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
-
-            // when
-            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
-                .thenThrow(ApplicationRemoteException())
-
-            val result = mockMvc.delete(deleteEndpoint) {
-                contentType = MediaType.APPLICATION_JSON
-                accept = MediaType.APPLICATION_JSON
-            }
-
-            // then
-            val exc = result.andExpect {
-                status { isInternalServerError() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-            }
-                .andReturn().resolvedException
-            assertThat(exc is ApplicationRemoteException)
-            // check if it is deleted
-            Assertions.assertNull(appRepository.findByIdOrNull(appId))
-        }
-
-        @Test
         fun `should throw error if application is still CREATING`() {
             // given
             val appId = TestInputConfig.baseApp.id
@@ -401,10 +324,6 @@ class ApplicationLifecycleControllerTest {
             val appCreating = TestInputConfig.baseApp.toApplicationEntity()
             appCreating.status = ApplicationStatus.CREATING
             appRepository.save(appCreating)
-
-            // when
-            Mockito.`when`(applicationRPCServiceZeroMq.createApplication(any()))
-                .thenThrow(ApplicationRemoteException())
 
             val result = mockMvc.delete(deleteEndpoint) {
                 contentType = MediaType.APPLICATION_JSON

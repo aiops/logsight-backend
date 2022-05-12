@@ -92,12 +92,10 @@ internal class TokenServiceImplTest {
             )
             every { repository.deleteById(any()) } returns Unit
             // when
-            val checkPassword = tokenService.checkPasswordResetToken(passwordToken)
-            val checkActivation = tokenService.checkActivationToken(activationToken)
+            tokenService.checkPasswordResetToken(passwordToken)
+            tokenService.checkActivationToken(activationToken)
 
             // then
-            assert(checkPassword)
-            assert(checkActivation)
         }
 
         @Test

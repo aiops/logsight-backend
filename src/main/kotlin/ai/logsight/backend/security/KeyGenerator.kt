@@ -13,8 +13,4 @@ object KeyGenerator {
         secureRandom.nextBytes(buffer)
         return encoder.encodeToString(buffer).lowercase(Locale.getDefault()).filter { it.isLetterOrDigit() }
     }
-
-    fun generateStatic(): String {
-        return "sample_key"
-    }
 }

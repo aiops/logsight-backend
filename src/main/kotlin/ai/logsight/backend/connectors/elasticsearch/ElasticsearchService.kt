@@ -6,6 +6,7 @@ import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigPropertie
 import ai.logsight.backend.connectors.exceptions.ElasticsearchException
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
 import ai.logsight.backend.users.domain.User
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.security.DeleteUserRequest
@@ -60,6 +61,15 @@ class ElasticsearchService(
         kibanaClient.deleteRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = null, headerName = kibanaConfig.header
         )
+    }
+
+    fun deleteESIndices(index: String) {
+        try {
+            client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
+        }
+        catch(e: Exception){
+            logger.error(e.toString())
+        }
     }
 
     fun createKibanaSpace(userKey: String) {
@@ -143,30 +153,27 @@ class ElasticsearchService(
     }
 
     fun createKibanaIndexPatterns(
-        userKey: String,
-        applicationName: String,
-        indexPatterns: List<String>
+        indexPattern: String,
+        userKey: String
     ) {
-        performKibanaIndexPatternAction(userKey, applicationName, indexPatterns, delete = false)
+        performKibanaIndexPatternAction(indexPattern, userKey, delete = false)
     }
 
     fun deleteKibanaIndexPatterns(
-        userKey: String,
-        applicationName: String,
-        indexPatterns: List<String>
+        indexPattern: String,
+        userKey: String
     ) {
-        logger.info("Deleting kibana index patterns for user $userKey.")
-        performKibanaIndexPatternAction(userKey, applicationName, indexPatterns, delete = true)
+        logger.info("Deleting kibana index patterns $indexPattern.")
+        performKibanaIndexPatternAction(indexPattern, userKey, delete = true)
     }
 
     private fun performKibanaIndexPatternAction(
+        indexPattern: String,
         userKey: String,
-        applicationName: String,
-        indexPatterns: List<String>,
         delete: Boolean = false
     ) {
         val action = if (delete) "Deleting" else "Creating"
-        logger.info("$action kibana index patterns ${indexPatterns.joinToString(",")} for user $userKey.")
+        logger.info("$action kibana index patterns $indexPattern for user $userKey.")
 
         val url = UriComponentsBuilder.newInstance()
             .scheme(kibanaConfig.scheme)
@@ -181,27 +188,26 @@ class ElasticsearchService(
             .toString()
         try {
 
-            indexPatterns.forEach { pattern ->
-                val query =
-                    "{\"override\": false,\n" + "  \"refresh_fields\": true,\n" + "  \"index_pattern\": {\n" + "     \"title\": \"${userKey}_${applicationName}_${pattern}\"\n" + "  }\n" + "}"
+            val query =
+                "{\"override\": false,\n" + "  \"refresh_fields\": true,\n" + "  \"index_pattern\": {\n" + "     \"title\": \"$indexPattern*\"\n" + "  }\n" + "}"
 
-                if (delete) {
-                    val responseEntity = kibanaClient.deleteRequest(
-                        url = url,
-                        credentials = elasticsearchConfig.credentials,
-                        query = query,
-                        headerName = kibanaConfig.header
-                    )
-                } else {
-                    val responseEntity = kibanaClient.putRequest(
-                        url = url,
-                        credentials = elasticsearchConfig.credentials,
-                        query = query,
-                        headerName = kibanaConfig.header
-                    )
-                }
+            if (delete) {
+                val responseEntity = kibanaClient.deleteRequest(
+                    url = url,
+                    credentials = elasticsearchConfig.credentials,
+                    query = query,
+                    headerName = kibanaConfig.header
+                )
+            } else {
+                val responseEntity = kibanaClient.putRequest(
+                    url = url,
+                    credentials = elasticsearchConfig.credentials,
+                    query = query,
+                    headerName = kibanaConfig.header
+                )
             }
         } catch (e: HttpClientErrorException) {
+
             val msgJson = JSONObject(e.responseBodyAsString)
             throw ElasticsearchException(
                 msgJson.get("message")

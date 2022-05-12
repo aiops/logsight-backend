@@ -88,7 +88,7 @@ class UserControllerIntegrationTest {
     @DisplayName("GET /api/v1/auth/user")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class GetUser {
-        val getUserEndpoint = "/api/v1/auth/user"
+        private val getUserEndpoint = "/api/v1/auth/user"
 
         @BeforeAll
         fun setUp() {
@@ -171,7 +171,7 @@ class UserControllerIntegrationTest {
         @Test
         fun `User created successfully for valid input`() {
             // given
-            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password)
             // when
             val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -201,7 +201,7 @@ class UserControllerIntegrationTest {
             Mockito.`when`(emailService.sendActivationEmail(any()))
                 .thenThrow(MailClientException::class.java)
             // given
-            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password)
             // when
             val result = mockMvc.post(getUserEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -227,18 +227,15 @@ class UserControllerIntegrationTest {
 
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
-                "Not Matching passwords" to CreateUserRequest(
-                    TestInputConfig.baseEmail, "password", "notMatch"
-                ), // not matching passwords,
-                "Invalid email" to CreateUserRequest("invalid.com", "password", "password"),
+                "Invalid email" to CreateUserRequest("invalid.com", "password"),
                 "invalid email and not match password" to CreateUserRequest(
-                    "invalid.com", "password", "notMatch"
+                    "invalid.com", "password",
                 ), // invalid email and not matching passwords
                 "password less than 8 characters" to CreateUserRequest(
-                    TestInputConfig.baseEmail, "psd", "psd"
+                    TestInputConfig.baseEmail, "psd",
                 ), // password less than 8 characters
-                "empty email" to CreateUserRequest("", "password", "password"), // empty email
-                "empty request parameters" to CreateUserRequest("", "", ""), // empty request parameters
+                "empty email" to CreateUserRequest("", "password"), // empty email
+                "empty request parameters" to CreateUserRequest("", ""), // empty request parameters
             ).map { x -> Arguments.of(x.key, x.value) }
         }
 
@@ -271,7 +268,7 @@ class UserControllerIntegrationTest {
             val createdUser = TestInputConfig.baseUser
 
             val request = CreateUserRequest(
-                createdUser.email, createdUser.password, createdUser.password
+                createdUser.email, createdUser.password
             )
 
             // when
@@ -297,7 +294,7 @@ class UserControllerIntegrationTest {
             userRepository.save(createdUser)
 
             val request = CreateUserRequest(
-                createdUser.email, createdUser.password, createdUser.password
+                createdUser.email, createdUser.password
             )
 
             // when
@@ -332,7 +329,7 @@ class UserControllerIntegrationTest {
         @Test
         fun `User created successfully for valid input`() {
             // given
-            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password)
 //            Mockito.`when`(externalElasticsearch.initialize(anyOrNull()))
             // when
             val result = mockMvc.post(getUserEndpoint) {
@@ -359,7 +356,7 @@ class UserControllerIntegrationTest {
         @Test
         fun `Throws exception if external services do not work`() {
             // given
-            val createUserRequest = CreateUserRequest(newUser.email, newUser.password, newUser.password)
+            val createUserRequest = CreateUserRequest(newUser.email, newUser.password)
             Mockito.`when`(externalElasticsearch.initialize(anyOrNull()))
                 .thenThrow(ExternalServiceException::class.java)
             // when
@@ -381,18 +378,12 @@ class UserControllerIntegrationTest {
 
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
-                "Not Matching passwords" to CreateUserRequest(
-                    TestInputConfig.baseEmail, "password", "notMatch"
-                ), // not matching passwords,
-                "Invalid email" to CreateUserRequest("invalid.com", "password", "password"),
-                "invalid email and not match password" to CreateUserRequest(
-                    "invalid.com", "password", "notMatch"
-                ), // invalid email and not matching passwords
+                "Invalid email" to CreateUserRequest("invalid.com", "password"),
                 "password less than 8 characters" to CreateUserRequest(
-                    TestInputConfig.baseEmail, "psd", "psd"
+                    TestInputConfig.baseEmail, "psd",
                 ), // password less than 8 characters
-                "empty email" to CreateUserRequest("", "password", "password"), // empty email
-                "empty request parameters" to CreateUserRequest("", "", ""), // empty request parameters
+                "empty email" to CreateUserRequest("", "password"), // empty email
+                "empty request parameters" to CreateUserRequest("", ""), // empty request parameters
             ).map { x -> Arguments.of(x.key, x.value) }
         }
 
@@ -427,7 +418,7 @@ class UserControllerIntegrationTest {
             userRepository.save(createdUser)
 
             val request = CreateUserRequest(
-                createdUser.email, createdUser.password, createdUser.password
+                createdUser.email, createdUser.password
             )
 
             // when
@@ -578,7 +569,7 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $getUserEndpoint/change_password")
+    @DisplayName("POST $getUserEndpoint/password/change")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class ChangePassword {
@@ -589,7 +580,7 @@ class UserControllerIntegrationTest {
             userRepository.save(TestInputConfig.baseUserEntity)
         }
 
-        private val changePasswordEndpoint = "$getUserEndpoint/change_password"
+        private val changePasswordEndpoint = "$getUserEndpoint/password/change"
 
         @Test
         fun `OK when password changed successfully`() {
@@ -597,7 +588,7 @@ class UserControllerIntegrationTest {
             val user = TestInputConfig.baseUser
             val newPassword = "newPassword"
             val request =
-                ChangePasswordRequest(user.id.toString(), TestInputConfig.basePassword, newPassword, newPassword)
+                ChangePasswordRequest(user.id.toString(), TestInputConfig.basePassword, newPassword)
             val response = ChangePasswordResponse(user.id)
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -625,24 +616,17 @@ class UserControllerIntegrationTest {
         private fun getInvalidPasswords(): List<Arguments> {
             return mapOf(
                 "Invalid ID" to ChangePasswordRequest(
-                    "invalid id", TestInputConfig.basePassword, "password123", "password123"
+                    "invalid id", TestInputConfig.basePassword, "password123"
                 ),
-                "Passwords not match" to ChangePasswordRequest(
-                    TestInputConfig.baseUser.id.toString(),
-                    TestInputConfig.basePassword,
-                    "password123",
-                    "notMatchPassword"
-                ),
+
                 "Old password too short" to ChangePasswordRequest(
                     TestInputConfig.baseUser.id.toString(),
                     "short",
                     "password123",
-                    "password123"
                 ),
                 "New password too short" to ChangePasswordRequest(
                     TestInputConfig.baseUser.id.toString(),
                     TestInputConfig.basePassword,
-                    "short",
                     "short"
                 )
 
@@ -674,7 +658,6 @@ class UserControllerIntegrationTest {
                 ChangePasswordRequest(
                     TestInputConfig.baseUser.id.toString(),
                     "WrongOldPassword",
-                    "password123",
                     "password123"
                 )
             val result = mockMvc.post(changePasswordEndpoint) {
@@ -699,7 +682,7 @@ class UserControllerIntegrationTest {
             user.activated = false
             userRepository.save(user)
             val request =
-                ChangePasswordRequest(user.id.toString(), user.password, "password123", "password123")
+                ChangePasswordRequest(user.id.toString(), user.password, "password123")
             val result = mockMvc.post(changePasswordEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(request)
@@ -716,11 +699,11 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $getUserEndpoint/reset_password")
+    @DisplayName("POST $getUserEndpoint/password/reset")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class ResetPassword {
-        private val passwordResetEndpoint = "$getUserEndpoint/reset_password"
+        private val passwordResetEndpoint = "$getUserEndpoint/password/reset"
 
         @BeforeAll
         fun setUp() {
@@ -737,7 +720,7 @@ class UserControllerIntegrationTest {
             val tokenEntity = TokenEntity(user.id, TokenType.PASSWORD_RESET_TOKEN, Duration.ofMinutes(15))
             tokenRepository.save(tokenEntity)
 
-            val request = ResetPasswordRequest(user.id, newPassword, newPassword, tokenEntity.token)
+            val request = ResetPasswordRequest(user.id, newPassword, tokenEntity.token)
             val response = ResetPasswordResponse(user.id)
 
             // when
@@ -770,7 +753,7 @@ class UserControllerIntegrationTest {
             tokenRepository.save(tokenEntity)
             val newPassword = "newPassword"
 
-            val request = ResetPasswordRequest(user.id, newPassword, newPassword, tokenEntity.token)
+            val request = ResetPasswordRequest(user.id, newPassword, tokenEntity.token)
             // when
             val result = mockMvc.post(passwordResetEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -798,7 +781,7 @@ class UserControllerIntegrationTest {
             tokenRepository.save(tokenEntity)
             val newPassword = "newPassword"
 
-            val request = ResetPasswordRequest(user.id, newPassword, newPassword, tokenEntity.token)
+            val request = ResetPasswordRequest(user.id, newPassword, tokenEntity.token)
             // when
             val result = mockMvc.post(passwordResetEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -819,10 +802,10 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $getUserEndpoint/forgot_password")
+    @DisplayName("POST $getUserEndpoint/password/forgot")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ForgotPassword {
-        private val forgotPasswordEndpoint = "$getUserEndpoint/forgot_password"
+        private val forgotPasswordEndpoint = "$getUserEndpoint/password/forgot"
 
         @BeforeAll
         fun setUp() {
@@ -994,8 +977,6 @@ class UserControllerIntegrationTest {
         fun `Not found when user doesn't exist`() {
             // given
             val user = newUser
-            val request = ResendActivationEmailRequest(user.email)
-
             // when
             val result = mockMvc.delete("$getUserEndpoint/${UUID.randomUUID()}") {
                 contentType = MediaType.APPLICATION_JSON
