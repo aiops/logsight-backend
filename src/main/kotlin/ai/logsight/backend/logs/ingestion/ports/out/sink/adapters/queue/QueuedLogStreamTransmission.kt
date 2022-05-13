@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 
 @Component
 final class QueuedLogStreamTransmission(
-    private val logQueue: LogQueue,
+    private val blockingQueueSink: BlockingQueueSink,
     private val sink: ZeroMqSink
 ) : DisposableBean, Runnable {
     @Volatile
@@ -15,14 +15,13 @@ final class QueuedLogStreamTransmission(
     private val thread: Thread = Thread(this)
 
     init {
-
         thread.start()
     }
 
     override fun run() {
         while (!stopReading) {
-            val log = logQueue.take()
-            sink.sendString(log)
+            val logBatchDTO = blockingQueueSink.take()
+            sink.sendBatch(logBatchDTO)
         }
     }
 

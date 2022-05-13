@@ -2,6 +2,7 @@ package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.common.config.CommonConfigProperties
+import ai.logsight.backend.common.config.LogsightDeploymentType
 import ai.logsight.backend.email.domain.service.EmailService
 import ai.logsight.backend.security.authentication.response.GetUserResponse
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -162,7 +163,7 @@ class UserControllerIntegrationTest {
     inner class CreateOnlineUser {
         @BeforeEach
         fun setUp() {
-            commonConfigProperties.deployment = "web-service"
+            commonConfigProperties.deployment = LogsightDeploymentType.WEB_SERVICE
             userRepository.deleteAll()
             tokenRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
@@ -320,7 +321,7 @@ class UserControllerIntegrationTest {
 
         @BeforeEach
         fun setUp() {
-            commonConfigProperties.deployment = "stand-alone"
+            commonConfigProperties.deployment = LogsightDeploymentType.STAND_ALONE
             userRepository.deleteAll()
             tokenRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
