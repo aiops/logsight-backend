@@ -1,13 +1,10 @@
 package ai.logsight.backend.compare.controller
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.charts.repository.entities.elasticsearch.TagData
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.controller.request.GetCompareResultRequest
-import ai.logsight.backend.compare.controller.request.TagRequest
 import ai.logsight.backend.compare.controller.response.CompareDataResponse
 import ai.logsight.backend.compare.dto.CompareDTO
-import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.service.CompareService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
@@ -49,7 +46,7 @@ class CompareController(
             applicationName = application.name,
             flushId = getCompareResultRequest.flushId,
             baselineTags = getCompareResultRequest.baselineTags,
-            compareTags = getCompareResultRequest.candidateTags,
+            candidateTags = getCompareResultRequest.candidateTags,
             privateKey = application.user.key
         )
         val compareResponse = compareService.getCompareData(compareDTO)
@@ -82,7 +79,7 @@ class CompareController(
             applicationName = application.name,
             flushId = getCompareResultRequest.flushId,
             baselineTags = getCompareResultRequest.baselineTags,
-            compareTags = getCompareResultRequest.candidateTags,
+            candidateTags = getCompareResultRequest.candidateTags,
             privateKey = application.user.key
         )
         return compareService.getCompareDataView(compareDTO)
