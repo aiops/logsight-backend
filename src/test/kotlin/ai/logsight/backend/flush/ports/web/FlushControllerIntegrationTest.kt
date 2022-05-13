@@ -3,26 +3,27 @@ package ai.logsight.backend.flush.ports.web
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.application.ports.out.rpc.RPCService
-import ai.logsight.backend.logs.domain.enums.LogDataSources
-import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.ingestion.extensions.toLogsReceiptEntity
-import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
-import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.flush.domain.service.FlushStatus
 import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.ports.persistence.FlushEntity
 import ai.logsight.backend.flush.ports.persistence.FlushRepository
 import ai.logsight.backend.flush.ports.rpc.FlushRPCService
 import ai.logsight.backend.flush.ports.web.request.CreateFlushRequest
+import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.ingestion.extensions.toLogsReceiptEntity
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -63,10 +64,6 @@ internal class FlushControllerIntegrationTest {
     @MockBean
     private lateinit var flushRPCService: FlushRPCService
 
-    @MockBean
-    @Qualifier("ZeroMQ")
-    private lateinit var analyticsManagerAppRPC: RPCService
-
     companion object {
         const val endpoint = "/api/v1/logs/flush"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
@@ -88,11 +85,10 @@ internal class FlushControllerIntegrationTest {
         @Test
         fun `should create result init successfully`() {
             // given
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,
-                    LogDataSources.REST_BATCH.source,
                     application.toApplication()
                 )
             )
@@ -115,7 +111,7 @@ internal class FlushControllerIntegrationTest {
         @Test
         fun `should return error when result init receipt id does not exist`() {
             // given
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val request = CreateFlushRequest(receiptId = application.id) // wrong id
             // when
             val result = mockMvc.post(endpoint) {
@@ -135,11 +131,10 @@ internal class FlushControllerIntegrationTest {
         fun `should return valid if there is an already pending receipt for the same application`() {
             // given
             userRepository.save(TestInputConfig.baseUserEntity)
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,
-                    LogDataSources.REST_BATCH.source,
                     application.toApplication()
                 )
             )
@@ -170,11 +165,10 @@ internal class FlushControllerIntegrationTest {
         fun `should return exception and delete the result init entry in db if RPC service fails`() {
             // given
             userRepository.save(TestInputConfig.baseUserEntity)
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,
-                    LogDataSources.REST_BATCH.source,
                     application.toApplication()
                 )
             )

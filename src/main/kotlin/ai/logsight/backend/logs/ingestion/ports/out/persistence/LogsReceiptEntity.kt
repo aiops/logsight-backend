@@ -4,6 +4,8 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.flush.ports.persistence.FlushEntity
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.util.*
 import javax.persistence.*
 
@@ -20,9 +22,6 @@ class LogsReceiptEntity(
 
     @Column(name = "logs_count", nullable = false)
     var logsCount: Int,
-
-    @Column(name = "source")
-    val source: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")

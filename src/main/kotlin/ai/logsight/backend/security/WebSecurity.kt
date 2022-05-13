@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.cors.CorsConfiguration
@@ -24,9 +23,9 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
         http.cors().and().csrf().disable().authorizeRequests()
             .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/users/activate").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/v1/users/reset_password").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/v1/users/forgot_password").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/v1/users/resend_activation").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/password/reset").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/password/forgot").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/users/activation/resend").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
             .antMatchers("/v2/api-docs/**").permitAll()
             .antMatchers("/swagger.json").permitAll()

@@ -1,4 +1,4 @@
-package ai.logsight.backend.compare.controller.request
+package ai.logsight.backend.incidents.controller.request
 
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*

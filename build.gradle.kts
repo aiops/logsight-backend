@@ -28,7 +28,7 @@ repositories {
 dependencies {
 //    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
 
-    implementation("org.springframework.integration:spring-integration-zeromq:5.5.8")
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.11")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -43,9 +43,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
-    implementation("org.springframework.data:spring-data-elasticsearch:4.3.1")
+    implementation("org.springframework.data:spring-data-elasticsearch:4.3.4")
 //    implementation("org.liquibase:liquibase-core")
-    implementation("com.h2database:h2:2.1.210")
+    implementation("com.h2database:h2:2.1.212")
 //    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
     implementation("org.json:json:20160810")
@@ -75,13 +75,13 @@ dependencies {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
     testImplementation("org.springframework.security:spring-security-test")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.3")
-    testImplementation("io.mockk:mockk:1.12.2")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.3")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.8")
+    testImplementation("io.mockk:mockk:1.12.3")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.7")
     // testing dependencies
-    testCompileOnly("org.mockito:mockito-junit-jupiter:4.3.1")
+    testCompileOnly("org.mockito:mockito-junit-jupiter:4.5.1")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.mockito:mockito-inline:4.3.1")
+    testImplementation("org.mockito:mockito-inline:4.5.1")
     testCompileOnly("org.assertj:assertj-core:3.22.0")
     testImplementation(kotlin("test"))
 }

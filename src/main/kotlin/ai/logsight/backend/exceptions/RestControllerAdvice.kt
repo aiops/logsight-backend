@@ -29,7 +29,6 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import java.io.IOException
 import javax.naming.AuthenticationException
 import javax.servlet.http.HttpServletRequest
 
@@ -37,7 +36,6 @@ import javax.servlet.http.HttpServletRequest
 class RestControllerAdvice {
 
     private val logger: Logger = LoggerImpl(RestControllerAdvice::class.java)
-
 
     @ExceptionHandler(
         BadCredentialsException::class, AuthenticationException::class
@@ -138,6 +136,6 @@ class RestControllerAdvice {
 //            else -> stackTrace // default behavior
 //        }
 
-        return ResponseEntity(ErrorResponse(status, message, requestPath), status)
+        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTrace), status)
     }
 }

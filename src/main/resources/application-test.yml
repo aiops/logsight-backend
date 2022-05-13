@@ -24,3 +24,4 @@ spring:
     duration: 15
 
 logsight.application-rpc.zeromq.timeout: 200
+logsight.logs.stream.queue.max-size: 100

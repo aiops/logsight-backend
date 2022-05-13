@@ -2,6 +2,7 @@ package ai.logsight.backend.users.ports.web
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.common.config.CommonConfigProperties
+import ai.logsight.backend.common.config.LogsightDeploymentType
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.service.UserService
@@ -46,10 +47,8 @@ class UserController(
             "Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name
         )
         val user = when (commonConfigProperties.deployment) {
-            "web-service" -> userService.createOnlineUser(createUserCommand)
-                .toUser()
-            "stand-alone" -> userService.createUser(createUserCommand)
-            else -> throw IllegalArgumentException("deployment configuration can be on of [stand-alone,  web-service]")
+            LogsightDeploymentType.WEB_SERVICE -> userService.createOnlineUser(createUserCommand).toUser()
+            LogsightDeploymentType.STAND_ALONE -> userService.createUser(createUserCommand)
         }
         logger.info("New user ${createUserRequest.email} successfully created.", this::createUser.name)
         return CreateUserResponse(userId = user.id)
@@ -92,7 +91,7 @@ class UserController(
      * Change the user password.
      */
     @ApiOperation("Change password to existing and logged in user")
-    @PostMapping("/change_password")
+    @PostMapping("/password/change")
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(
         @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
@@ -102,7 +101,6 @@ class UserController(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,
             newPassword = changePasswordRequest.newPassword,
-            confirmNewPassword = changePasswordRequest.repeatNewPassword
         )
         logger.info("Starting the process for changing password of a user ${user.id}.", this::changePassword.name)
         val modifiedUser = userService.changePassword(changePasswordCommand)
@@ -114,12 +112,11 @@ class UserController(
      * Receive the token from the link sent via email and display form to reset password
      */
     @ApiOperation("Reset password, when the user forgets it")
-    @PostMapping("/reset_password")
+    @PostMapping("/password/reset")
     @ResponseStatus(HttpStatus.OK)
     fun resetPassword(@Valid @RequestBody resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse {
         val resetPasswordCommand = ResetPasswordCommand(
             password = resetPasswordRequest.password,
-            repeatPassword = resetPasswordRequest.repeatPassword,
             passwordResetToken = resetPasswordRequest.passwordResetToken,
             id = resetPasswordRequest.userId
         )
@@ -136,7 +133,7 @@ class UserController(
      * Generate a password-reset token and send it by email.
      */
     @ApiOperation("Send reset password link")
-    @PostMapping("/forgot_password")
+    @PostMapping("/password/forgot")
     @ResponseStatus(HttpStatus.OK)
     fun forgotPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
         logger.info("Sending password reset link a user ${forgotPasswordRequest.email}.", this::forgotPassword.name)
@@ -147,7 +144,7 @@ class UserController(
      * Resend activation email.
      */
     @ApiOperation("Send activation email")
-    @PostMapping("/resend_activation")
+    @PostMapping("/activation/resend")
     @ResponseStatus(HttpStatus.OK)
     fun resendActivationEmail(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
         logger.info("Sending activation link ${resendActivationEmailRequest.email}.", this::forgotPassword.name)
