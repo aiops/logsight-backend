@@ -7,6 +7,6 @@ data class CompareDTO(
     val applicationName: String,
     val flushId: UUID?,
     val privateKey: String,
-    val baselineTag: String,
-    val compareTag: String
+    val baselineTags: Map<String, String>,
+    val compareTags: Map<String, String>
 )
