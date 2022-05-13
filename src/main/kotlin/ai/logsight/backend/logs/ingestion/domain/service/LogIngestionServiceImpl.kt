@@ -1,5 +1,7 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
+import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
+import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
@@ -12,6 +14,7 @@ import ai.logsight.backend.logs.ingestion.ports.out.sink.Sink
 
 class LogIngestionServiceImpl(
     private val applicationStorageService: ApplicationStorageService,
+    private val applicationLifecycleService: ApplicationLifecycleService,
     private val logsReceiptStorageService: LogsReceiptStorageService,
     private val logBatchSink: Sink,
 ) : LogIngestionService {
@@ -40,7 +43,13 @@ class LogIngestionServiceImpl(
         // Create batches for unknown applicationID
         val unknownId = logEventsDTO.logs.filter { it.applicationId == null }.groupBy { it.applicationName }
             .map { grouped ->
-                val application = applicationStorageService.autoCreateApplication(grouped.key!!, logEventsDTO.user)
+                val application = applicationLifecycleService.autoCreateApplication(
+                    CreateApplicationCommand(
+                        applicationName = grouped.key!!,
+                        user = logEventsDTO.user,
+                        displayName = grouped.key!!
+                    )
+                )
                 LogBatch(
                     application = application,
                     logs = grouped.value.map { it.toLogsightLog() }

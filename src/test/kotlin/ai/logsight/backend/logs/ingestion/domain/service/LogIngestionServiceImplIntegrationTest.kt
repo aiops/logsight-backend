@@ -1,15 +1,9 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
 import ai.logsight.backend.TestInputConfig
-import ai.logsight.backend.TestInputConfig.defaultTag
-import ai.logsight.backend.TestInputConfig.logBatch
-import ai.logsight.backend.TestInputConfig.sendLogMessage
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
-import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
-import org.joda.time.DateTime
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -33,12 +27,7 @@ class LogIngestionServiceImplIntegrationTest {
     lateinit var logsReceiptRepository: LogsReceiptRepository
 
     @Autowired
-    lateinit var logIngestionServiceImpl: LogIngestionServiceImpl
-
-    companion object {
-        private const val numBatches = 10
-        val batches = List(numBatches) { logBatch }
-    }
+    lateinit var logIngestionService: LogIngestionService
 
     @Nested
     @DisplayName("Process Logs")
@@ -48,13 +37,12 @@ class LogIngestionServiceImplIntegrationTest {
         @BeforeAll
         fun setupAll() {
             userRepository.save(TestInputConfig.baseUserEntity)
-            applicationRepository.save(TestInputConfig.baseAppEntity)
+            applicationRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @BeforeEach
         fun setupEach() {
             logsReceiptRepository.deleteAll()
-//            logIngestionServiceImpl.logQueue.blockingLogQueue.clear()
         }
 
         @Test
@@ -62,7 +50,9 @@ class LogIngestionServiceImplIntegrationTest {
             // given
 
             // when
-            val logReceipt = logIngestionServiceImpl.processLogBatch(logBatch)
+            val logReceipt = logIngestionService.processLogBatch(TestInputConfig.logBatch)
+
+            logsReceiptRepository.deleteAll()
 
             // then
             Assertions.assertNotNull(logReceipt)
@@ -73,12 +63,12 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return ordered order counter`() {
             // given
+            val numBatches = 10
+            val batches = List(numBatches) { TestInputConfig.logBatch }
 
             // when
             val logReceipts = batches.map { batch ->
-                logIngestionServiceImpl.processLogBatch(
-                    batch
-                )
+                logIngestionService.processLogBatch(batch)
             }
 
             // then
@@ -107,7 +97,7 @@ class LogIngestionServiceImplIntegrationTest {
         @BeforeAll
         fun setupAll() {
             userRepository.save(TestInputConfig.baseUserEntity)
-            applicationRepository.save(TestInputConfig.baseAppEntity)
+            applicationRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @BeforeEach
@@ -115,16 +105,12 @@ class LogIngestionServiceImplIntegrationTest {
             logsReceiptRepository.deleteAll()
         }
 
-        private val logMessages = List(TestInputConfig.numMessages) { sendLogMessage }
-
         @Test
         fun `should return valid log receipt`() {
             // given
-            val logBatchSinglesDTO = LogEventsDTO(
-                user = TestInputConfig.baseUser, logs = logMessages
-            )
+
             // when
-            val logReceipts = logIngestionServiceImpl.processLogEvents(logBatchSinglesDTO)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOById)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -148,7 +134,7 @@ class LogIngestionServiceImplIntegrationTest {
         @BeforeAll
         fun setupAll() {
             userRepository.save(TestInputConfig.baseUserEntity)
-            applicationRepository.save(TestInputConfig.baseAppEntity)
+            applicationRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @BeforeEach
@@ -156,16 +142,12 @@ class LogIngestionServiceImplIntegrationTest {
             logsReceiptRepository.deleteAll()
         }
 
-        private val logMessages = List(TestInputConfig.numMessages) { sendLogMessage }
-
         @Test
         fun `should return valid log receipt`() {
             // given
-            val logBatchSinglesDTO = LogEventsDTO(
-                user = TestInputConfig.baseUser, logs = logMessages
-            )
+
             // when
-            val logReceipts = logIngestionServiceImpl.processLogEvents(logBatchSinglesDTO)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOById)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -176,60 +158,28 @@ class LogIngestionServiceImplIntegrationTest {
         @Test
         fun `should return valid log receipt when application name does not exists, it should create the app first`() {
             // given
-            val logMessage =
-                SendLogMessage(
-                    applicationName = "test_app_new_name",
-                    message = "Hello World!",
-                    timestamp = DateTime.now().toString(),
-                    tags = defaultTag
-                )
-            val logMessages = List(TestInputConfig.numMessages) { logMessage }
-            val logBatchSinglesDTO = LogEventsDTO(
-                user = TestInputConfig.baseUser, logs = logMessages
-            )
 
             // when
-            val logReceipts = logIngestionServiceImpl.processLogEvents(logBatchSinglesDTO)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOByName)
 
             // then
             Assertions.assertNotNull(logReceipts)
-            Assertions.assertEquals(TestInputConfig.numMessages, logReceipts[0].logsCount)
-            Assertions.assertEquals("test_app_new_name", logReceipts[0].application.name)
+            Assertions.assertEquals(1, logReceipts.size)
+            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOByName.logs.size, logReceipts[0].logsCount)
+            Assertions.assertEquals(TestInputConfig.nonExistentAppName, logReceipts[0].application.name)
         }
 
         @Test
         fun `should return valid receipt when applicationId or applicationName are in the request`() {
             // given
-            val logMessage1 = listOf(
-                SendLogMessage(
-                    applicationName = "test_app_new_name",
-                    message = "Hello World!",
-                    timestamp = DateTime.now()
-                        .toString(),
-                    tags = defaultTag
-                )
-            )
-
-            val logMessage2 = listOf(
-                SendLogMessage(
-                    applicationId = TestInputConfig.baseApp.id,
-                    message = "Hello World!",
-                    timestamp = DateTime.now()
-                        .toString(),
-                    tags = defaultTag
-                )
-            )
-
-            val logMessages = logMessage1 + logMessage2
-            val logBatchSinglesDTO = LogEventsDTO(
-                user = TestInputConfig.baseUser, logs = logMessages
-            )
 
             // when
-            val logReceipts = logIngestionServiceImpl.processLogEvents(logBatchSinglesDTO)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOMixed)
             // then
             Assertions.assertNotNull(logReceipts)
-            Assertions.assertEquals(logMessages.size, logReceipts.size)
+            Assertions.assertEquals(2, logReceipts.size)
+            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOById.logs.size, logReceipts[0].logsCount)
+            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOByName.logs.size, logReceipts[1].logsCount)
         }
 
         @AfterAll

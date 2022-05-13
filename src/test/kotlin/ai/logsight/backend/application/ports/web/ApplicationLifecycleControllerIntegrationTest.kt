@@ -39,8 +39,7 @@ import java.util.*
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext
-
-class ApplicationLifecycleControllerTest {
+class ApplicationLifecycleControllerIntegrationTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -67,7 +66,7 @@ class ApplicationLifecycleControllerTest {
             userRepository.deleteAll()
             appRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
-            appRepository.save(TestInputConfig.baseAppEntity)
+            appRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @AfterAll
@@ -192,9 +191,9 @@ class ApplicationLifecycleControllerTest {
                 val application =
                     appRepository.findByUserAndName(TestInputConfig.baseUserEntity, TestInputConfig.baseAppName)
             }
-            appRepository.save(TestInputConfig.baseAppEntity)
+            appRepository.save(TestInputConfig.baseAppEntityReady)
             for (i in 0..50) {
-                val application = appRepository.findById(TestInputConfig.baseAppEntity.id)
+                val application = appRepository.findById(TestInputConfig.baseAppEntityReady.id)
             }
         }
         // TODO: 11.05.22  @Sasho Please write assertions for this
@@ -211,7 +210,7 @@ class ApplicationLifecycleControllerTest {
             userRepository.deleteAll()
             appRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
-            appRepository.save(TestInputConfig.baseAppEntity)
+            appRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @AfterAll
@@ -223,7 +222,7 @@ class ApplicationLifecycleControllerTest {
         @BeforeEach
         fun initApp() {
             appRepository.deleteAll()
-            appRepository.save(TestInputConfig.baseAppEntity)
+            appRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         @Test
@@ -314,29 +313,6 @@ class ApplicationLifecycleControllerTest {
             }
                 .andReturn().resolvedException
             assertThat(exc is ApplicationNotFoundException)
-        }
-
-        @Test
-        fun `should throw error if application is still CREATING`() {
-            // given
-            val appId = TestInputConfig.baseApp.id
-            val deleteEndpoint = "$endpoint/${TestInputConfig.baseUser.id}/applications/$appId"
-            val appCreating = TestInputConfig.baseApp.toApplicationEntity()
-            appCreating.status = ApplicationStatus.CREATING
-            appRepository.save(appCreating)
-
-            val result = mockMvc.delete(deleteEndpoint) {
-                contentType = MediaType.APPLICATION_JSON
-                accept = MediaType.APPLICATION_JSON
-            }
-
-            // then
-            val exc = result.andExpect {
-                status { isConflict() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-            }
-                .andReturn().resolvedException
-            assertThat(exc is ApplicationStatusException)
         }
     }
 }

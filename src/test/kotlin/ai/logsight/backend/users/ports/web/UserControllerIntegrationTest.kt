@@ -861,10 +861,10 @@ class UserControllerIntegrationTest {
     }
 
     @Nested
-    @DisplayName("POST $getUserEndpoint/resend_activation")
+    @DisplayName("POST $getUserEndpoint/activation/resend")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     inner class ResendActivation {
-        private val resendActivationEndpoint = "$getUserEndpoint/resend_activation"
+        private val resendActivationEndpoint = "$getUserEndpoint/activation/resend"
 
         @BeforeAll
         fun setUp() {

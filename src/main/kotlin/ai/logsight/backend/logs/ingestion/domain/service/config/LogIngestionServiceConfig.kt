@@ -1,5 +1,6 @@
 package ai.logsight.backend.logs.ingestion.domain.service.config
 
+import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.common.config.LogsightDeploymentType
@@ -13,18 +14,25 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class LogIngestionServiceConfig(
-    val commonConfig: CommonConfigProperties,
-    val applicationStorageService: ApplicationStorageService,
-    val logsReceiptStorageService: LogsReceiptStorageService,
-    val blockingQueueSink: BlockingQueueSink,
-    val zeroMqSink: ZeroMqSink
+    private val commonConfig: CommonConfigProperties,
+    private val applicationStorageService: ApplicationStorageService,
+    private val applicationLifecycleService: ApplicationLifecycleService,
+    private val logsReceiptStorageService: LogsReceiptStorageService,
+    private val blockingQueueSink: BlockingQueueSink,
+    private val zeroMqSink: ZeroMqSink
 ) {
     @Bean
     fun logIngestionService(): LogIngestionService =
         when (commonConfig.deployment) {
             LogsightDeploymentType.STAND_ALONE ->
-                LogIngestionServiceImpl(applicationStorageService, logsReceiptStorageService, blockingQueueSink)
+                LogIngestionServiceImpl(
+                    applicationStorageService, applicationLifecycleService,
+                    logsReceiptStorageService, blockingQueueSink
+                )
             LogsightDeploymentType.WEB_SERVICE -> // TODO : This is to see if this works, change to kafka sink
-                LogIngestionServiceImpl(applicationStorageService, logsReceiptStorageService, zeroMqSink)
+                LogIngestionServiceImpl(
+                    applicationStorageService, applicationLifecycleService,
+                    logsReceiptStorageService, zeroMqSink
+                )
         }
 }

@@ -39,7 +39,11 @@ class LogDemoService(
         // create fresh applications
         val applications = appNames.map { name ->
             applicationLifecycleService.createApplication(
-                CreateApplicationCommand(name, user)
+                CreateApplicationCommand(
+                    applicationName = name,
+                    user = user,
+                    displayName = name
+                )
             )
         }
 

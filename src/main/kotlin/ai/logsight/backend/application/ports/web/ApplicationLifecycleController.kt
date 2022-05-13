@@ -37,7 +37,7 @@ class ApplicationLifecycleController(
     @ResponseStatus(HttpStatus.OK)
     fun getApplications(
         @PathVariable @Pattern(
-            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
             message = "userId must be UUID type."
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
     ): GetAllApplicationsResponse {
@@ -60,7 +60,7 @@ class ApplicationLifecycleController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createApplication(
         @PathVariable @Pattern(
-            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\d-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
             message = "userId must be UUID type."
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody createApplicationRequest: CreateApplicationRequest
@@ -69,7 +69,7 @@ class ApplicationLifecycleController(
         val createApplicationCommand = CreateApplicationCommand(
             applicationName = createApplicationRequest.applicationName,
             user = user,
-            displayName = createApplicationRequest.displayName
+            displayName = createApplicationRequest.displayName ?: createApplicationRequest.applicationName
         )
         logger.info(
             "Creating application ${createApplicationRequest.applicationName} for user ${user.id}.",
@@ -91,12 +91,12 @@ class ApplicationLifecycleController(
     @ResponseStatus(HttpStatus.OK)
     fun deleteApplication(
         @PathVariable @Pattern(
-            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
             message = "userId must be UUID type."
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
 
         @PathVariable @Valid @Pattern(
-            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
             message = "applicationId must be UUID type."
         ) @NotEmpty(message = "applicationId must not be empty.") applicationId: String
     ): DeleteApplicationResponse {

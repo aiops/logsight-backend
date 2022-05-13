@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.ingestion.ports.out.persistence
 
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
+import ai.logsight.backend.application.extensions.toApplicationEntity
+import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
@@ -12,17 +12,16 @@ import java.util.*
 @Service
 class LogsReceiptStorageServiceImpl(
     private val logsReceiptRepository: LogsReceiptRepository,
-    private val applicationRepository: ApplicationRepository
+    private val applicationStorageService: ApplicationStorageService
 ) : LogsReceiptStorageService {
     override fun saveLogsReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogsReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
             logsCount = createLogsReceiptCommand.logsCount,
-            application = applicationRepository.findById(createLogsReceiptCommand.application.id)
-                .orElseThrow { ApplicationNotFoundException("Application ${createLogsReceiptCommand.application.id} does not exist for user.") }
-
+            application = applicationStorageService
+                .findApplicationById(createLogsReceiptCommand.application.id)
+                .toApplicationEntity()
         )
-        return logsReceiptRepository.save(logsReceiptEntity)
-            .toLogsReceipt()
+        return logsReceiptRepository.save(logsReceiptEntity).toLogsReceipt()
     }
 
     override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {

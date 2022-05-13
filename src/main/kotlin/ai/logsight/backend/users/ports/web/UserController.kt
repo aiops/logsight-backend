@@ -144,7 +144,7 @@ class UserController(
      * Resend activation email.
      */
     @ApiOperation("Send activation email")
-    @PostMapping("/resend_activation")
+    @PostMapping("/activation/resend")
     @ResponseStatus(HttpStatus.OK)
     fun resendActivationEmail(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
         logger.info("Sending activation link ${resendActivationEmailRequest.email}.", this::forgotPassword.name)

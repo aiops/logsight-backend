@@ -1,10 +1,9 @@
-package ai.logsight.backend.logs.ingestion.ports.out.stream.adapters.zeromq
+package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq
 
 import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.ports.out.sink.LogBatchJsonSerializer
-import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.ZeroMqSink
 import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.config.LogSinkZeroMqConfigProperties
 import com.sun.mail.iap.ConnectionException
 import org.junit.jupiter.api.*
@@ -21,7 +20,7 @@ import org.zeromq.ZMQ
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-class ZeromqIntegrationTest {
+class ZeroMqSinkIntegrationTest {
 
     @Autowired
     lateinit var zeroMqSink: ZeroMqSink
@@ -44,7 +43,7 @@ class ZeromqIntegrationTest {
             val status = zeroMQSocket.connect(addr)
             if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
             zeroMQSocket.subscribe("")
-            Thread.sleep(5)
+            Thread.sleep(5000)
             return zeroMQSocket
         }
 

@@ -85,7 +85,7 @@ internal class FlushControllerIntegrationTest {
         @Test
         fun `should create result init successfully`() {
             // given
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,
@@ -111,7 +111,7 @@ internal class FlushControllerIntegrationTest {
         @Test
         fun `should return error when result init receipt id does not exist`() {
             // given
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val request = CreateFlushRequest(receiptId = application.id) // wrong id
             // when
             val result = mockMvc.post(endpoint) {
@@ -131,7 +131,7 @@ internal class FlushControllerIntegrationTest {
         fun `should return valid if there is an already pending receipt for the same application`() {
             // given
             userRepository.save(TestInputConfig.baseUserEntity)
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,
@@ -165,7 +165,7 @@ internal class FlushControllerIntegrationTest {
         fun `should return exception and delete the result init entry in db if RPC service fails`() {
             // given
             userRepository.save(TestInputConfig.baseUserEntity)
-            val application = appRepository.save(TestInputConfig.baseAppEntity)
+            val application = appRepository.save(TestInputConfig.baseAppEntityReady)
             val receipt = receiptStorageService.saveLogsReceipt(
                 CreateLogsReceiptCommand(
                     2000,

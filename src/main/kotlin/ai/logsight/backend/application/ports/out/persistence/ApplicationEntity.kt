@@ -14,7 +14,7 @@ class ApplicationEntity(
     val id: UUID = UUID.randomUUID(),
 
     @Column(name = "application_key", nullable = false)
-    var applicationKey: String = KeyGenerator.generate(),
+    val applicationKey: String = KeyGenerator.generate(),
 
     @Column(name = "display_name", nullable = true)
     val displayName: String? = null,
@@ -27,7 +27,7 @@ class ApplicationEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    var status: ApplicationStatus,
+    val status: ApplicationStatus,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

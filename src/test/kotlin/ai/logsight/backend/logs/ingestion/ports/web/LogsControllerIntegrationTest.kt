@@ -76,12 +76,12 @@ internal class LogsControllerIntegrationTest {
             applicationRepository.deleteAll()
             userRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
-            applicationRepository.save(TestInputConfig.baseAppEntity)
+            applicationRepository.save(TestInputConfig.baseAppEntityReady)
         }
 
         private val logsUriPath = "/api/v1/logs"
 
-        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+        private val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
         private val defaultBody = SendLogListRequest(applicationId = baseApp.id, logs = listOf(logEvent))
 

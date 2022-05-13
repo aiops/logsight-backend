@@ -54,12 +54,12 @@ logsight:
   logs:
     stream:
       queue:
-        max-size: 1000000
+        max-size: 100000
       zeromq:
         protocol: "tcp"
         host: "*"
         port: ${LOGS_STREAM_ZMQ_PORT:5559}
-        hwm: 10000000
+        hwm: 1000000
     control-rpc-in:
       zeromq:
         protocol: "tcp"

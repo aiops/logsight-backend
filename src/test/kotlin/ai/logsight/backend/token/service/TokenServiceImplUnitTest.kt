@@ -19,7 +19,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 
-internal class TokenServiceImplTest {
+internal class TokenServiceImplUnitTest {
     private val repository: TokenRepository = mockk(relaxed = true)
     val tokenConfig = TokenConfigurationProperties()
     val tokenService = TokenServiceImpl(repository, tokenConfig)
