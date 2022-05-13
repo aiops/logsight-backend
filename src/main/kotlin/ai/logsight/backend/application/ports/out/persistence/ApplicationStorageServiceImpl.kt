@@ -5,7 +5,6 @@ import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.extensions.toApplication
-import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.application.utils.NameParser
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
@@ -41,7 +40,6 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
 
     override fun deleteApplication(applicationId: UUID) {
         val appEntity = this.findApplicationByIdPrivate(applicationId)
-        appEntity.status = ApplicationStatus.DELETED
         appRepository.delete(appEntity)
     }
 
@@ -62,12 +60,8 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         return appRepository.findAllByUser(user.toUserEntity()).map { it.toApplication() }
     }
 
-    override fun saveApplication(application: Application): Application {
-        return appRepository.save(application.toApplicationEntity()).toApplication()
-    }
-
     override fun setApplicationStatus(application: Application, applicationStatus: ApplicationStatus): Application {
-        val appEntity = application.toApplicationEntity()
+        val appEntity = findApplicationByIdPrivate(applicationId = application.id)
         appEntity.status = applicationStatus
         appRepository.save(appEntity)
         return appEntity.toApplication()
@@ -79,13 +73,6 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
         if (app != null) {
             return app.toApplication()
         }
-        val appEntity = ApplicationEntity(
-            displayName = applicationName,
-            name = applicationName,
-            index = nameParser.toElasticsearchStandard(applicationName),
-            status = ApplicationStatus.CREATING,
-            user = userEntity,
-        )
-        return appRepository.save(appEntity).toApplication()
+        return createApplication(applicationName, user, displayName)
     }
 }

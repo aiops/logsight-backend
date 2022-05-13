@@ -19,7 +19,7 @@ class ApplicationEntity(
     @Column(name = "display_name", nullable = true)
     val displayName: String? = null,
 
-    @Column(name = "index")
+    @Column(name = "index", unique = true)
     val index: String,
 
     @Column(name = "name")

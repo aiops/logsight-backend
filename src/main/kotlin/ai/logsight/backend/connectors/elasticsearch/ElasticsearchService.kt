@@ -66,8 +66,7 @@ class ElasticsearchService(
     fun deleteESIndices(index: String) {
         try {
             client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
-        }
-        catch(e: Exception){
+        } catch (e: Exception) {
             logger.error(e.toString())
         }
     }
