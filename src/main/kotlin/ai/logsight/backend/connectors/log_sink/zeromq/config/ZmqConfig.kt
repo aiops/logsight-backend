@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.config
+package ai.logsight.backend.connectors.log_sink.zeromq.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -8,16 +8,16 @@ import org.zeromq.ZMQ
 import java.net.ConnectException
 
 @Configuration
-class LogSinkZeroMqConfig(
-    private val logSinkZeroMqConfig: LogSinkZeroMqConfigProperties
+class ZmqConfig(
+    private val zmqConfigProperties: ZmqConfigProperties
 ) {
     @Bean
-    fun logStreamZeroMqSocket(): ZMQ.Socket {
+    fun zmqSocket(): ZMQ.Socket {
         val ctx = ZContext()
         val zeroMQSocket = ctx.createSocket(SocketType.PUB)
-        zeroMQSocket.sndHWM = logSinkZeroMqConfig.hwm
+        zeroMQSocket.sndHWM = zmqConfigProperties.hwm
         zeroMQSocket.setXpubNoDrop(true)
-        val addr = "${logSinkZeroMqConfig.protocol}://${logSinkZeroMqConfig.host}:${logSinkZeroMqConfig.port}"
+        val addr = "${zmqConfigProperties.protocol}://${zmqConfigProperties.host}:${zmqConfigProperties.port}"
         val status = zeroMQSocket.bind(addr)
         if (!status) throw ConnectException("ZeroMQ log stream is not able to bind socket to $addr")
         return zeroMQSocket

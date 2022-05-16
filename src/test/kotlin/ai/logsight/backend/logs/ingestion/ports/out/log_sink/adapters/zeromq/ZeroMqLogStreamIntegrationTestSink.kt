@@ -1,10 +1,10 @@
-package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq
+package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.zeromq
 
 import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogBatchJsonSerializer
-import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.config.LogSinkZeroMqConfigProperties
+import ai.logsight.backend.logs.ingestion.ports.out.log_sink.serializer.LogBatchJsonSerializer
+import ai.logsight.backend.connectors.log_sink.zeromq.config.ZmqConfigProperties
 import com.sun.mail.iap.ConnectionException
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,13 +20,13 @@ import org.zeromq.ZMQ
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-class ZeroMqSinkIntegrationTest {
+class ZeroMqLogStreamIntegrationTestSink {
 
     @Autowired
-    lateinit var zeroMqSink: ZeroMqSink
+    lateinit var zeroMqSink: ZmqLogSinkAdapter
 
     @Autowired
-    lateinit var zeroMqConf: LogSinkZeroMqConfigProperties
+    lateinit var zeroMqConf: ZmqConfigProperties
 
     @Autowired
     lateinit var logBatchJsonSerializer: LogBatchJsonSerializer

@@ -12,6 +12,7 @@ import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
 import ai.logsight.backend.flush.exceptions.FlushNotFoundException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
+import ai.logsight.backend.logs.ingestion.ports.out.log_sink.LogSinkException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
@@ -66,7 +67,8 @@ class RestControllerAdvice {
         ApplicationRemoteException::class,
         Exception::class, // Wildcard,
         RemoteCompareException::class,
-        ExternalServiceException::class
+        ExternalServiceException::class,
+        LogSinkException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)

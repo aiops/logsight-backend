@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.queue
+package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.queued_zmq
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
@@ -8,9 +8,9 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-class BlockingQueueSinkUnitTest {
+class BlockingQueueLogStreamUnitTestSink {
 
-    val blockingQueueSink = BlockingQueueSink(LinkedBlockingQueue(100))
+    val blockingQueueSink = BlockingQueueLogSinkAdapter(LinkedBlockingQueue(100))
 
     @Nested
     @DisplayName("Logs")
