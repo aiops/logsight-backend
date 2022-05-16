@@ -2,7 +2,7 @@ package ai.logsight.backend.logs.ingestion.ports.out.log_sink.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-enum class LogSinkConnectorTypes {
+enum class LogSinkTypes {
     @JsonProperty("zmq")
     ZMQ,
 

@@ -6,8 +6,8 @@ import ai.logsight.backend.application.domain.service.ApplicationLifecycleServic
 import ai.logsight.backend.application.extensions.toApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.ingestion.ports.out.log_sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.LogSinkAdapter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -22,17 +22,18 @@ import kotlin.test.assertNotNull
 @ExtendWith(MockitoExtension::class)
 @DirtiesContext
 internal class LogIngestionServiceImplUnitTest {
-    @Mock
-    private lateinit var logsReceiptStorageService: LogsReceiptStorageService
-
-    @Mock
-    private lateinit var applicationLifecycleService: ApplicationLifecycleService
 
     @Mock
     private lateinit var applicationStorageService: ApplicationStorageService
 
     @Mock
-    private lateinit var logBatchLogSinkAdapter: LogSinkAdapter
+    private lateinit var applicationLifecycleService: ApplicationLifecycleService
+
+    @Mock
+    private lateinit var logsReceiptStorageService: LogsReceiptStorageService
+
+    @Mock
+    private lateinit var logSink: LogSink
 
     @InjectMocks
     private lateinit var logIngestionServiceImpl: LogIngestionServiceImpl

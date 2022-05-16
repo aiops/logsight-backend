@@ -7,10 +7,10 @@ import org.zeromq.ZMQ
 import org.zeromq.ZMQException
 
 @Service
-class ZeroMqConnector(
+class ZmqConnector(
     val zmqSocket: ZMQ.Socket
 ) : LogSinkConnector {
-    private val logger = LoggerImpl(ZeroMqConnector::class.java)
+    private val logger = LoggerImpl(ZmqConnector::class.java)
 
     override fun send(msg: String): Boolean {
         logger.debug("Sending message $msg to endpoint ${zmqSocket.lastEndpoint}.")

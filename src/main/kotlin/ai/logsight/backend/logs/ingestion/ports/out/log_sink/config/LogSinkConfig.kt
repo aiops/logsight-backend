@@ -17,8 +17,8 @@ class LogSinkConfig(
     @Bean
     fun logIngestionService(): LogSink =
         when (logSinkConfigProperties.type) {
-            LogSinkConnectorTypes.ZMQ -> LogSink(zmqLogSinkAdapter)
-            LogSinkConnectorTypes.QUEUED_ZMQ -> LogSink(blockingQueueLogSinkAdapter)
-            LogSinkConnectorTypes.KAFKA -> LogSink(kafkaLogSinkAdapter)
+            LogSinkTypes.ZMQ -> LogSink(zmqLogSinkAdapter)
+            LogSinkTypes.QUEUED_ZMQ -> LogSink(blockingQueueLogSinkAdapter)
+            LogSinkTypes.KAFKA -> LogSink(kafkaLogSinkAdapter)
         }
 }

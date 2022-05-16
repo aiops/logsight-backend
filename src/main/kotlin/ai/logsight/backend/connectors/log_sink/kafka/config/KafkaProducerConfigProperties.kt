@@ -4,10 +4,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
-@ConfigurationProperties(prefix = "logsight.logs.stream.kafka")
+@ConfigurationProperties(prefix = "logsight.connectors.kafka")
 @ConstructorBinding
 @EnableConfigurationProperties
 class KafkaProducerConfigProperties(
     val bootstrapServer: String,
-    val topic: String
+    val topic: String,
+    val partitions: Int,
+    val replicationFactor: Short
 )

@@ -1,10 +1,6 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.zeromq
+package ai.logsight.backend.connectors.log_sink.zeromq
 
-import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.connectors.log_sink.zeromq.config.ZmqConfigProperties
-import ai.logsight.backend.logs.extensions.toLogBatchDTO
-import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.serializer.LogBatchJsonSerializer
 import com.sun.mail.iap.ConnectionException
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,26 +16,22 @@ import org.zeromq.ZMQ
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-class ZeroMqLogStreamIntegrationTestSink {
+internal class ZmqConnectorIntegrationTest {
+    @Autowired
+    lateinit var zmqConnector: ZmqConnector
 
     @Autowired
-    lateinit var zeroMqSink: ZmqLogSinkAdapter
-
-    @Autowired
-    lateinit var zeroMqConf: ZmqConfigProperties
-
-    @Autowired
-    lateinit var logBatchJsonSerializer: LogBatchJsonSerializer
+    lateinit var zmqConfigProperties: ZmqConfigProperties
 
     @Nested
-    @DisplayName("Process Logs")
+    @DisplayName("Send Logs via zmq")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    inner class ProcessLogs {
+    inner class SendLogs {
 
         private fun getZeroMqTestSocket(): ZMQ.Socket {
             val ctx = ZContext()
             val zeroMQSocket = ctx.createSocket(SocketType.SUB)
-            val addr = "${zeroMqConf.protocol}://0.0.0.0:${zeroMqConf.port}"
+            val addr = "${zmqConfigProperties.protocol}://0.0.0.0:${zmqConfigProperties.port}"
             val status = zeroMQSocket.connect(addr)
             if (!status) throw ConnectionException("Test ZeroMQ SUB is not able to connect socket to $addr")
             zeroMQSocket.subscribe("")
@@ -50,38 +42,39 @@ class ZeroMqLogStreamIntegrationTestSink {
         @Test
         fun `should send log to zeromq success`() {
             // given
+            val msg = "Hello world"
 
             // when
-            zeroMqSink.sendBatch(logBatch.toLogBatchDTO())
+            val success = zmqConnector.send(msg)
 
             // then
+            Assertions.assertTrue(success)
         }
 
         @Test
         fun `test transmission via zeromq`() {
             // given
-            val numLogs = 1000
-            val logs = List(numLogs) { logBatch.toLogBatchDTO() }
+            val numMsg = 1000
+            val msg = "Hello world"
+            val messages = List(numMsg) { msg }
             val zeroMQSocket = getZeroMqTestSocket()
 
             // when
-            val successes = logs.map {
-                zeroMqSink.sendBatch(it)
+            val successes = messages.map {
+                zmqConnector.send(it)
             }
 
             // then
-            Assertions.assertEquals(successes.size, numLogs)
-            verifyZeroMqTransmission(zeroMQSocket, logs)
+            Assertions.assertEquals(successes.size, numMsg)
+            verifyZeroMqTransmission(zeroMQSocket, messages)
         }
 
-        private fun verifyZeroMqTransmission(zeroMQSocket: ZMQ.Socket, sentLogs: List<LogBatchDTO>) {
-            val serializedLogs = List(sentLogs.size) { String(zeroMQSocket.recv()) }
-            val receivedLogs =
-                serializedLogs.map { logBatchJsonSerializer.deserialize(it) }
+        private fun verifyZeroMqTransmission(zeroMQSocket: ZMQ.Socket, sentMessages: List<String>) {
+            val receivedMessages = List(sentMessages.size) { String(zeroMQSocket.recv()) }
 
             // num. sent logs = num. received logs
-            Assertions.assertEquals(receivedLogs.size, sentLogs.size)
-            Assertions.assertEquals(sentLogs, receivedLogs)
+            Assertions.assertEquals(receivedMessages.size, sentMessages.size)
+            Assertions.assertEquals(sentMessages, receivedMessages)
         }
     }
 }
