@@ -102,7 +102,7 @@ internal class KafkaProducerSinkConnectorIntegrationTest {
 
             // num. sent logs = num. received logs
             Assertions.assertEquals(receivedMessages.size, sentMessages.size)
-            //Assertions.assertEquals(sentMessages, receivedMessages)
+            // Assertions.assertEquals(sentMessages, receivedMessages)
         }
     }
 }
