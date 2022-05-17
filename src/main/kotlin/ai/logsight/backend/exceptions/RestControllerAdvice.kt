@@ -8,8 +8,6 @@ import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
-import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
-import ai.logsight.backend.flush.exceptions.FlushNotFoundException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSinkException
@@ -53,7 +51,6 @@ class RestControllerAdvice {
         ApplicationAlreadyCreatedException::class,
         ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
-        FlushAlreadyPendingException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -92,7 +89,6 @@ class RestControllerAdvice {
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
         LogsReceiptNotFoundException::class,
-        FlushNotFoundException::class
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)
