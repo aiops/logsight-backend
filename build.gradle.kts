@@ -74,6 +74,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google", module = "android-json")
     }
+    testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.springframework.security:spring-security-test")
     implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.8")
     testImplementation("io.mockk:mockk:1.12.3")

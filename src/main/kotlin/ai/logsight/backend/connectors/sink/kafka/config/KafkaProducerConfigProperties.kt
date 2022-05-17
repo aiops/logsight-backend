@@ -1,14 +1,15 @@
-package ai.logsight.backend.flush.ports.rpc.adapters.zeromq.config
+package ai.logsight.backend.connectors.sink.kafka.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
-@ConfigurationProperties(prefix = "logsight.logs.control-rpc-out.zeromq")
+@ConfigurationProperties(prefix = "logsight.connectors.kafka")
 @ConstructorBinding
 @EnableConfigurationProperties
-data class FlushRPCZeroMqConfigProperties(
-    val protocol: String,
-    val host: String,
-    val port: Int
+class KafkaProducerConfigProperties(
+    val bootstrapServer: String,
+    val topic: String,
+    val partitions: Int,
+    val replicationFactor: Short
 )

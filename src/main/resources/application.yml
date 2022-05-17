@@ -51,26 +51,23 @@ logsight:
       port: ${APP_RPC_ZMQ_PORT:5555}
       timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Milliseconds
 
+  connectors:
+    zeromq:
+      protocol: "tcp"
+      host: "*"
+      port: ${LOGS_STREAM_ZMQ_PORT:5559}
+      hwm: 1000000
+    kafka:
+      bootstrapServer: ${LOGSIGHT_KAFKA_SERVER:localhost:9092}
+      topic: "log-batches"
+      partitions: 5
+      replication_factor: 1
+
   logs:
-    stream:
+    sink:
+      type: "zmq" # "queued-zmq", "kafka"
       queue:
         max-size: 100000
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_STREAM_ZMQ_PORT:5559}
-        hwm: 1000000
-    control-rpc-in:
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_CTRL_RPC_IN_ZMQ_PORT:5558}
-        topic: "result_init"
-    control-rpc-out:
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_CTRL_RPC_OUT_ZMQ_PORT:5557}
 
   elasticsearch:
     scheme: ${ELASTICSEARCH_SCHEME:http}

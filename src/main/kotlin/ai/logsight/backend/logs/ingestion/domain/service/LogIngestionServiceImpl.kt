@@ -9,14 +9,16 @@ import ai.logsight.backend.logs.extensions.toLogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.logs.ingestion.ports.out.sink.Sink
+import org.springframework.stereotype.Service
 
+@Service
 class LogIngestionServiceImpl(
     private val applicationStorageService: ApplicationStorageService,
     private val applicationLifecycleService: ApplicationLifecycleService,
     private val logsReceiptStorageService: LogsReceiptStorageService,
-    private val logBatchSink: Sink,
+    private val logSink: LogSink,
 ) : LogIngestionService {
 
     override fun processLogBatch(logBatch: LogBatch): LogsReceipt {
@@ -25,7 +27,7 @@ class LogIngestionServiceImpl(
             application = logBatch.application
         )
         val receipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
-        this.logBatchSink.sendBatch(logBatch.toLogBatchDTO()) // toLogBatchDTO
+        logSink.sendLogBatch(logBatch.toLogBatchDTO()) // toLogBatchDTO
         return receipt
     }
 

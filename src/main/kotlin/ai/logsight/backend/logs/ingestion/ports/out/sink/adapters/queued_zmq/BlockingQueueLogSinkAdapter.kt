@@ -1,15 +1,15 @@
-package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.queue
+package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.queued_zmq
 
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
-import ai.logsight.backend.logs.ingestion.ports.out.sink.Sink
+import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.LogSinkAdapter
 import org.springframework.stereotype.Component
 import java.util.concurrent.LinkedBlockingQueue
 
 @Component
-class BlockingQueueSink(
+class BlockingQueueLogSinkAdapter(
     val blockingLogQueue: LinkedBlockingQueue<LogBatchDTO>,
-) : Sink {
+) : LogSinkAdapter {
     fun take(): LogBatchDTO {
         return blockingLogQueue.take()
     }

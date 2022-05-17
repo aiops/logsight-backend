@@ -4,7 +4,7 @@ import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.flush.ports.rpc.FlushRPCService
 import ai.logsight.backend.flush.ports.rpc.dto.FlushDTO
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogBatchJsonSerializer
+import ai.logsight.backend.logs.ingestion.ports.out.sink.serializer.LogBatchJsonSerializer
 import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ

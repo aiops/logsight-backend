@@ -1,15 +1,15 @@
-package ai.logsight.backend.flush.ports.channel.adapter.zeromq.config
+package ai.logsight.backend.connectors.sink.zmq.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 
-@ConfigurationProperties(prefix = "logsight.logs.control-rpc-in.zeromq")
+@ConfigurationProperties(prefix = "logsight.connectors.zeromq")
 @ConstructorBinding
 @EnableConfigurationProperties
-data class FlushMessageHandlerZeroMqConfigProperties(
+data class ZmqConfigProperties(
     val protocol: String,
     val host: String,
     val port: Int,
-    val topic: String
+    val hwm: Int
 )
