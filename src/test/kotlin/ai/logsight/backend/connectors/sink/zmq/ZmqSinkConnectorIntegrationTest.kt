@@ -1,6 +1,6 @@
-package ai.logsight.backend.connectors.log_sink.zeromq
+package ai.logsight.backend.connectors.sink.zmq
 
-import ai.logsight.backend.connectors.log_sink.zeromq.config.ZmqConfigProperties
+import ai.logsight.backend.connectors.sink.zmq.config.ZmqConfigProperties
 import com.sun.mail.iap.ConnectionException
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,9 +16,9 @@ import org.zeromq.ZMQ
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-internal class ZmqConnectorIntegrationTest {
+internal class ZmqSinkConnectorIntegrationTest {
     @Autowired
-    lateinit var zmqConnector: ZmqConnector
+    lateinit var zmqSinkConnector: ZmqSinkConnector
 
     @Autowired
     lateinit var zmqConfigProperties: ZmqConfigProperties
@@ -45,7 +45,7 @@ internal class ZmqConnectorIntegrationTest {
             val msg = "Hello world"
 
             // when
-            val success = zmqConnector.send(msg)
+            val success = zmqSinkConnector.send(msg)
 
             // then
             Assertions.assertTrue(success)
@@ -61,7 +61,7 @@ internal class ZmqConnectorIntegrationTest {
 
             // when
             val successes = messages.map {
-                zmqConnector.send(it)
+                zmqSinkConnector.send(it)
             }
 
             // then

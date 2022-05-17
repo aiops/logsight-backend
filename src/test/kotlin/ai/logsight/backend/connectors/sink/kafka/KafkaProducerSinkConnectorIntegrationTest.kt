@@ -1,6 +1,6 @@
-package ai.logsight.backend.connectors.log_sink.kafka
+package ai.logsight.backend.connectors.sink.kafka
 
-import ai.logsight.backend.connectors.log_sink.kafka.config.KafkaProducerConfigProperties
+import ai.logsight.backend.connectors.sink.kafka.config.KafkaProducerConfigProperties
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.junit.jupiter.api.*
@@ -22,10 +22,10 @@ import java.util.concurrent.LinkedBlockingQueue
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @DirtiesContext
-internal class KafkaProducerConnectorIntegrationTest {
+internal class KafkaProducerSinkConnectorIntegrationTest {
 
     @Autowired
-    lateinit var producer: KafkaProducerConnector
+    lateinit var producer: KafkaProducerSinkConnector
 
     @Autowired
     lateinit var kafkaProducerConfigProperties: KafkaProducerConfigProperties

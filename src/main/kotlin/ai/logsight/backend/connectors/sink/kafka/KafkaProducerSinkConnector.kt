@@ -1,8 +1,8 @@
-package ai.logsight.backend.connectors.log_sink.kafka
+package ai.logsight.backend.connectors.sink.kafka
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.connectors.log_sink.LogSinkConnector
-import ai.logsight.backend.connectors.log_sink.kafka.config.KafkaProducerConfigProperties
+import ai.logsight.backend.connectors.sink.SinkConnector
+import ai.logsight.backend.connectors.sink.kafka.config.KafkaProducerConfigProperties
 import org.springframework.kafka.KafkaException
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
@@ -11,11 +11,11 @@ import org.springframework.util.concurrent.ListenableFuture
 import org.springframework.util.concurrent.ListenableFutureCallback
 
 @Service
-class KafkaProducerConnector(
+class KafkaProducerSinkConnector(
     val kafkaTemplate: KafkaTemplate<String, String>,
     val kafkaProducerConfigProperties: KafkaProducerConfigProperties
-) : LogSinkConnector {
-    private val logger = LoggerImpl(KafkaProducerConnector::class.java)
+) : SinkConnector {
+    private val logger = LoggerImpl(KafkaProducerSinkConnector::class.java)
 
     override fun send(msg: String): Boolean {
         val topic = kafkaProducerConfigProperties.topic

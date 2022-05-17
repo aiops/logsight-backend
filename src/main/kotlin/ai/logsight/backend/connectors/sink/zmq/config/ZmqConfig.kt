@@ -1,4 +1,4 @@
-package ai.logsight.backend.connectors.log_sink.zeromq.config
+package ai.logsight.backend.connectors.sink.zmq.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

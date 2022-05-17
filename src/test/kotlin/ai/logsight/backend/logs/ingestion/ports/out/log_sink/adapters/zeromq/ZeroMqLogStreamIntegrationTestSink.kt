@@ -1,7 +1,7 @@
 package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.zeromq
 
 import ai.logsight.backend.TestInputConfig.logBatch
-import ai.logsight.backend.connectors.log_sink.zeromq.config.ZmqConfigProperties
+import ai.logsight.backend.connectors.sink.zmq.config.ZmqConfigProperties
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 import ai.logsight.backend.logs.ingestion.ports.out.log_sink.serializer.LogBatchJsonSerializer

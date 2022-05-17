@@ -1,4 +1,4 @@
-package ai.logsight.backend.connectors.log_sink.kafka.config
+package ai.logsight.backend.connectors.sink.kafka.config
 
 import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.admin.NewTopic

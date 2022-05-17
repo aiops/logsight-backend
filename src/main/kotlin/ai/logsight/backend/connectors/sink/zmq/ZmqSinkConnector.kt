@@ -1,16 +1,16 @@
-package ai.logsight.backend.connectors.log_sink.zeromq
+package ai.logsight.backend.connectors.sink.zmq
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.connectors.log_sink.LogSinkConnector
+import ai.logsight.backend.connectors.sink.SinkConnector
 import org.springframework.stereotype.Service
 import org.zeromq.ZMQ
 import org.zeromq.ZMQException
 
 @Service
-class ZmqConnector(
+class ZmqSinkConnector(
     val zmqSocket: ZMQ.Socket
-) : LogSinkConnector {
-    private val logger = LoggerImpl(ZmqConnector::class.java)
+) : SinkConnector {
+    private val logger = LoggerImpl(ZmqSinkConnector::class.java)
 
     override fun send(msg: String): Boolean {
         logger.debug("Sending message $msg to endpoint ${zmqSocket.lastEndpoint}.")
