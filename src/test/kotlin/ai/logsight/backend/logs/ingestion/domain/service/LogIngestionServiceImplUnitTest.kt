@@ -41,7 +41,7 @@ internal class LogIngestionServiceImplUnitTest {
     @Test
     fun `should return valid log receipt`() {
         // given
-        val appReady = TestInputConfig.baseApp.toApplicationStatus(ApplicationStatus.READY)
+        val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
         val createLogsReceiptCommand = CreateLogsReceiptCommand(TestInputConfig.logBatch.logs.size, appReady)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .doReturn(TestInputConfig.logReceipt)

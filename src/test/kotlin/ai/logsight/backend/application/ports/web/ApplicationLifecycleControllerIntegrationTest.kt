@@ -4,8 +4,6 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationStatusException
-import ai.logsight.backend.application.extensions.toApplicationEntity
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
