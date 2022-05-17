@@ -9,9 +9,8 @@ import ai.logsight.backend.logs.extensions.toLogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.LogSink
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.LogSinkAdapter
 import org.springframework.stereotype.Service
 
 @Service

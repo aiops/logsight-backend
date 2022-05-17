@@ -1,10 +1,10 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.zeromq
+package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq
 
 import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.connectors.sink.zmq.config.ZmqConfigProperties
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.serializer.LogBatchJsonSerializer
+import ai.logsight.backend.logs.ingestion.ports.out.sink.serializer.LogBatchJsonSerializer
 import com.sun.mail.iap.ConnectionException
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired

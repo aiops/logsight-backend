@@ -6,7 +6,7 @@ import ai.logsight.backend.application.domain.service.ApplicationLifecycleServic
 import ai.logsight.backend.application.extensions.toApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.LogSink
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

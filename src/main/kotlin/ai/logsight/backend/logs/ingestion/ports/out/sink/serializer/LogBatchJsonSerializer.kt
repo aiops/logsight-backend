@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.serializer
+package ai.logsight.backend.logs.ingestion.ports.out.sink.serializer
 
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO

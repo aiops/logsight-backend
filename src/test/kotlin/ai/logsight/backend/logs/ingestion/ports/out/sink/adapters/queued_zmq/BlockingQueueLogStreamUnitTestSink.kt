@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.queued_zmq
+package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.queued_zmq
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached

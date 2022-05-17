@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.config
+package ai.logsight.backend.logs.ingestion.ports.out.sink.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

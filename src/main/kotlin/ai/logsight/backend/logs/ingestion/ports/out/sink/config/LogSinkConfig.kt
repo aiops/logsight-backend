@@ -1,9 +1,9 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.config
+package ai.logsight.backend.logs.ingestion.ports.out.sink.config
 
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.LogSink
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.kafka.KafkaLogSinkAdapter
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.queued_zmq.BlockingQueueLogSinkAdapter
-import ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters.zeromq.ZmqLogSinkAdapter
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
+import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.kafka.KafkaLogSinkAdapter
+import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.queued_zmq.BlockingQueueLogSinkAdapter
+import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq.ZmqLogSinkAdapter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

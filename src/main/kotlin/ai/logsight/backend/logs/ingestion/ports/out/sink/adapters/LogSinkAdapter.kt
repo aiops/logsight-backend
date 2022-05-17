@@ -1,4 +1,4 @@
-package ai.logsight.backend.logs.ingestion.ports.out.log_sink.adapters
+package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters
 
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
 
