@@ -3,7 +3,6 @@ package ai.logsight.backend.logs.ingestion.domain.service
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
-import ai.logsight.backend.application.extensions.toApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink

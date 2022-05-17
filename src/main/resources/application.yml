@@ -44,13 +44,6 @@ logsight:
     base-url: ${LOGSIGHT_URL:http://localhost:4200}
     logsight-email: ${LOGSIGHT_EMAIL:support@logsight.ai}
 
-  application-rpc:
-    zeromq:
-      protocol: "tcp"
-      host: ${APP_RPC_ZMQ_HOST:0.0.0.0}
-      port: ${APP_RPC_ZMQ_PORT:5555}
-      timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Milliseconds
-
   connectors:
     zeromq:
       protocol: "tcp"
