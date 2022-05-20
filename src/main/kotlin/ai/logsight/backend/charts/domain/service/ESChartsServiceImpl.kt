@@ -71,7 +71,7 @@ class ESChartsServiceImpl(
                     ChartSeriesPoint(
                         name = name,
                         value = i.valueData.value,
-                        applicationId = app?.id
+                        applicationId = app.id
                     )
                 )
             }
