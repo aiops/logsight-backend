@@ -85,6 +85,7 @@ internal class KafkaProducerSinkConnectorIntegrationTest {
             val numMsg = 1000
             val msg = "Hello world"
             val messages = List(numMsg) { msg }
+            val expectedTopics = List(numMsg) { kafkaProducerConfigProperties.topic }
 
             // when
             val successes = messages.map {
@@ -94,15 +95,18 @@ internal class KafkaProducerSinkConnectorIntegrationTest {
 
             // then
             Assertions.assertEquals(successes.size, numMsg)
-            verifyZeroMqTransmission(messages)
+            verifyZeroMqTransmission(messages, expectedTopics)
         }
 
-        private fun verifyZeroMqTransmission(sentMessages: List<String>) {
-            val receivedMessages = List(sentMessages.size) { records.take() }
+        private fun verifyZeroMqTransmission(sentMessages: List<String>, expectedTopics: List<String>) {
+            val consumerRecords = List(sentMessages.size) { records.take() }
+            val receivedMessages = consumerRecords.map { it.value() }
+            val topics = consumerRecords.map { it.topic() }
 
             // num. sent logs = num. received logs
-            Assertions.assertEquals(receivedMessages.size, sentMessages.size)
-            //Assertions.assertEquals(sentMessages, receivedMessages)
+            Assertions.assertEquals(consumerRecords.size, sentMessages.size)
+            Assertions.assertEquals(sentMessages, receivedMessages)
+            Assertions.assertEquals(expectedTopics, topics)
         }
     }
 }

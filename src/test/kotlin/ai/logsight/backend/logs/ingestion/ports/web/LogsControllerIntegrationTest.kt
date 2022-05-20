@@ -6,7 +6,7 @@ import ai.logsight.backend.TestInputConfig.baseUser
 import ai.logsight.backend.TestInputConfig.defaultTag
 import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.TestInputConfig.logEvent
-import ai.logsight.backend.TestInputConfig.logReceipt
+import ai.logsight.backend.TestInputConfig.logsReceipt
 import ai.logsight.backend.TestInputConfig.sendLogMessage
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.exceptions.ApplicationStatusException
@@ -93,7 +93,7 @@ internal class LogsControllerIntegrationTest {
             Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
                 .thenReturn(baseApp)
             Mockito.`when`(logsService.processLogBatch(any()))
-                .thenReturn(logReceipt)
+                .thenReturn(logsReceipt)
 
             // when
             val result = performRequest()
@@ -188,7 +188,7 @@ internal class LogsControllerIntegrationTest {
             Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
                 .thenReturn(baseApp)
             Mockito.`when`(logsService.processLogBatch(any()))
-                .thenReturn(logReceipt)
+                .thenReturn(logsReceipt)
 
             // when
             val result = performRequest()

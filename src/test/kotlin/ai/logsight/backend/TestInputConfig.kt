@@ -2,6 +2,7 @@ package ai.logsight.backend
 
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
+import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.logs.domain.LogBatch
@@ -51,9 +52,13 @@ object TestInputConfig {
             .toString(),
         level = "INFO"
     )
-    const val nonExistentAppName = "i_am_not_created_yet"
+    val createApplicationCommand = CreateApplicationCommand(
+        applicationName = baseAppName,
+        user = baseUser,
+        displayName = baseAppName,
+    )
     val sendLogMessageByAppName = SendLogMessage(
-        applicationName = nonExistentAppName,
+        applicationName = baseAppName,
         timestamp = logEvent.timestamp,
         message = logEvent.message,
         level = logEvent.level,
@@ -83,16 +88,20 @@ object TestInputConfig {
         logs = List(numMessages) { logsightLog }
     )
     val logBatchDTO = logBatch.toLogBatchDTO()
-    val logReceipt = LogsReceipt(UUID.randomUUID(), orderNum = 1, logBatch.logs.size, baseApp)
-    val logBatchSinglesDTOById = LogEventsDTO(
+    val logsReceipt = LogsReceipt(UUID.randomUUID(), orderNum = 1, numMessages, baseApp)
+    fun getLogsReceipts(num: Int = 1): List<LogsReceipt> {
+        return (1..num).map { logsReceipt.copy(orderNum = it.toLong()) }
+    }
+
+    val logEventsDTOById = LogEventsDTO(
         user = baseUser,
         logs = List(numMessages) { sendLogMessageByAppId }
     )
-    val logBatchSinglesDTOByName = LogEventsDTO(
+    val logEventsDTOByName = LogEventsDTO(
         user = baseUser,
         logs = List(numMessages) { sendLogMessageByAppName }
     )
-    val logBatchSinglesDTOMixed = LogEventsDTO(
+    val logEventsDTOMixed = LogEventsDTO(
         user = baseUser,
         logs = List(numMessages) { sendLogMessageByAppId } + List(numMessages) { sendLogMessageByAppName }
     )

@@ -110,7 +110,7 @@ class LogIngestionServiceImplIntegrationTest {
             // given
 
             // when
-            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOById)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logEventsDTOById)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -147,7 +147,7 @@ class LogIngestionServiceImplIntegrationTest {
             // given
 
             // when
-            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOById)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logEventsDTOById)
 
             // then
             Assertions.assertNotNull(logReceipts)
@@ -160,13 +160,13 @@ class LogIngestionServiceImplIntegrationTest {
             // given
 
             // when
-            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOByName)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logEventsDTOByName)
 
             // then
             Assertions.assertNotNull(logReceipts)
             Assertions.assertEquals(1, logReceipts.size)
-            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOByName.logs.size, logReceipts[0].logsCount)
-            Assertions.assertEquals(TestInputConfig.nonExistentAppName, logReceipts[0].application.name)
+            Assertions.assertEquals(TestInputConfig.logEventsDTOByName.logs.size, logReceipts[0].logsCount)
+            Assertions.assertEquals(TestInputConfig.baseAppName, logReceipts[0].application.name)
         }
 
         @Test
@@ -174,12 +174,12 @@ class LogIngestionServiceImplIntegrationTest {
             // given
 
             // when
-            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logBatchSinglesDTOMixed)
+            val logReceipts = logIngestionService.processLogEvents(TestInputConfig.logEventsDTOMixed)
             // then
             Assertions.assertNotNull(logReceipts)
             Assertions.assertEquals(2, logReceipts.size)
-            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOById.logs.size, logReceipts[0].logsCount)
-            Assertions.assertEquals(TestInputConfig.logBatchSinglesDTOByName.logs.size, logReceipts[1].logsCount)
+            Assertions.assertEquals(TestInputConfig.logEventsDTOById.logs.size, logReceipts[0].logsCount)
+            Assertions.assertEquals(TestInputConfig.logEventsDTOByName.logs.size, logReceipts[1].logsCount)
         }
 
         @AfterAll

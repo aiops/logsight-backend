@@ -32,6 +32,11 @@ class LogIngestionServiceImpl(
     }
 
     override fun processLogEvents(logEventsDTO: LogEventsDTO): List<LogsReceipt> {
+        val logBatches = mapToLogBatches(logEventsDTO)
+        return logBatches.map { processLogBatch(it) }
+    }
+
+    private fun mapToLogBatches(logEventsDTO: LogEventsDTO): List<LogBatch> {
         // Create batches for known Application IDs
         val knownId = logEventsDTO.logs.filter { it.applicationId != null } // filter only known applicationId
             .groupBy { it.applicationId }
@@ -57,8 +62,9 @@ class LogIngestionServiceImpl(
                     logs = grouped.value.map { it.toLogsightLog() }
                 )
             }
-        // Combine batches per application ID and send them
-        // TODO: This is optional, should we combine them or ignore this?
-        return (knownId + unknownId).map { processLogBatch(it) }
+        // Combine batches per application ID and send them (the plus operator was override)
+        return knownId + unknownId
     }
 }
+
+
