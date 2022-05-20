@@ -4,7 +4,6 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
-import ai.logsight.backend.application.extensions.toApplicationStatus
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
@@ -49,7 +48,7 @@ internal class LogIngestionServiceImplUnitTest {
     @Test
     fun `should return valid log receipt for logBatch`() {
         // given
-        val appReady = TestInputConfig.baseApp.toApplicationStatus(ApplicationStatus.READY)
+        val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
         val createLogsReceiptCommand = CreateLogsReceiptCommand(TestInputConfig.logBatch.logs.size, appReady)
         Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
             .doReturn(TestInputConfig.logsReceipt)

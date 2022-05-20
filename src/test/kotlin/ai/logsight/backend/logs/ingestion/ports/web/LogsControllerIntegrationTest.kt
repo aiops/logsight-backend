@@ -9,7 +9,6 @@ import ai.logsight.backend.TestInputConfig.logEvent
 import ai.logsight.backend.TestInputConfig.logsReceipt
 import ai.logsight.backend.TestInputConfig.sendLogMessage
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
@@ -126,23 +125,6 @@ internal class LogsControllerIntegrationTest {
         }
 
         @Test
-        fun `should return conflict because application is in invalid state`() {
-            // given
-            Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
-                .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogBatch(any()))
-                .thenThrow(ApplicationStatusException::class.java)
-
-            // when
-            val result = performRequest()
-
-            // then
-            result.andExpect(status().isConflict)
-        }
-
-        @Test
         fun `should return internal server error because application logs processing failed`() {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
@@ -208,23 +190,6 @@ internal class LogsControllerIntegrationTest {
 
             // then
             result.andExpect(status().isNotFound)
-        }
-
-        @Test
-        fun `should return conflict because application is in invalid state`() {
-            // given
-            Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
-                .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogEvents(any()))
-                .thenThrow(ApplicationStatusException::class.java)
-
-            // when
-            val result = performRequest()
-
-            // then
-            result.andExpect(status().isConflict)
         }
 
         @Test

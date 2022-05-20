@@ -2,8 +2,6 @@ package ai.logsight.backend.exceptions
 
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationRemoteException
-import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -51,7 +49,6 @@ class RestControllerAdvice {
         EmailExistsException::class,
         TokenExpiredException::class,
         ApplicationAlreadyCreatedException::class,
-        ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
         FlushAlreadyPendingException::class,
     )
@@ -64,7 +61,6 @@ class RestControllerAdvice {
         ElasticsearchException::class,
         MailException::class,
         LogFileIOException::class,
-        ApplicationRemoteException::class,
         Exception::class, // Wildcard,
         RemoteCompareException::class,
         ExternalServiceException::class,
