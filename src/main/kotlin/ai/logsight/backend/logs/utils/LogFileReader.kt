@@ -1,13 +1,21 @@
 package ai.logsight.backend.logs.utils
 
-import ai.logsight.backend.logs.domain.LogMessage
+import ai.logsight.backend.logs.domain.LogEvent
+import ai.logsight.backend.logs.domain.LogsightLog
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import java.io.InputStream
 
 class LogFileReader {
 
-    fun readFile(fileName: String, inputStream: InputStream): List<LogMessage> {
+    fun readFile(fileName: String, inputStream: InputStream): List<LogEvent> {
         val fileContent = readFileContent(fileName, inputStream)
         return logLinesToList(fileContent)
+    }
+
+    fun readDemoFile(fileName: String, inputStream: InputStream): List<LogsightLog> {
+        val logs = readFile(fileName, inputStream)
+        return logs.map { LogsightLog(event = it, tags = mapOf("default" to "fileName")) }
     }
 
     private fun readFileContent(fileName: String, inputStream: InputStream): String =
@@ -18,43 +26,11 @@ class LogFileReader {
             throw LogFileIOException("Error while reading file content of file $fileName. Reason: ${e.message}")
         }
 
-    // TODO (This must be tested)
-    private fun logLinesToList(fileContent: String): List<LogMessage> {
-        val logMessages = mutableListOf<LogMessage>()
-        val stringBuilder = StringBuilder()
-        // Filters empty lines and appends multiline logs to one line based on heuristic that
-        // multiline logs start with spaces
-        fileContent.lines()
-            .filter { it.isNotEmpty() }
-            .forEach {
-                stringBuilder.append(
-                    it.trim()
-                        .plus(" ")
-                )
-                if (!it.first()
-                    .isWhitespace()
-                ) {
-                    logMessages.add(
-                        LogMessage(
-                            null,
-                            message = stringBuilder.toString()
-                                .trim(),
-                            null, null
-                        )
-
-                    )
-                    stringBuilder.clear()
-                }
-            }
-        if (stringBuilder.isNotEmpty())
-            logMessages.add(
-                LogMessage(
-                    null,
-                    message = stringBuilder.toString()
-                        .trim(),
-                    null, null
-                )
-            )
+    private fun logLinesToList(fileContent: String): List<LogEvent> {
+        val mapper = ObjectMapper().registerModule(KotlinModule())!!
+        val logMessages = fileContent.lines().filter { it.isNotEmpty() }.map {
+            mapper.readValue<LogEvent>(it, LogEvent::class.java)
+        }
         return logMessages
     }
 }

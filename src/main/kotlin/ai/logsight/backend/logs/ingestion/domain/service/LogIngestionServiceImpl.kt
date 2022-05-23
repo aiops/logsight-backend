@@ -1,141 +1,70 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
-import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.domain.service.ApplicationLifecycleServiceImpl
+import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.extensions.isReadyOrException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.common.utils.TopicBuilder
-import ai.logsight.backend.logs.domain.LogMessage
-import ai.logsight.backend.logs.domain.LogsightLog
+import ai.logsight.backend.logs.domain.LogBatch
+import ai.logsight.backend.logs.extensions.toLogBatchDTO
+import ai.logsight.backend.logs.extensions.toLogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
-import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.domain.dto.LogSinglesDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
-import ai.logsight.backend.logs.ingestion.ports.out.stream.LogQueue
-import ai.logsight.backend.users.domain.User
-import com.antkorwin.xsync.XSync
 import org.springframework.stereotype.Service
-import java.util.concurrent.BlockingQueue
 
 @Service
 class LogIngestionServiceImpl(
-    val logsReceiptStorageService: LogsReceiptStorageService,
-    val applicationStorageService: ApplicationStorageService,
-    val applicationLifeCycleServiceImpl: ApplicationLifecycleServiceImpl,
-    val logQueue: LogQueue,
-    val xSync: XSync<String>
+    private val applicationStorageService: ApplicationStorageService,
+    private val applicationLifecycleService: ApplicationLifecycleService,
+    private val logsReceiptStorageService: LogsReceiptStorageService,
+    private val logSink: LogSink,
 ) : LogIngestionService {
-    val logger: LoggerImpl = LoggerImpl(LogIngestionServiceImpl::class.java)
-    val topicBuilder = TopicBuilder()
 
-    // TODO make configurable
-    private var topicPostfix: String = "input"
-
-    // Pool for random application name
-    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-
-    private fun generateRandomApplicationName(): String {
-        return (1..10)
-            .map { _ -> kotlin.random.Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
-    }
-
-    private fun validateApplicationName(applicationName: String): String {
-        var applicationNameValidated = applicationName.lowercase().replace(("[^\\w_-]").toRegex(), "")
-        if (applicationNameValidated.isEmpty()) {
-            applicationNameValidated = generateRandomApplicationName()
-        }
-        return applicationNameValidated
-    }
-
-    private fun handleApplicationAutoCreate(user: User, applicationName: String): Application {
-        val applicationNameValidated = validateApplicationName(applicationName)
-        return try {
-            applicationStorageService.findApplicationByUserAndName(user, applicationNameValidated)
-        } catch (e: ApplicationNotFoundException) {
-            applicationLifeCycleServiceImpl.createApplication(CreateApplicationCommand(applicationNameValidated, user))
-        }
-    }
-    override fun processLogSingles(logSinglesDTO: LogSinglesDTO): List<LogsReceipt> {
-        val logReceiptsApplicationId = logSinglesDTO.logs
-            .filter { it.applicationId != null }
-            .groupBy { Pair(it.applicationId, it.tag) }
-            .map { groupedByApplicationIdAndTag ->
-                val application = applicationStorageService.findApplicationById(groupedByApplicationIdAndTag.key.first!!)
-                LogBatchDTO(
-                    user = logSinglesDTO.user,
-                    application = application,
-                    tag = groupedByApplicationIdAndTag.key.second,
-                    logs = groupedByApplicationIdAndTag.value.map { logMessageDTO ->
-                        LogMessage(
-                            timestamp = logMessageDTO.timestamp,
-                            message = logMessageDTO.message,
-                            level = logMessageDTO.level,
-                            metadata = logMessageDTO.metadata
-                        )
-                    },
-                    source = logSinglesDTO.source
-                )
-            }
-            .map { processLogBatch(logBatchDTO = it) }
-
-        val logReceiptsApplicationName = logSinglesDTO.logs
-            .filter { it.applicationName != null }
-            .groupBy { Pair(it.applicationName, it.tag) }
-            .map { groupedByApplicationNameAndTag ->
-                val application = handleApplicationAutoCreate(logSinglesDTO.user, groupedByApplicationNameAndTag.key.first!!)
-                LogBatchDTO(
-                    user = logSinglesDTO.user,
-                    application = application,
-                    tag = groupedByApplicationNameAndTag.key.second,
-                    logs = groupedByApplicationNameAndTag.value.map { logMessageDTO ->
-                        LogMessage(
-                            timestamp = logMessageDTO.timestamp,
-                            message = logMessageDTO.message,
-                            level = logMessageDTO.level,
-                            metadata = logMessageDTO.metadata
-                        )
-                    },
-                    source = logSinglesDTO.source
-                )
-            }
-            .map { processLogBatch(logBatchDTO = it) }
-
-        return logReceiptsApplicationId + logReceiptsApplicationName
-    }
-
-    override fun processLogBatch(logBatchDTO: LogBatchDTO): LogsReceipt {
-        logBatchDTO.application.isReadyOrException()
-
+    override fun processLogBatch(logBatch: LogBatch): LogsReceipt {
         val createLogsReceiptCommand = CreateLogsReceiptCommand(
-            logsCount = logBatchDTO.logs.size,
-            source = logBatchDTO.source.name,
-            application = logBatchDTO.application
+            logsCount = logBatch.logs.size,
+            application = logBatch.application
         )
-        val topic = topicBuilder.buildTopic(listOf(logBatchDTO.user.key, logBatchDTO.application.name, topicPostfix))
+        val receipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
+        logSink.sendLogBatch(logBatch.toLogBatchDTO()) // toLogBatchDTO
+        return receipt
+    }
 
-        // Order and transmission to logsight core are synchronized via mutex
-        var logsReceipt: LogsReceipt? = null
-        xSync.execute("logs-stream") { // TODO define mutex constants somewhere else
-            logsReceipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
-            val logsightLogs = logBatchDTO.logs.map { message ->
-                LogsightLog(
-                    logBatchDTO.application.name,
-                    logBatchDTO.application.id.toString(),
-                    logBatchDTO.user.key,
-                    logBatchDTO.source,
-                    logBatchDTO.tag,
-                    logsReceipt!!.orderNum,
-                    message
+    override fun processLogEvents(logEventsDTO: LogEventsDTO): List<LogsReceipt> {
+        val logBatches = mapToLogBatches(logEventsDTO)
+        return logBatches.map { processLogBatch(it) }
+    }
+
+    private fun mapToLogBatches(logEventsDTO: LogEventsDTO): List<LogBatch> {
+        // Create batches for known Application IDs
+        val knownId = logEventsDTO.logs.filter { it.applicationId != null } // filter only known applicationId
+            .groupBy { it.applicationId }
+            .map { grouped -> // create log batch DTO
+                val application = applicationStorageService.findApplicationById(grouped.key!!)
+                LogBatch(
+                    application = application,
+                    logs = grouped.value.map { it.toLogsightLog() }
                 )
             }
-            logQueue.addAll(topic, logsightLogs)
-        }
-        return logsReceipt ?: throw RuntimeException()
+        // Create batches for unknown applicationID
+        val unknownId = logEventsDTO.logs.filter { it.applicationId == null }.groupBy { it.applicationName }
+            .map { grouped ->
+                val application = applicationLifecycleService.autoCreateApplication(
+                    CreateApplicationCommand(
+                        applicationName = grouped.key!!,
+                        user = logEventsDTO.user,
+                        displayName = grouped.key!!
+                    )
+                )
+                LogBatch(
+                    application = application,
+                    logs = grouped.value.map { it.toLogsightLog() }
+                )
+            }
+        // Combine batches per application ID and send them (the plus operator was override)
+        return knownId + unknownId
     }
 }
+
+

@@ -44,33 +44,23 @@ logsight:
     base-url: ${LOGSIGHT_URL:http://localhost:4200}
     logsight-email: ${LOGSIGHT_EMAIL:support@logsight.ai}
 
-  application-rpc:
+  connectors:
     zeromq:
       protocol: "tcp"
-      host: ${APP_RPC_ZMQ_HOST:0.0.0.0}
-      port: ${APP_RPC_ZMQ_PORT:5555}
-      timeout: ${APP_RPC_ZMQ_TIMEOUT:10000}    # Milliseconds
+      host: "*"
+      port: ${LOGS_STREAM_ZMQ_PORT:5559}
+      hwm: 1000000
+    kafka:
+      bootstrapServer: ${LOGSIGHT_KAFKA_SERVER:localhost:9092}
+      topic: "log-batches"
+      partitions: 5
+      replication_factor: 1
 
   logs:
-    stream:
+    sink:
+      type: "zmq" # "queued-zmq", "kafka"
       queue:
-        max-size: 1000000
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_STREAM_ZMQ_PORT:5559}
-        hwm: 10000000
-    control-rpc-in:
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_CTRL_RPC_IN_ZMQ_PORT:5558}
-        topic: "result_init"
-    control-rpc-out:
-      zeromq:
-        protocol: "tcp"
-        host: "*"
-        port: ${LOGS_CTRL_RPC_OUT_ZMQ_PORT:5557}
+        max-size: 100000
 
   elasticsearch:
     scheme: ${ELASTICSEARCH_SCHEME:http}

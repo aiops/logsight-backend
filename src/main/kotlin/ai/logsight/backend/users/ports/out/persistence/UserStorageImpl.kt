@@ -52,19 +52,21 @@ class UserStorageImpl(
             .toUser()
     }
 
-    override fun changePassword(id: UUID, newPassword: String, confirmNewPassword: String): User {
+    override fun changePassword(id: UUID, newPassword: String): User {
         val userEntity = userRepository.findById(id)
             .orElseThrow { UserNotFoundException("User with id $id doesn't exist in database.") }
 
-// change password
+        // change password
         userEntity.password = passwordEncoder.encode(newPassword)
         // save changes
         return userRepository.save(userEntity)
             .toUser()
     }
+
     override fun findUserById(userId: UUID): User = userRepository.findById(userId)
         .orElseThrow { UserNotFoundException("User with id $userId not found.") }
         .toUser()
+
     override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
         ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
 

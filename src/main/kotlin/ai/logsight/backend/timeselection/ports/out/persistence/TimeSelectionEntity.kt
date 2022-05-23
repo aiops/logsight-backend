@@ -1,14 +1,12 @@
 package ai.logsight.backend.timeselection.ports.out.persistence
 
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
-import org.hibernate.annotations.OnDelete
-import org.hibernate.annotations.OnDeleteAction
 import java.util.*
 import javax.persistence.*
 
 @Entity
 @Table(name = "time_selection")
-data class TimeSelectionEntity(
+class TimeSelectionEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 

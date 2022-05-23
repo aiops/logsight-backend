@@ -1,7 +1,8 @@
 package ai.logsight.backend.users.ports.web.request
 
-import java.util.*
-import javax.validation.constraints.*
+import javax.validation.constraints.Email
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Size
 
 data class CreateUserRequest(
     @get:NotEmpty(message = "email must not be empty.")
@@ -12,12 +13,4 @@ data class CreateUserRequest(
     @get:Size(min = 8, message = "password must be at least 8 characters.")
     val password: String,
 
-    @get:NotEmpty(message = "repeatPassword must not be empty.")
-    @get:Size(min = 8, message = "repeatPassword must be at least 8 characters.")
-    val repeatPassword: String,
-) {
-    @AssertTrue(message = "password and repeatPassword must be equal")
-    fun isValidPass(): Boolean {
-        return Objects.equals(this.password, this.repeatPassword)
-    }
-}
+)
