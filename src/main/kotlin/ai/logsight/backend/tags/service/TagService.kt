@@ -8,26 +8,13 @@ import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.TagData
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.controller.request.TagEntry
-import ai.logsight.backend.compare.controller.response.CompareDataResponse
-import ai.logsight.backend.compare.dto.CompareDTO
 import ai.logsight.backend.compare.dto.Tag
-import ai.logsight.backend.compare.exceptions.RemoteCompareException
-import ai.logsight.backend.compare.out.rest.config.CompareRESTConfigProperties
-import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
-import ai.logsight.backend.flush.domain.service.FlushStatus
-import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
-import ai.logsight.backend.flush.ports.persistence.FlushStorageService
 import ai.logsight.backend.users.domain.User
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.json.JSONObject
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.util.UriComponentsBuilder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 @Service
 class TagService(

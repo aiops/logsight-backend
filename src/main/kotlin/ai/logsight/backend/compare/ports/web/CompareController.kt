@@ -5,12 +5,7 @@ import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
 import ai.logsight.backend.compare.domain.dto.CompareDTO
-import ai.logsight.backend.compare.domain.dto.Tag
 import ai.logsight.backend.compare.domain.service.CompareService
-import ai.logsight.backend.compare.controller.request.GetCompareResultRequest
-import ai.logsight.backend.compare.controller.response.CompareDataResponse
-import ai.logsight.backend.compare.dto.CompareDTO
-import ai.logsight.backend.compare.service.CompareService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -50,9 +45,6 @@ class CompareController(
             applicationId = application.id,
             applicationName = application.name,
             logsReceiptId = getCompareResultRequest.logsReceiptId,
-            baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.candidateTag,
-            flushId = getCompareResultRequest.flushId,
             baselineTags = getCompareResultRequest.baselineTags,
             candidateTags = getCompareResultRequest.candidateTags,
             privateKey = application.user.key
@@ -60,7 +52,6 @@ class CompareController(
         val compareResponse = compareService.getCompareData(compareDTO)
         compareResponse.applicationId = application.id
         compareResponse.logsReceiptId = getCompareResultRequest.logsReceiptId
-        compareResponse.flushId = getCompareResultRequest.flushId
         var baselineTags = ""
         for ((key, value) in getCompareResultRequest.baselineTags.entries) {
             baselineTags += "&baselineTag:$key=$value"
@@ -87,9 +78,6 @@ class CompareController(
             applicationId = application.id,
             applicationName = application.name,
             logsReceiptId = getCompareResultRequest.logsReceiptId,
-            baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.candidateTag,
-            flushId = getCompareResultRequest.flushId,
             baselineTags = getCompareResultRequest.baselineTags,
             candidateTags = getCompareResultRequest.candidateTags,
             privateKey = application.user.key

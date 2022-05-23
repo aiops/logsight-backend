@@ -3,7 +3,6 @@ package ai.logsight.backend.connectors.elasticsearch
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import ai.logsight.backend.users.domain.User
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.client.RequestOptions
@@ -13,6 +12,7 @@ import org.elasticsearch.client.indices.GetMappingsResponse
 import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
+import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -47,9 +47,10 @@ class ElasticsearchService(
         for (mapping in allMappings) {
             val indexMapping = allMappings[mapping.key]
             val mappingSource = indexMapping!!.source()
-            JSONObject(mappingSource.toString()).getJSONObject("properties").getJSONObject("tags").getJSONObject("properties").keys().forEach {
-                tags[it.toString()] = ""
-            }
+            JSONObject(mappingSource.toString()).getJSONObject("properties").getJSONObject("tags")
+                .getJSONObject("properties").keys().forEach {
+                    tags[it.toString()] = ""
+                }
         }
         return tags.keys.toList()
     }
