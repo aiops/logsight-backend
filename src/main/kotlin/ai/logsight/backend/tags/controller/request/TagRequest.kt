@@ -9,5 +9,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
 data class TagRequest(
-    val listTags: List<TagEntry> = listOf()
+    val listTags: List<TagEntry> = mutableListOf(),
+    val applicationId: UUID?
 )

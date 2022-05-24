@@ -4,5 +4,5 @@ import ai.logsight.backend.application.domain.Application
 
 data class LogBatch(
     val application: Application,
-    val logs: List<LogsightLog>,
+    var logs: List<LogsightLog>,
 )

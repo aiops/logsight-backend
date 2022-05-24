@@ -148,10 +148,8 @@ class ESChartsServiceImpl(
         )
         logger.debug("Mapping the data to an output chart.", this::createTableChart.name)
         tableChartData.hits.hits.sortedByDescending { it.source.totalScore }
-
         val numElements =
             if (getChartDataQuery.chartConfig.parameters.containsKey("numElements")) getChartDataQuery.chartConfig.parameters["numElements"] as Int else null
-
         return TableChart(
             data = tableChartData.hits.hits.take(numElements ?: tableChartData.hits.hits.size).map {
                 IncidentRow(

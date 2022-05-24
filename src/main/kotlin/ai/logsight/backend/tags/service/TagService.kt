@@ -41,20 +41,21 @@ class TagService(
                 mapOf(
                     "type" to "util",
                     "feature" to "filter_tags",
-                    "indexType" to "log_ad",
+                    "indexType" to "pipeline",
                     "field" to getFilterQuery(filterTags)
                 )
             )
         )
         val getChartDataQuery = chartsService.getChartQuery(user.id, chartRequest)
-        return mapper.readValue(chartsRepository.getData(getChartDataQuery, "*"))
+        val tagData = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, "*"))
+        return tagData
     }
 
     fun getCompareTagValues(user: User, tagName: String): List<Tag> {
         val chartRequest = ChartRequest(
             applicationId = null,
             chartConfig = ChartConfig(
-                mapOf("type" to "util", "feature" to "versions", "indexType" to "log_ad", "field" to tagName)
+                mapOf("type" to "util", "feature" to "versions", "indexType" to "pipeline", "field" to tagName)
             )
         )
         val getChartDataQuery = chartsService.getChartQuery(user.id, chartRequest)

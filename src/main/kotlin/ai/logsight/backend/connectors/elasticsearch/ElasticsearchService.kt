@@ -80,7 +80,7 @@ class ElasticsearchService(
 
     fun deleteESIndices(index: String) {
         try {
-            client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
+            client.indices().delete(DeleteIndexRequest("$index*"), RequestOptions.DEFAULT)
         } catch (e: Exception) {
             throw ElasticsearchException("Failed to delete elasticsearch index $index. Reason: $e")
         }

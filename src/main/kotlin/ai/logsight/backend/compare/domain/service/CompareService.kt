@@ -13,6 +13,7 @@ import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStora
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.json.JSONObject
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
@@ -37,16 +38,16 @@ class CompareService(
         val requestBody = mapOf(
             CompareDTO::applicationId.name to compareDTO.applicationId,
             CompareDTO::applicationName.name to compareDTO.applicationName,
-            CompareDTO::baselineTags.name to mapper.writeValueAsString(compareDTO.baselineTags),
-            CompareDTO::candidateTags.name to mapper.writeValueAsString(compareDTO.candidateTags),
+            CompareDTO::baselineTags.name to JSONObject(compareDTO.baselineTags).toString(),
+            CompareDTO::candidateTags.name to JSONObject(compareDTO.candidateTags).toString(),
             CompareDTO::privateKey.name to compareDTO.privateKey
         )
         val request =
             HttpRequest.newBuilder()
                 .uri(uri)
+                .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody)))
                 .build()
-
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() != HttpStatus.OK.value())
             throw RemoteCompareException(
