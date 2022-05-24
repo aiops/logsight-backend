@@ -58,7 +58,7 @@ class CompareController(
         }
         var candidateTags = ""
         for ((key, value) in getCompareResultRequest.baselineTags.entries) {
-            candidateTags += "&baselineTag:$key=$value"
+            candidateTags += "&candidateTag:$key=$value"
         }
         compareResponse.link =
             "${commonConfigProperties.baseURL}/pages/compare?applicationId=${application.id}${baselineTags}$candidateTags"
