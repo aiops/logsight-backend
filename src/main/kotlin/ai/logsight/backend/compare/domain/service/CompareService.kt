@@ -36,8 +36,6 @@ class CompareService(
     fun getCompareDataView(compareDTO: CompareDTO): String {
         val uri = buildCompareEndpointURI()
         val requestBody = mapOf(
-            CompareDTO::applicationId.name to compareDTO.applicationId,
-            CompareDTO::applicationName.name to compareDTO.applicationName,
             CompareDTO::baselineTags.name to JSONObject(compareDTO.baselineTags).toString(),
             CompareDTO::candidateTags.name to JSONObject(compareDTO.candidateTags).toString(),
             CompareDTO::privateKey.name to compareDTO.privateKey

@@ -40,12 +40,10 @@ class TagController(
     @ResponseStatus(HttpStatus.OK)
     fun getCompareTags(
         authentication: Authentication,
-        @RequestBody(required = false) tagRequest: TagRequest = TagRequest(applicationId = null)
+        @RequestBody(required = false) tagRequest: TagRequest = TagRequest()
     ): TagResponse {
-        val application = tagRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
-        tagRequest.listTags.plus(application?.let { TagEntry("applicationName", it.name) })
         val user = userStorageService.findUserByEmail(authentication.name)
         val tagData = tagService.getCompareTagFilter(user, tagRequest.listTags)
-        return TagResponse(tagKeys = tagData.aggregations.listAggregations.buckets.filter { !tagRequest.listTags.map { it.tagName }.contains(it.tagValue) }.filter { it.tagValue != "applicationName" }.map { TagKey(tagName = it.tagValue, it.tagCount) })
+        return TagResponse(tagKeys = tagData.aggregations.listAggregations.buckets.filter { !tagRequest.listTags.map { it.tagName }.contains(it.tagValue) }.map { TagKey(tagName = it.tagValue, it.tagCount) })
     }
 }
