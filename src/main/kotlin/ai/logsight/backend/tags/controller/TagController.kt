@@ -1,11 +1,9 @@
 package ai.logsight.backend.compare.controller
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.charts.repository.entities.elasticsearch.TagData
-import ai.logsight.backend.compare.controller.request.TagEntry
+import ai.logsight.backend.compare.controller.request.TagKeyResponse
 import ai.logsight.backend.compare.controller.request.TagRequest
-import ai.logsight.backend.compare.controller.request.TagResponse
-import ai.logsight.backend.compare.dto.Tag
+import ai.logsight.backend.compare.controller.request.TagValueResponse
 import ai.logsight.backend.compare.dto.TagKey
 import ai.logsight.backend.compare.service.TagService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
@@ -30,9 +28,9 @@ class TagController(
     fun getCompareTagValues(
         authentication: Authentication,
         @RequestBody tagName: String
-    ): List<Tag> {
+    ): TagValueResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return tagService.getCompareTagValues(user, tagName) // use response here
+        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagName))
     }
 
     @ApiOperation("Get all available tags for specific application, given selected tags.")
@@ -41,9 +39,13 @@ class TagController(
     fun getCompareTags(
         authentication: Authentication,
         @RequestBody(required = false) tagRequest: TagRequest = TagRequest()
-    ): TagResponse {
+    ): TagKeyResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         val tagData = tagService.getCompareTagFilter(user, tagRequest.listTags)
-        return TagResponse(tagKeys = tagData.aggregations.listAggregations.buckets.filter { !tagRequest.listTags.map { it.tagName }.contains(it.tagValue) }.map { TagKey(tagName = it.tagValue, it.tagCount) })
+        return TagKeyResponse(
+            tagKeys = tagData.aggregations.listAggregations.buckets.filter {itFilter ->
+                !tagRequest.listTags.map { itMap1 -> itMap1.tagName }.contains(itFilter.tagValue)
+            }.map { itMap2 -> TagKey(tagName = itMap2.tagValue, itMap2.tagCount) }
+        )
     }
 }
