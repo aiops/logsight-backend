@@ -3,16 +3,17 @@ package ai.logsight.backend.connectors.elasticsearch
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.users.domain.User
+import org.elasticsearch.action.DocWriteResponse
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
+import org.elasticsearch.action.delete.DeleteRequest
+import org.elasticsearch.action.delete.DeleteResponse
+import org.elasticsearch.action.update.UpdateRequest
+import org.elasticsearch.action.update.UpdateResponse
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
-import org.elasticsearch.client.indices.GetMappingsRequest
-import org.elasticsearch.client.indices.GetMappingsResponse
 import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
-import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -38,21 +39,40 @@ class ElasticsearchService(
             .putUser(request, RequestOptions.DEFAULT)
     }
 
-    fun getTags(userKey: String): List<String> {
-        val request = GetMappingsRequest()
-        request.indices("$userKey*")
-        val getMappingResponse: GetMappingsResponse = client.indices().getMapping(request, RequestOptions.DEFAULT)
-        val allMappings = getMappingResponse.mappings()
-        val tags = mutableMapOf<String, String>()
-        for (mapping in allMappings) {
-            val indexMapping = allMappings[mapping.key]
-            val mappingSource = indexMapping!!.source()
-            JSONObject(mappingSource.toString()).getJSONObject("properties").getJSONObject("tags")
-                .getJSONObject("properties").keys().forEach {
-                    tags[it.toString()] = ""
-                }
+    fun deleteByIndexAndDocID(index: String, id: String): String {
+        val request = DeleteRequest(
+            index,
+            id
+        )
+        val deleteResponse: DeleteResponse = client.delete(
+            request, RequestOptions.DEFAULT
+        )
+        val deletedId = deleteResponse.id
+        if (deleteResponse.result == DocWriteResponse.Result.NOT_FOUND) {
+            throw ElasticsearchException("The document does not exists in elasticsearch. Please check your index and document ID and try again")
         }
-        return tags.keys.toList()
+        return deletedId
+    }
+
+    fun updateStatusByIndexAndDocID(status: Long, index: String, id: String): String {
+        val jsonMap: MutableMap<String, Any> = HashMap()
+        jsonMap["status"] = status
+        val request = UpdateRequest(
+            index,
+            id
+        ).doc(jsonMap)
+
+        val updateResponse: UpdateResponse = client.update(
+            request, RequestOptions.DEFAULT
+        )
+        val index: String = updateResponse.index
+        val id: String = updateResponse.id
+        val version: Long = updateResponse.version
+        if (updateResponse.result === DocWriteResponse.Result.UPDATED) {
+            return id
+        } else {
+            throw ElasticsearchException("Update was not successful. Please try again.")
+        }
     }
 
     fun deleteESUser(username: String) {

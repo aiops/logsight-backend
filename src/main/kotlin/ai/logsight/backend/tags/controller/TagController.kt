@@ -30,7 +30,7 @@ class TagController(
         @RequestBody tagName: String
     ): TagValueResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagName))
+        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagName, "*"))
     }
 
     @ApiOperation("Get all available tags for specific application, given selected tags.")
@@ -41,9 +41,9 @@ class TagController(
         @RequestBody(required = false) tagRequest: TagRequest = TagRequest()
     ): TagKeyResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        val tagData = tagService.getCompareTagFilter(user, tagRequest.listTags)
+        val tagData = tagService.getCompareTagFilter(user, tagRequest.listTags, "*")
         return TagKeyResponse(
-            tagKeys = tagData.aggregations.listAggregations.buckets.filter {itFilter ->
+            tagKeys = tagData.aggregations.listAggregations.buckets.filter { itFilter ->
                 !tagRequest.listTags.map { itMap1 -> itMap1.tagName }.contains(itFilter.tagValue)
             }.map { itMap2 -> TagKey(tagName = itMap2.tagValue, itMap2.tagCount) }
         )

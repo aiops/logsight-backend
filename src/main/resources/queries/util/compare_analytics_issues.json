@@ -1,0 +1,34 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "terms": {
+        "field": "status.keyword",
+        "order": {
+          "_count": "desc"
+        },
+        "size": 5
+      }
+    }
+  },
+  "size": 0,
+  "fields": [
+    {
+      "field": "timestamp",
+      "format": "date_time"
+    }
+  ],
+  "script_fields": {},
+  "stored_fields": [
+    "*"
+  ],
+  "runtime_mappings": {},
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [baselineTags_value]
+    }
+  }
+}

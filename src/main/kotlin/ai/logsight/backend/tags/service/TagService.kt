@@ -25,16 +25,24 @@ class TagService(
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
-    fun getFilterQuery(filterTags: List<TagEntry>): String {
+    fun getFilterQuery(filterTags: List<TagEntry>, applicationIndices: String): String {
         val filterQuery = mutableListOf<JSONObject>()
-        filterTags.forEach {
-            filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tag_keys.keyword" to it.tagName)))))
-            filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tags.${it.tagName}.keyword" to it.tagValue)))))
+        if (applicationIndices.isNotEmpty()) {
+            filterTags.forEach {
+                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tag_keys.keyword" to it.tagName)))))
+                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tags.${it.tagName}.keyword" to it.tagValue)))))
+            }
+        } else {
+            filterTags.forEach {
+                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("baseline_tag_keys.keyword" to it.tagName)))))
+                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("baseline_tags.${it.tagName}.keyword" to it.tagValue)))))
+            }
         }
+
         return filterQuery.toString().drop(1).dropLast(1)
     }
 
-    fun getCompareTagFilter(user: User, filterTags: List<TagEntry>): TagData {
+    fun getCompareTagFilter(user: User, filterTags: List<TagEntry>, applicationIndices: String): TagData {
         val chartRequest = ChartRequest(
             applicationId = null,
             chartConfig = ChartConfig(
@@ -42,16 +50,16 @@ class TagService(
                     "type" to "util",
                     "feature" to "filter_tags",
                     "indexType" to "pipeline",
-                    "field" to getFilterQuery(filterTags)
+                    "field" to getFilterQuery(filterTags, applicationIndices)
                 )
             )
         )
         val getChartDataQuery = chartsService.getChartQuery(user.id, chartRequest)
-        val tagData = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, "*"))
+        val tagData = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
         return tagData
     }
 
-    fun getCompareTagValues(user: User, tagName: String): List<Tag> {
+    fun getCompareTagValues(user: User, tagName: String, applicationIndices: String): List<Tag> {
         val chartRequest = ChartRequest(
             applicationId = null,
             chartConfig = ChartConfig(
@@ -59,7 +67,7 @@ class TagService(
             )
         )
         val getChartDataQuery = chartsService.getChartQuery(user.id, chartRequest)
-        val tagValues = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, "*"))
+        val tagValues = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
         return tagValues.aggregations.listAggregations.buckets.map {
             Tag(tagName = tagName, tagValue = it.tagValue, tagCount = it.tagCount)
         }

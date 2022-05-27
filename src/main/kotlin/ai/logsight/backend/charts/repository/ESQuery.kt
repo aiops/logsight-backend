@@ -13,5 +13,18 @@ class ESQuery(
         return this
     }
 
+    fun modifyBaselineTags(baselineTags: String): ESQuery {
+        this.query = this.query.replace("baselineTags_value", baselineTags)
+        return this
+    }
+    fun modifyCompareId(compareId: String): ESQuery {
+        if(compareId.isNotEmpty()){
+            this.query = this.query.replace("compare_id", "{\"match_phrase\": {\"_id\": \"$compareId\"}}")
+        }else{
+            this.query = this.query.replace("compare_id", "")
+        }
+        return this
+    }
+
 
 }

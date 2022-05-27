@@ -1,11 +1,18 @@
 package ai.logsight.backend.compare.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
+import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareDataPoint
+import ai.logsight.backend.charts.repository.entities.elasticsearch.VerticalBarBucket
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.domain.dto.CompareDTO
 import ai.logsight.backend.compare.domain.service.CompareService
+import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPIRequest
 import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
+import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
+import ai.logsight.backend.compare.ports.web.response.CompareAnalyticsIssueKPIResponse
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
+import ai.logsight.backend.compare.ports.web.response.DeleteCompareByIdResponse
+import ai.logsight.backend.compare.ports.web.response.UpdateCompareStatusResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -71,5 +78,50 @@ class CompareController(
             privateKey = user.key
         )
         return compareService.getCompareDataView(compareDTO)
+    }
+
+    @ApiOperation("Get compare by ID")
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    fun getCompareByID(
+        authentication: Authentication,
+        @RequestParam(required = false) compareId: String? = null,
+    ): List<HitsCompareDataPoint> {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return compareService.getCompareByID(compareId, user)
+    }
+
+    @ApiOperation("Delete compare by ID")
+    @DeleteMapping("{compareId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteCompareByID(
+        authentication: Authentication,
+        @PathVariable compareId: String,
+    ): DeleteCompareByIdResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return DeleteCompareByIdResponse(compareService.deleteCompareByID(compareId, user))
+    }
+
+    @ApiOperation("Update compare status by ID")
+    @PostMapping("/status")
+    @ResponseStatus(HttpStatus.OK)
+    fun updateCompareStatusByID(
+        authentication: Authentication,
+        @Valid @RequestBody updateCompareStatusRequest: UpdateCompareStatusRequest
+    ): UpdateCompareStatusResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return UpdateCompareStatusResponse(compareService.updateCompareStatusByID(updateCompareStatusRequest.compareId, updateCompareStatusRequest.compareStatus, user))
+    }
+
+    @ApiOperation("Get analytics KPI for issues")
+    @PostMapping("/issues")
+    @ResponseStatus(HttpStatus.OK)
+    fun getAnalyticsIssuesKPI(
+        authentication: Authentication,
+        @Valid @RequestBody getCompareAnalyticsIssueKPIRequest: GetCompareAnalyticsIssueKPIRequest
+    ): CompareAnalyticsIssueKPIResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        val map = compareService.getAnalyticsIssuesKPI(user, getCompareAnalyticsIssueKPIRequest.baselineTags).map { it.status to it.count }.toMap()
+        return CompareAnalyticsIssueKPIResponse(map)
     }
 }

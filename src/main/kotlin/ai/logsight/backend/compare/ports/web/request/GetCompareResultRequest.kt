@@ -10,8 +10,8 @@ import javax.validation.constraints.Pattern
 data class GetCompareResultRequest(
     @RequestParam(required = false)
     val logsReceiptId: UUID? = null,
-    @get:NotEmpty(message = "baselineTags must not be empty.")
+    @get:NotEmpty(message = "Baseline tags must not be empty.")
     val baselineTags: Map<String, String> = mapOf("defaultTag" to "default"),
-    @get:NotEmpty(message = "compareTags must not be empty.")
+    @get:NotEmpty(message = "Candidate tags must not be empty.")
     val candidateTags: Map<String, String> = mapOf("defaultTag" to "default")
 )
