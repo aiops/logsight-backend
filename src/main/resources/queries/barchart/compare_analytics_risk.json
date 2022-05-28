@@ -1,0 +1,60 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "auto_date_histogram": {
+        "field": "timestamp",
+        "buckets": 10
+      },
+      "aggs": {
+        "bucketMinRisk": {
+          "min": {
+            "field": "risk"
+          }
+        },
+        "bucketMeanRisk": {
+          "avg": {
+            "field": "risk"
+          }
+        },
+        "bucketMaxRisk": {
+          "max": {
+            "field": "risk"
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
+  "fields": [
+    {
+      "field": "timestamp",
+      "format": "date_time"
+    }
+  ],
+  "script_fields": {},
+  "stored_fields": [
+    "*"
+  ],
+  "runtime_mappings": {},
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [
+        {
+          "range": {
+            "timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

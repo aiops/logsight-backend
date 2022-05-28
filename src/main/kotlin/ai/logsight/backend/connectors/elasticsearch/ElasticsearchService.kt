@@ -35,14 +35,12 @@ class ElasticsearchService(
         logger.debug("Creating elasticsearch user $username.")
         val esUser = ESUser(username, Collections.singletonList(roles))
         val request = PutUserRequest.withPassword(esUser, roles.toCharArray(), true, RefreshPolicy.NONE)
-        client.security()
-            .putUser(request, RequestOptions.DEFAULT)
+        client.security().putUser(request, RequestOptions.DEFAULT)
     }
 
     fun deleteByIndexAndDocID(index: String, id: String): String {
         val request = DeleteRequest(
-            index,
-            id
+            index, id
         )
         val deleteResponse: DeleteResponse = client.delete(
             request, RequestOptions.DEFAULT
@@ -54,22 +52,17 @@ class ElasticsearchService(
         return deletedId
     }
 
-    fun updateStatusByIndexAndDocID(status: Long, index: String, id: String): String {
-        val jsonMap: MutableMap<String, Any> = HashMap()
-        jsonMap["status"] = status
+    fun updateFieldByIndexAndDocID(parameters: HashMap<String, Any>, index: String, id: String): String {
         val request = UpdateRequest(
-            index,
-            id
-        ).doc(jsonMap)
+            index, id
+        ).doc(parameters)
 
         val updateResponse: UpdateResponse = client.update(
             request, RequestOptions.DEFAULT
         )
-        val index: String = updateResponse.index
-        val id: String = updateResponse.id
-        val version: Long = updateResponse.version
+        val responseId: String = updateResponse.id
         if (updateResponse.result === DocWriteResponse.Result.UPDATED) {
-            return id
+            return responseId
         } else {
             throw ElasticsearchException("Update was not successful. Please try again.")
         }
@@ -77,22 +70,13 @@ class ElasticsearchService(
 
     fun deleteESUser(username: String) {
         logger.info("Deleting elasticsearch user $username.")
-        client.security()
-            .deleteUser(DeleteUserRequest(username), RequestOptions.DEFAULT)
+        client.security().deleteUser(DeleteUserRequest(username), RequestOptions.DEFAULT)
     }
 
     fun deleteKibanaRole(userKey: String) {
         logger.info("Deleting kibana roles for personal space and index patterns for user $userKey.")
-        val url = UriComponentsBuilder.newInstance()
-            .scheme(kibanaConfig.scheme)
-            .host(kibanaConfig.host)
-            .port(kibanaConfig.port)
-            .path("/api")
-            .path("/security")
-            .path("/role")
-            .path("/$userKey")
-            .build()
-            .toString()
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
+            .port(kibanaConfig.port).path("/api").path("/security").path("/role").path("/$userKey").build().toString()
         kibanaClient.deleteRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = null, headerName = kibanaConfig.header
         )
@@ -111,15 +95,8 @@ class ElasticsearchService(
         val query =
             "{ \"id\": \"kibana_space_${userKey}\", " + "\"name\": \"Logsight\", " + "\"description\" : \"This is your Logsight Space - ${userKey}\" }"
 
-        val url = UriComponentsBuilder.newInstance()
-            .scheme(kibanaConfig.scheme)
-            .host(kibanaConfig.host)
-            .port(kibanaConfig.port)
-            .path("/api")
-            .path("/spaces")
-            .path("/space")
-            .build()
-            .toString()
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
+            .port(kibanaConfig.port).path("/api").path("/spaces").path("/space").build().toString()
         kibanaClient.sendRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
         )
@@ -127,15 +104,8 @@ class ElasticsearchService(
 
     fun deleteKibanaSpace(userKey: String) {
         logger.info("Deleting kibana space $userKey.")
-        val url = UriComponentsBuilder.newInstance()
-            .scheme(kibanaConfig.scheme)
-            .host(kibanaConfig.host)
-            .port(kibanaConfig.port)
-            .path("/api")
-            .path("/spaces")
-            .path("/space")
-            .path("/kibana_space_$userKey")
-            .build()
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
+            .port(kibanaConfig.port).path("/api").path("/spaces").path("/space").path("/kibana_space_$userKey").build()
             .toString()
         kibanaClient.deleteRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = null, headerName = kibanaConfig.header
@@ -147,16 +117,8 @@ class ElasticsearchService(
 
         val query =
             "{ \"metadata\" : { \"version\" : 1 }," + "\"elasticsearch\": { \"cluster\" : [ ], " + "\"indices\" : [ {\"names\" : [$userKey*]," + " \"privileges\" : [ \"all\" ]}] }, " + "\"kibana\": [ { \"base\": [], \"feature\": { \"discover\": [ \"all\" ], \"visualize\": [ \"all\" ], " + "\"dashboard\":  [ \"all\" ], \"advancedSettings\": [ \"all\" ], \"indexPatterns\": [ \"all\" ] }, " + "\"spaces\": [ \"kibana_space_${userKey}\" ] } ] }"
-        val url = UriComponentsBuilder.newInstance()
-            .scheme(kibanaConfig.scheme)
-            .host(kibanaConfig.host)
-            .port(kibanaConfig.port)
-            .path("/api")
-            .path("/security")
-            .path("/role")
-            .path("/$userKey")
-            .build()
-            .toString()
+        val url = UriComponentsBuilder.newInstance().scheme(kibanaConfig.scheme).host(kibanaConfig.host)
+            .port(kibanaConfig.port).path("/api").path("/security").path("/role").path("/$userKey").build().toString()
         kibanaClient.putRequest(
             url = url, credentials = elasticsearchConfig.credentials, query = query, headerName = kibanaConfig.header
         )

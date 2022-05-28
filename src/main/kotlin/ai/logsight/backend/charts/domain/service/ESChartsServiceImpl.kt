@@ -9,17 +9,19 @@ import ai.logsight.backend.charts.domain.charts.PieChart
 import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
+import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.charts.repository.ESChartRepository
-import ai.logsight.backend.charts.repository.entities.elasticsearch.BarChartData
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
-import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
-import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
-import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultBucket
+import ai.logsight.backend.charts.repository.entities.elasticsearch.*
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
+import ai.logsight.backend.common.utils.QueryBuilderHelper
+import ai.logsight.backend.compare.controller.request.TagEntry
+import ai.logsight.backend.compare.dto.Tag
+import ai.logsight.backend.compare.dto.TagKey
+import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -36,7 +38,8 @@ class ESChartsServiceImpl(
     private val chartsRepository: ESChartRepository,
     private val applicationStorageService: ApplicationStorageService,
     private val userStorageService: UserStorageService,
-    private val applicationIndicesBuilder: ApplicationIndicesBuilder
+    private val applicationIndicesBuilder: ApplicationIndicesBuilder,
+    private val queryBuilderHelper: QueryBuilderHelper
 ) : ChartsService {
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -62,15 +65,11 @@ class ESChartsServiceImpl(
         heatMapData.aggregations.listAggregations.buckets.forEach {
             val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
             for (i in it.listBuckets.buckets) {
-                val name = i.key.split("_")
-                    .subList(1, i.key.split("_").size - 1)
-                    .joinToString("_")
+                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("_")
                 val app = applicationStorageService.findApplicationByUserAndName(user = getChartDataQuery.user, name)
                 heatMapListPoints.add(
                     ChartSeriesPoint(
-                        name = name,
-                        value = i.valueData.value,
-                        applicationId = app.id
+                        name = name, value = i.valueData.value, applicationId = app.id
                     )
                 )
             }
@@ -125,8 +124,7 @@ class ESChartsServiceImpl(
         pieChartData.aggregations.javaClass.kotlin.memberProperties.forEach {
             pieChartSeries.add(
                 ChartSeriesPoint(
-                    name = it.name.uppercase(),
-                    (it.get(pieChartData.aggregations) as ValueResultBucket).value
+                    name = it.name.uppercase(), (it.get(pieChartData.aggregations) as ValueResultBucket).value
                 )
             )
         }
@@ -167,6 +165,79 @@ class ESChartsServiceImpl(
                 )
             }
         )
+    }
+
+    fun getCompareByID(compareId: String?, user: User): List<HitsCompareDataPoint> {
+        val chartRequest = ChartRequest(
+            applicationId = null,
+            chartConfig = ChartConfig(
+                mapOf(
+                    "type" to "util",
+                    "feature" to "compare_id",
+                    "indexType" to "verifications",
+                    "compareId" to (compareId ?: "")
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val verification =
+            mapper.readValue<TableCompare>(chartsRepository.getData(getChartDataQuery, "${user.key}_verifications"))
+        return verification.hits.hits
+    }
+
+    fun getCompareTagFilter(user: User, listTags: List<TagEntry>, applicationIndices: String): List<TagKey> {
+        val chartRequest = ChartRequest(
+            applicationId = null,
+            chartConfig = ChartConfig(
+                mapOf(
+                    "type" to "util",
+                    "feature" to "filter_tags",
+                    "indexType" to "pipeline",
+                    "field" to queryBuilderHelper.getTagsFilterQuery(listTags, applicationIndices)
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val tagData = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        val tagDataFiltered = tagData.aggregations.listAggregations.buckets.filter { itFilter ->
+            !listTags.map { itMap1 -> itMap1.tagName }.contains(itFilter.tagValue)
+        }.map { itMap2 -> TagKey(tagName = itMap2.tagValue, itMap2.tagCount) }
+        return tagDataFiltered
+    }
+
+    fun getCompareTagValues(user: User, tagName: String, applicationIndices: String): List<Tag> {
+        val chartRequest = ChartRequest(
+            applicationId = null,
+            chartConfig = ChartConfig(
+                mapOf("type" to "util", "feature" to "versions", "indexType" to "pipeline", "field" to tagName)
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val tagValues = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        return tagValues.aggregations.listAggregations.buckets.map {
+            Tag(tagName = tagName, tagValue = it.tagValue, tagCount = it.tagCount)
+        }
+    }
+
+    fun getAnalyticsIssuesKPI(user: User, baselineTags: Map<String, String>): Map<Long, Long> {
+        val chartRequest = ChartRequest(
+            applicationId = null,
+            chartConfig = ChartConfig(
+                mapOf(
+                    "type" to "util",
+                    "feature" to "compare_analytics_issues",
+                    "indexType" to "verifications",
+                    "baselineTags" to queryBuilderHelper.getBaselineTagsQuery(baselineTags)
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val chart = mapper.readValue<VerticalBarChartData>(
+            chartsRepository.getData(
+                getChartDataQuery, "${user.key}_verifications"
+            )
+        )
+        return chart.aggregations.listAggregations.buckets.map { it.status to it.count }.toMap()
     }
 
     override fun getChartQuery(userId: UUID, createChartRequest: ChartRequest): GetChartDataQuery {
