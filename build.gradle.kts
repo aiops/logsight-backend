@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "2.5.7"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.flywaydb.flyway") version "8.5.11"
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.spring") version "1.6.10"
     kotlin("plugin.jpa") version "1.6.10"
@@ -27,7 +28,7 @@ repositories {
 
 dependencies {
 //    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
-
+    implementation("org.flywaydb:flyway-core:8.5.11")
     implementation("org.springframework.integration:spring-integration-zeromq:5.5.11")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -43,7 +44,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
-    implementation("org.springframework.data:spring-data-elasticsearch:4.3.4")
+    implementation("org.springframework.data:spring-data-elasticsearch:4.4.0")
 //    implementation("org.liquibase:liquibase-core")
     implementation("com.h2database:h2:2.1.212")
 //    implementation("org.liquibase:liquibase-core")
