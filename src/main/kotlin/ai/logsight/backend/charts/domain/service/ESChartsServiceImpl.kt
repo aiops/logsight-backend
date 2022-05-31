@@ -258,7 +258,7 @@ class ESChartsServiceImpl(
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val verification =
-            mapper.readValue<TableCompare>(chartsRepository.getData(getChartDataQuery, "${user.key}_verifications"))
+            mapper.readValue<TableCompare>(chartsRepository.getData(getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"))
         return verification.hits.hits
     }
 

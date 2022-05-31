@@ -12,7 +12,9 @@ import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import springfox.documentation.annotations.ApiIgnore
 
+@ApiIgnore
 @Api(tags = ["Tags"], description = "Operations with log data tags")
 @RestController
 @RequestMapping("/api/v1/logs/tags")

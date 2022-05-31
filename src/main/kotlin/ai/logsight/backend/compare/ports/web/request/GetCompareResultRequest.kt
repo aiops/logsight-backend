@@ -11,7 +11,7 @@ data class GetCompareResultRequest(
     @RequestParam(required = false)
     val logsReceiptId: UUID? = null,
     @get:NotEmpty(message = "Baseline tags must not be empty.")
-    val baselineTags: Map<String, String> = mapOf("defaultTag" to "default"),
+    val baselineTags: Map<String, String>,
     @get:NotEmpty(message = "Candidate tags must not be empty.")
-    val candidateTags: Map<String, String> = mapOf("defaultTag" to "default")
+    val candidateTags: Map<String, String>
 )

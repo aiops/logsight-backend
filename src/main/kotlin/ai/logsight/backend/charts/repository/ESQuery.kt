@@ -18,13 +18,11 @@ class ESQuery(
         return this
     }
     fun modifyCompareId(compareId: String): ESQuery {
-        if(compareId.isNotEmpty()){
+        if (compareId.isNotEmpty()) {
             this.query = this.query.replace("compare_id", "{\"match_phrase\": {\"_id\": \"$compareId\"}}")
-        }else{
+        } else {
             this.query = this.query.replace("compare_id", "")
         }
         return this
     }
-
-
 }
