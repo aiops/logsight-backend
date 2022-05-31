@@ -93,6 +93,7 @@ class CompareController(
         @Valid @RequestBody getCompareAnalyticsIssueKPIRequest: GetCompareAnalyticsIssueKPIRequest
     ): CompareAnalyticsIssueKPIResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return CompareAnalyticsIssueKPIResponse(compareService.getAnalyticsIssuesKPI(user, getCompareAnalyticsIssueKPIRequest.baselineTags))
+        val result = compareService.getAnalyticsIssuesKPI(user, getCompareAnalyticsIssueKPIRequest.baselineTags)
+        return CompareAnalyticsIssueKPIResponse(result)
     }
 }

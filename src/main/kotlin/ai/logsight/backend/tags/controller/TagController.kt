@@ -3,6 +3,7 @@ package ai.logsight.backend.tags.controller
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.compare.controller.request.TagKeyResponse
 import ai.logsight.backend.compare.controller.request.TagRequest
+import ai.logsight.backend.compare.controller.request.TagValueRequest
 import ai.logsight.backend.compare.controller.request.TagValueResponse
 import ai.logsight.backend.tags.service.TagService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
@@ -25,10 +26,10 @@ class TagController(
     @ResponseStatus(HttpStatus.OK)
     fun getCompareTagValues(
         authentication: Authentication,
-        @RequestBody tagName: String
+        @RequestBody tagValueRequest: TagValueRequest
     ): TagValueResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagName, "*"))
+        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagValueRequest.tagName, tagValueRequest.indexType))
     }
 
     @ApiOperation("Get all available tags given selected tags")
@@ -39,6 +40,6 @@ class TagController(
         @RequestBody(required = false) tagRequest: TagRequest = TagRequest()
     ): TagKeyResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return TagKeyResponse(tagKeys = tagService.getCompareTagFilter(user, tagRequest.listTags, "*"))
+        return TagKeyResponse(tagKeys = tagService.getCompareTagFilter(user, tagRequest.listTags, tagRequest.indexType))
     }
 }

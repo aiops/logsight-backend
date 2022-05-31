@@ -8,7 +8,7 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
-data class TagRequest(
-    val listTags: List<TagEntry> = mutableListOf(),
+data class TagValueRequest(
+    val tagName: String,
     val indexType: String = "*"
 )

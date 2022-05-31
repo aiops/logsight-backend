@@ -39,7 +39,7 @@ class IncidentService(
         val getChartDataQuery = GetChartDataQuery(
             application = application, user = application.user,
             chartConfig = ChartConfig(
-                mapOf(
+                mutableMapOf(
                     "type" to "tablechart",
                     "startTime" to incidentQuery.startTime,
                     "stopTime" to incidentQuery.stopTime,

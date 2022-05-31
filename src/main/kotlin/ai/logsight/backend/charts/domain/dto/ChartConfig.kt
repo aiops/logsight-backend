@@ -6,5 +6,5 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
 data class ChartConfig(
-    var parameters: Map<String, Any>,
+    var parameters: MutableMap<String, Any>,
 )

@@ -1,12 +1,10 @@
 {
   "aggs": {
     "listAggregations": {
-      "terms": {
-        "field": "status",
-        "order": {
-          "_count": "desc"
-        },
-        "size": 5
+      "date_histogram": {
+        "field": "timestamp",
+        "calendar_interval": "1w",
+        "time_zone": "Europe/Berlin"
       }
     }
   },
@@ -28,7 +26,9 @@
   "query": {
     "bool": {
       "must": [],
-      "filter": [baselineTags_value]
+      "filter": [baselineTags_value],
+      "should": [],
+      "must_not": []
     }
   }
 }
