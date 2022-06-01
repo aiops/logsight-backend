@@ -53,22 +53,6 @@ class ApplicationLifecycleController(
         )
     }
 
-    @ApiOperation("Get application by name of the authenticated user")
-    @GetMapping("")
-    @ResponseStatus(HttpStatus.OK)
-    fun getApplicationByName(
-        @PathVariable @Pattern(
-            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
-            message = "userId must be UUID type."
-        ) @NotEmpty(message = "userId must not be empty.") userId: String,
-        @RequestParam applicationName: String
-    ): ApplicationResponse {
-        val user = userService.findUserById(UUID.fromString(userId))
-        val application = applicationStorageService.findApplicationByUserAndName(user, applicationName)
-        logger.info("Returning back the list of applications to user ${user.id}", this::getApplications.name)
-        return application.toApplicationResponse()
-    }
-
     /**
      * Register a new application in the system.
      */
