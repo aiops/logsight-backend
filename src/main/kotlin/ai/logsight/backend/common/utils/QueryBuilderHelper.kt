@@ -1,14 +1,11 @@
 package ai.logsight.backend.common.utils
 
-import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.compare.controller.request.TagEntry
-import ai.logsight.backend.users.domain.User
 import org.json.JSONObject
 import org.springframework.stereotype.Service
 
 @Service
-class QueryBuilderHelper() {
+class QueryBuilderHelper {
     fun getBaselineTagsQuery(baselineTags: Map<String, String>): String {
         val filterQuery = mutableListOf<JSONObject>()
         baselineTags.forEach {
@@ -16,6 +13,7 @@ class QueryBuilderHelper() {
         }
         return filterQuery.toString().drop(1).dropLast(1)
     }
+
     fun getTagsFilterQuery(filterTags: List<TagEntry>, applicationIndices: String): String {
         val filterQuery = mutableListOf<JSONObject>()
         if (applicationIndices == "*") {

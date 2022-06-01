@@ -83,7 +83,7 @@ internal class LogIngestionServiceImplUnitTest {
             // given
             val logEventsDTOByName = TestInputConfig.logEventsDTOByName
             val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
-            Mockito.`when`(applicationLifecycleService.autoCreateApplication(TestInputConfig.createApplicationCommand))
+            Mockito.`when`(applicationLifecycleService.createApplication(TestInputConfig.createApplicationCommand))
                 .doReturn(appReady)
             runLogEventsTest(logEventsDTOByName, TestInputConfig.getLogsReceipts(1), appReady)
         }
@@ -95,12 +95,16 @@ internal class LogIngestionServiceImplUnitTest {
             val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
             Mockito.`when`(applicationStorageService.findApplicationById(appReady.id))
                 .doReturn(appReady)
-            Mockito.`when`(applicationLifecycleService.autoCreateApplication(TestInputConfig.createApplicationCommand))
+            Mockito.`when`(applicationLifecycleService.createApplication(TestInputConfig.createApplicationCommand))
                 .doReturn(appReady)
             runLogEventsTest(logEventsDTOMixed, TestInputConfig.getLogsReceipts(2), appReady)
         }
-        
-        private fun runLogEventsTest(logEventsDTO: LogEventsDTO, expectedLogsReceipts: List<LogsReceipt>, appReady: Application) {
+
+        private fun runLogEventsTest(
+            logEventsDTO: LogEventsDTO,
+            expectedLogsReceipts: List<LogsReceipt>,
+            appReady: Application
+        ) {
             // given
             val createLogsReceiptCommand = CreateLogsReceiptCommand(TestInputConfig.numMessages, appReady)
             Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)).thenAnswer(

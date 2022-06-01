@@ -10,8 +10,8 @@ import ai.logsight.backend.logs.extensions.toLogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import org.springframework.stereotype.Service
 
 @Service
@@ -28,7 +28,14 @@ class LogIngestionServiceImpl(
             application = logBatch.application
         )
         val receipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
-        logBatch.logs = logBatch.logs.map { LogsightLog(it.id, it.event, it.metadata, it.tags.plus(mapOf("applicationName" to logBatch.application.name))) }
+        logBatch.logs = logBatch.logs.map {
+            LogsightLog(
+                it.id,
+                it.event,
+                it.metadata,
+                it.tags.plus(mapOf("applicationName" to logBatch.application.name))
+            )
+        }
         logSink.sendLogBatch(logBatch.toLogBatchDTO()) // toLogBatchDTO
         return receipt
     }
@@ -52,7 +59,7 @@ class LogIngestionServiceImpl(
         // Create batches for unknown applicationID
         val unknownId = logEventsDTO.logs.filter { it.applicationId == null }.groupBy { it.applicationName }
             .map { grouped ->
-                val application = applicationLifecycleService.autoCreateApplication(
+                val application = applicationLifecycleService.createApplication(
                     CreateApplicationCommand(
                         applicationName = grouped.key!!,
                         user = logEventsDTO.user,
@@ -68,5 +75,3 @@ class LogIngestionServiceImpl(
         return knownId + unknownId
     }
 }
-
-

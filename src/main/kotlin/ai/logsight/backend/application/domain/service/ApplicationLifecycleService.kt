@@ -6,6 +6,5 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 
 interface ApplicationLifecycleService {
     fun createApplication(createAppCmd: CreateApplicationCommand): Application
-    fun autoCreateApplication(createAppCmd: CreateApplicationCommand): Application
     fun deleteApplication(deleteAppCmd: DeleteApplicationCommand)
 }
