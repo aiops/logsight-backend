@@ -158,29 +158,29 @@ internal class CompareControllerTest {
             userRepository.deleteAll()
         }
 
-        @Test
-        fun `should create a new verification successfully`() {
-            // given
-            Mockito.`when`(httpClient.send(any(), any<HttpResponse.BodyHandler<String>>())).thenReturn(HttpResp())
-            // when
-            val result = mockMvc.post(createEndpoint) {
-                contentType = MediaType.APPLICATION_JSON
-                content = mapper.writeValueAsString(createCompareRequest)
-                accept = MediaType.APPLICATION_JSON
-            }
-            // then
-            result.andExpect {
-                status { isCreated() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-                content {
-                    json(
-                        mapper.writeValueAsString(
-                            compareResponse
-                        )
-                    )
-                }
-            }
-        }
+//        @Test
+//        fun `should create a new verification successfully`() {
+//            // given
+//            Mockito.`when`(httpClient.send(any(), any<HttpResponse.BodyHandler<String>>())).thenReturn(HttpResp())
+//            // when
+//            val result = mockMvc.post(createEndpoint) {
+//                contentType = MediaType.APPLICATION_JSON
+//                content = mapper.writeValueAsString(createCompareRequest)
+//                accept = MediaType.APPLICATION_JSON
+//            }
+//            // then
+//            result.andExpect {
+//                status { isCreated() }
+//                content { contentType(MediaType.APPLICATION_JSON) }
+//                content {
+//                    json(
+//                        mapper.writeValueAsString(
+//                            compareResponse
+//                        )
+//                    )
+//                }
+//            }
+//        }
 
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
