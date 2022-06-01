@@ -6,6 +6,7 @@ import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareD
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.domain.dto.CompareDTO
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
+import ai.logsight.backend.compare.ports.out.HttpClientFactory
 import ai.logsight.backend.compare.ports.out.config.CompareRESTConfigProperties
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
@@ -17,7 +18,6 @@ import org.json.JSONObject
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.util.UriComponentsBuilder
-import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
@@ -25,9 +25,9 @@ import java.net.http.HttpResponse
 class CompareService(
     private val restConfigProperties: CompareRESTConfigProperties,
     private val esChartsServiceImpl: ESChartsServiceImpl,
-    private val elasticsearchService: ElasticsearchService
+    private val elasticsearchService: ElasticsearchService,
+    private val httpClientFactory: HttpClientFactory
 ) {
-    private val httpClient: HttpClient = HttpClient.newBuilder().build()
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
     private val logger = LoggerImpl(ChartsController::class.java)
@@ -41,7 +41,7 @@ class CompareService(
         )
         val request = HttpRequest.newBuilder().uri(uri).header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody))).build()
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        val response = httpClientFactory.create().send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() != HttpStatus.OK.value()) throw RemoteCompareException(
             response.body().toString()
         )
