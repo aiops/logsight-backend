@@ -4,7 +4,11 @@ import ai.logsight.backend.charts.domain.service.ChartsService
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.charts.ports.web.response.CreateChartResponse
 import ai.logsight.backend.common.logging.LoggerImpl
+import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPIRequest
+import ai.logsight.backend.compare.ports.web.response.CompareAnalyticsIssueKPIResponse
+import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.*
@@ -79,5 +83,19 @@ class ChartsController(
         val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
         // Create charts command
         return CreateChartResponse(chartsService.createTableChart(query))
+    }
+
+    @ApiOperation("Get analytics KPI for issues")
+    @PostMapping("/map")
+    @ResponseStatus(HttpStatus.OK)
+    fun getAnalyticsIssuesKPI(
+        @PathVariable @Pattern(
+            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String,
+        @Valid @RequestBody getCompareAnalyticsIssueKPIRequest: GetCompareAnalyticsIssueKPIRequest
+    ): CompareAnalyticsIssueKPIResponse {
+        val result = chartsService.getAnalyticsIssuesKPI(UUID.fromString(userId), getCompareAnalyticsIssueKPIRequest.baselineTags)
+        return CompareAnalyticsIssueKPIResponse(result)
     }
 }

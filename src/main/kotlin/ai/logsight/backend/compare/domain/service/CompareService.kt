@@ -52,10 +52,6 @@ class CompareService(
         return esChartsServiceImpl.getCompareByID(compareId, user)
     }
 
-    fun getAnalyticsIssuesKPI(user: User, baselineTags: Map<String, String>): Map<Long, Long> {
-        return esChartsServiceImpl.getAnalyticsIssuesKPI(user, baselineTags)
-    }
-
     fun deleteCompareByID(compareId: String, user: User): String {
         return elasticsearchService.deleteByIndexAndDocID("${user.key}_verifications", compareId)
     }

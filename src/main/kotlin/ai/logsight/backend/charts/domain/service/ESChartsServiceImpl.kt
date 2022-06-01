@@ -21,6 +21,8 @@ import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
+import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPIRequest
+import ai.logsight.backend.compare.ports.web.response.CompareAnalyticsIssueKPIResponse
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -29,8 +31,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.loxbear.logsight.charts.data.IncidentRow
+import io.swagger.annotations.ApiOperation
+import org.springframework.http.HttpStatus
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.ResponseStatus
 import java.util.*
+import javax.validation.Valid
 import kotlin.reflect.full.memberProperties
 
 @Service
@@ -95,6 +104,9 @@ class ESChartsServiceImpl(
         }
         return BarChart(data = barChartSeries)
     }
+
+
+
 
     fun createCompareAnalyticsBarChartVelocityFailureRatio(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
         getChartDataQuery.chartConfig.parameters["baselineTags"] =
@@ -296,7 +308,8 @@ class ESChartsServiceImpl(
         }
     }
 
-    fun getAnalyticsIssuesKPI(user: User, baselineTags: Map<String, String>): Map<Long, Long> {
+    override fun getAnalyticsIssuesKPI(userId: UUID, baselineTags: Map<String, String>): Map<Long, Long> {
+        val user = userStorageService.findUserById(userId)
         val chartRequest = ChartRequest(
             applicationId = null,
             chartConfig = ChartConfig(

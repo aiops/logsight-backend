@@ -84,16 +84,4 @@ class CompareController(
             )
         )
     }
-
-    @ApiOperation("Get analytics KPI for issues")
-    @PostMapping("/issues")
-    @ResponseStatus(HttpStatus.OK)
-    fun getAnalyticsIssuesKPI(
-        authentication: Authentication,
-        @Valid @RequestBody getCompareAnalyticsIssueKPIRequest: GetCompareAnalyticsIssueKPIRequest
-    ): CompareAnalyticsIssueKPIResponse {
-        val user = userStorageService.findUserByEmail(authentication.name)
-        val result = compareService.getAnalyticsIssuesKPI(user, getCompareAnalyticsIssueKPIRequest.baselineTags)
-        return CompareAnalyticsIssueKPIResponse(result)
-    }
 }
