@@ -3,6 +3,7 @@ package ai.logsight.backend.compare.ports.web
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareDataPoint
+import ai.logsight.backend.compare.ports.out.HttpClientFactory
 import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
 import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
@@ -14,6 +15,8 @@ import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.mockk.every
+import io.mockk.mockk
 import org.assertj.core.api.Assertions
 import org.json.JSONArray
 import org.junit.jupiter.api.*
@@ -21,6 +24,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -28,7 +32,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -37,13 +40,8 @@ import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.web.bind.MethodArgumentNotValidException
-import java.net.URI
 import java.net.http.HttpClient
-import java.net.http.HttpHeaders
-import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.util.*
-import javax.net.ssl.SSLSession
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -65,41 +63,8 @@ internal class CompareControllerTest {
     private lateinit var elasticsearchService: ElasticsearchService
 
     @MockBean
-    private lateinit var httpClient: HttpClient
+    private lateinit var httpClientFactory: HttpClientFactory
 
-    inner class HttpResp : HttpResponse<String> {
-        override fun statusCode(): Int {
-            TODO("Not yet implemented")
-        }
-
-        override fun request(): HttpRequest {
-            TODO("Not yet implemented")
-        }
-
-        override fun previousResponse(): Optional<HttpResponse<String>> {
-            TODO("Not yet implemented")
-        }
-
-        override fun headers(): HttpHeaders {
-            TODO("Not yet implemented")
-        }
-
-        override fun body(): String {
-            return ""
-        }
-
-        override fun sslSession(): Optional<SSLSession> {
-            TODO("Not yet implemented")
-        }
-
-        override fun uri(): URI {
-            TODO("Not yet implemented")
-        }
-
-        override fun version(): HttpClient.Version {
-            TODO("Not yet implemented")
-        }
-    }
     companion object {
         const val endpoint = "/api/v1/logs/compare"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
@@ -117,6 +82,7 @@ internal class CompareControllerTest {
         val createCompareRequest =
             GetCompareResultRequest(baselineTags = mapOf("tag" to "default"), candidateTags = mapOf("tag" to "default"))
         val compareResponse = CompareDataResponse(
+            link = "http://localhost:4200/pages/compare?compareId=compareId",
             baselineTags = mapOf("tag" to "default"),
             candidateTags = mapOf("tag" to "default"),
             compareId = "compareId",
@@ -158,29 +124,39 @@ internal class CompareControllerTest {
             userRepository.deleteAll()
         }
 
-//        @Test
-//        fun `should create a new verification successfully`() {
-//            // given
-//            Mockito.`when`(httpClient.send(any(), any<HttpResponse.BodyHandler<String>>())).thenReturn(HttpResp())
-//            // when
-//            val result = mockMvc.post(createEndpoint) {
-//                contentType = MediaType.APPLICATION_JSON
-//                content = mapper.writeValueAsString(createCompareRequest)
-//                accept = MediaType.APPLICATION_JSON
-//            }
-//            // then
-//            result.andExpect {
-//                status { isCreated() }
-//                content { contentType(MediaType.APPLICATION_JSON) }
-//                content {
-//                    json(
-//                        mapper.writeValueAsString(
-//                            compareResponse
-//                        )
-//                    )
-//                }
-//            }
-//        }
+        @Test
+        fun `should create a new verification successfully`() {
+            // given
+            val httpClientMock = mock(HttpClient::class.java)
+            val mockedResponse: HttpResponse<String> = mockk(relaxed = true)
+            every { mockedResponse.statusCode() } returns 200
+            every { mockedResponse.body() } returns mapper.writeValueAsString(compareResponse)
+//            Mockito.`when`(mockedResponse.statusCode()).thenReturn(200)
+//            Mockito.`when`(mockedResponse.body()).thenReturn("ok")
+
+            Mockito.`when`(httpClientFactory.create())
+                .thenReturn(httpClientMock)
+            Mockito.`when`(httpClientMock.send(any(), any<HttpResponse.BodyHandler<String>>()))
+                .thenReturn(mockedResponse)
+            // when
+            val result = mockMvc.post(createEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(createCompareRequest)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isCreated() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            compareResponse
+                        )
+                    )
+                }
+            }
+        }
 
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
