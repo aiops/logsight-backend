@@ -28,7 +28,7 @@ class CompareController(
 
     @ApiOperation("Create log compare between baseline and candidate tags")
     @PostMapping("")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     fun createCompare(
         authentication: Authentication,
         @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
@@ -61,7 +61,7 @@ class CompareController(
 
     @ApiOperation("Delete compare by ID")
     @DeleteMapping("{compareId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteCompareByID(
         authentication: Authentication,
         @PathVariable compareId: String,
