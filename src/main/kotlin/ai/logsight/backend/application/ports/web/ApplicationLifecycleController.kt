@@ -6,6 +6,7 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.extensions.toApplicationResponse
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
+import ai.logsight.backend.application.ports.web.responses.ApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsResponse
@@ -50,6 +51,22 @@ class ApplicationLifecycleController(
         return GetAllApplicationsResponse(
             applications = applications
         )
+    }
+
+    @ApiOperation("Get application by name of the authenticated user")
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    fun getApplicationByName(
+        @PathVariable @Pattern(
+            regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
+            message = "userId must be UUID type."
+        ) @NotEmpty(message = "userId must not be empty.") userId: String,
+        @RequestParam applicationName: String
+    ): ApplicationResponse {
+        val user = userService.findUserById(UUID.fromString(userId))
+        val application = applicationStorageService.findApplicationByUserAndName(user, applicationName)
+        logger.info("Returning back the list of applications to user ${user.id}", this::getApplications.name)
+        return application.toApplicationResponse()
     }
 
     /**
