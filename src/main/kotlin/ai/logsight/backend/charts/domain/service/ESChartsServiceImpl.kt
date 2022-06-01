@@ -105,9 +105,6 @@ class ESChartsServiceImpl(
         return BarChart(data = barChartSeries)
     }
 
-
-
-
     fun createCompareAnalyticsBarChartVelocityFailureRatio(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
         getChartDataQuery.chartConfig.parameters["baselineTags"] =
             queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
@@ -271,6 +268,24 @@ class ESChartsServiceImpl(
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val verification =
             mapper.readValue<TableCompare>(chartsRepository.getData(getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"))
+        return verification.hits.hits
+    }
+
+    fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
+        val chartRequest = ChartRequest(
+            applicationId = null,
+            chartConfig = ChartConfig(
+                mutableMapOf(
+                    "type" to "util",
+                    "feature" to "compare_id",
+                    "indexType" to "verifications",
+                    "compareId" to ""
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val verification =
+            mapper.readValue<TableCompareAll>(chartsRepository.getData(getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"))
         return verification.hits.hits
     }
 

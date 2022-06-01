@@ -4,7 +4,6 @@ import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageS
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.domain.dto.CompareDTO
 import ai.logsight.backend.compare.domain.service.CompareService
-import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPIRequest
 import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
 import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
 import ai.logsight.backend.compare.ports.web.response.*
@@ -49,14 +48,24 @@ class CompareController(
     }
 
     @ApiOperation("Get compare by ID")
-    @GetMapping("")
+    @GetMapping("/{compareId}")
     @ResponseStatus(HttpStatus.OK)
     fun getCompareByID(
         authentication: Authentication,
-        @RequestParam(required = false) compareId: String? = null,
+        @PathVariable compareId: String,
     ): GetCompareByIdResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         return GetCompareByIdResponse(compareService.getCompareByID(compareId, user))
+    }
+
+    @ApiOperation("Get all compares")
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    fun getAllCompares(
+        authentication: Authentication,
+    ): GetAllCompareResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return GetAllCompareResponse(compareService.getAllCompares(user))
     }
 
     @ApiOperation("Delete compare by ID")

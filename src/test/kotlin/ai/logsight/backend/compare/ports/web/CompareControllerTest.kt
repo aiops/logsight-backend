@@ -196,12 +196,12 @@ internal class CompareControllerTest {
     }
 
     @Nested
-    @DisplayName("GET $endpoint?compareId={compareId}")
+    @DisplayName("GET $endpoint/{compareId}")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class GetCompareById {
         private val getCompareByIdEndpoint =
-            "$endpoint?compareId=$compareId"
+            "$endpoint/$compareId"
 
         @BeforeAll
         fun setup() {

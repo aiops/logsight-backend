@@ -2,6 +2,7 @@ package ai.logsight.backend.compare.domain.service
 
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.ports.web.ChartsController
+import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareAllDataPoint
 import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareDataPoint
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.domain.dto.CompareDTO
@@ -50,6 +51,10 @@ class CompareService(
 
     fun getCompareByID(compareId: String?, user: User): List<HitsCompareDataPoint> {
         return esChartsServiceImpl.getCompareByID(compareId, user)
+    }
+
+    fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
+        return esChartsServiceImpl.getAllCompares(user)
     }
 
     fun deleteCompareByID(compareId: String, user: User): String {
