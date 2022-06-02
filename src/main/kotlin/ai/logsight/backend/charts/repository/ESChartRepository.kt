@@ -15,7 +15,10 @@ class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) 
     fun getData(getDataQuery: GetChartDataQuery, applicationIndices: String): String {
         val chartConfig = getDataQuery.chartConfig
         val query = ESQueryBuilder().buildQuery(
-            chartConfig.parameters as Map<String, String>
+            startTime = chartConfig.startTime,
+            stopTime = chartConfig.stopTime,
+            featureType = chartConfig.feature,
+            chartType = chartConfig.type
         )
         val url = UriComponentsBuilder.newInstance().scheme(elasticsearchConfig.scheme).host(elasticsearchConfig.host)
             .port(elasticsearchConfig.port).path(applicationIndices).path("/_search").build().toString()

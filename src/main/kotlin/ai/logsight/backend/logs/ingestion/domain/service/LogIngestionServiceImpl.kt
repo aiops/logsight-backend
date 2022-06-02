@@ -4,7 +4,6 @@ import ai.logsight.backend.application.domain.service.ApplicationLifecycleServic
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.logs.domain.LogBatch
-import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.extensions.toLogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
@@ -28,7 +27,6 @@ class LogIngestionServiceImpl(
             application = logBatch.application
         )
         val receipt = logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)
-        logBatch.logs = logBatch.logs.map { LogsightLog(it.id, it.event, it.metadata, it.tags.plus(mapOf("applicationName" to logBatch.application.name))) }
         logSink.sendLogBatch(logBatch.toLogBatchDTO()) // toLogBatchDTO
         return receipt
     }
