@@ -2,7 +2,7 @@
   "aggs": {
     "listAggregations": {
       "auto_date_histogram": {
-        "field": "timestamp",
+        "field": "@timestamp",
         "buckets": 6
       },
       "aggs": {
@@ -39,7 +39,7 @@
   "script_fields": {},
   "docvalue_fields": [
     {
-      "field": "timestamp",
+      "field": "@timestamp",
       "format": "date_time"
     }
   ],
@@ -48,7 +48,7 @@
       "must": [
         {
           "range": {
-            "timestamp": {
+            "@timestamp": {
               "format": "strict_date_optional_time",
               "gte": "start_time",
               "lte": "stop_time"

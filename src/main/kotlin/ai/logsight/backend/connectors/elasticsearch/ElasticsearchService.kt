@@ -3,16 +3,12 @@ package ai.logsight.backend.connectors.elasticsearch
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.users.domain.User
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.client.RequestOptions
 import org.elasticsearch.client.RestHighLevelClient
-import org.elasticsearch.client.indices.GetMappingsRequest
-import org.elasticsearch.client.indices.GetMappingsResponse
 import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
-import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -36,23 +32,6 @@ class ElasticsearchService(
         val request = PutUserRequest.withPassword(esUser, roles.toCharArray(), true, RefreshPolicy.NONE)
         client.security()
             .putUser(request, RequestOptions.DEFAULT)
-    }
-
-    fun getTags(userKey: String): List<String> {
-        val request = GetMappingsRequest()
-        request.indices("$userKey*")
-        val getMappingResponse: GetMappingsResponse = client.indices().getMapping(request, RequestOptions.DEFAULT)
-        val allMappings = getMappingResponse.mappings()
-        val tags = mutableMapOf<String, String>()
-        for (mapping in allMappings) {
-            val indexMapping = allMappings[mapping.key]
-            val mappingSource = indexMapping!!.source()
-            JSONObject(mappingSource.toString()).getJSONObject("properties").getJSONObject("tags")
-                .getJSONObject("properties").keys().forEach {
-                    tags[it.toString()] = ""
-                }
-        }
-        return tags.keys.toList()
     }
 
     fun deleteESUser(username: String) {
@@ -80,7 +59,7 @@ class ElasticsearchService(
 
     fun deleteESIndices(index: String) {
         try {
-            client.indices().delete(DeleteIndexRequest("$index*"), RequestOptions.DEFAULT)
+            client.indices().delete(DeleteIndexRequest(index), RequestOptions.DEFAULT)
         } catch (e: Exception) {
             throw ElasticsearchException("Failed to delete elasticsearch index $index. Reason: $e")
         }

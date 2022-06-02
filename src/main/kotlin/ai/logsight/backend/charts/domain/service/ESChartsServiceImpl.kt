@@ -10,16 +10,17 @@ import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
-import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.BarChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.HeatMapData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.PieChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartData
 import ai.logsight.backend.charts.repository.entities.elasticsearch.ValueResultBucket
+import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
+import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -48,7 +49,7 @@ class ESChartsServiceImpl(
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
+            getChartDataQuery.chartConfig.indexType
         )
         logger.debug("Obtained application indices: $applicationIndices.", this::createHeatMap.name)
         val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
@@ -84,7 +85,7 @@ class ESChartsServiceImpl(
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
+            getChartDataQuery.chartConfig.indexType
         )
         logger.debug("Obtained application indices: $applicationIndices.", this::createBarChart.name)
         val barChartData =
@@ -111,7 +112,7 @@ class ESChartsServiceImpl(
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
+            getChartDataQuery.chartConfig.indexType
         )
         logger.debug("Obtained application indices: $applicationIndices.", this::createPieChart.name)
         val pieChartData =
@@ -137,7 +138,7 @@ class ESChartsServiceImpl(
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
+            getChartDataQuery.chartConfig.indexType
         )
         logger.debug("Obtained application indices: $applicationIndices.", this::createTableChart.name)
         val tableChartData =
@@ -148,10 +149,9 @@ class ESChartsServiceImpl(
         )
         logger.debug("Mapping the data to an output chart.", this::createTableChart.name)
         tableChartData.hits.hits.sortedByDescending { it.source.totalScore }
-        val numElements =
-            if (getChartDataQuery.chartConfig.parameters.containsKey("numElements")) getChartDataQuery.chartConfig.parameters["numElements"] as Int else null
+
         return TableChart(
-            data = tableChartData.hits.hits.take(numElements ?: tableChartData.hits.hits.size).map {
+            data = tableChartData.hits.hits.take(getChartDataQuery.chartConfig.numElements?:tableChartData.hits.hits.size).map {
                 IncidentRow(
                     applicationId = it.source.applicationId,
                     indexName = it.indexName,

@@ -8,7 +8,7 @@ import org.json.JSONObject
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class TopKIncidentSource(
-    @JsonProperty("timestamp")
+    @JsonProperty("@timestamp")
     val timestamp: String,
     @JsonProperty("timestamp_start")
     val startTimestamp: String,
