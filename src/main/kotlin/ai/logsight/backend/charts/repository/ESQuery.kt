@@ -9,6 +9,11 @@ class ESQuery(
     }
 
     fun modifyField(field: String): ESQuery {
+        this.query = this.query.replace("field_name", field)
+        return this
+    }
+
+    fun modifyFilter(field: String): ESQuery {
         this.query = this.query.replace("field_value", field)
         return this
     }

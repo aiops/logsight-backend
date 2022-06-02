@@ -21,8 +21,6 @@ import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
-import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPIRequest
-import ai.logsight.backend.compare.ports.web.response.CompareAnalyticsIssueKPIResponse
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -31,15 +29,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.loxbear.logsight.charts.data.IncidentRow
-import io.swagger.annotations.ApiOperation
-import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.ResponseStatus
 import java.util.*
-import javax.validation.Valid
 import kotlin.reflect.full.memberProperties
 
 @Service
@@ -297,7 +288,7 @@ class ESChartsServiceImpl(
                     "type" to "util",
                     "feature" to "filter_tags",
                     "indexType" to "pipeline",
-                    "field" to queryBuilderHelper.getTagsFilterQuery(listTags, applicationIndices)
+                    "filter" to queryBuilderHelper.getTagsFilterQuery(listTags, applicationIndices)
                 )
             )
         )
@@ -309,11 +300,17 @@ class ESChartsServiceImpl(
         return tagDataFiltered
     }
 
-    fun getCompareTagValues(user: User, tagName: String, applicationIndices: String): List<Tag> {
+    fun getCompareTagValues(user: User, tagName: String, applicationIndices: String, listTags: List<TagEntry>): List<Tag> {
         val chartRequest = ChartRequest(
             applicationId = null,
             chartConfig = ChartConfig(
-                mutableMapOf("type" to "util", "feature" to "versions", "indexType" to "pipeline", "field" to tagName)
+                mutableMapOf(
+                    "type" to "util",
+                    "feature" to "versions",
+                    "indexType" to "pipeline",
+                    "filter" to queryBuilderHelper.getTagsFilterQuery(listTags, applicationIndices),
+                    "field" to tagName
+                )
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)

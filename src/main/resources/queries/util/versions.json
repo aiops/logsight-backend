@@ -2,7 +2,7 @@
   "aggs": {
     "listAggregations": {
       "terms": {
-        "field": "tags.field_value.keyword",
+        "field": "tags.field_name.keyword",
         "order": {
           "_count": "desc"
         },
@@ -26,11 +26,7 @@
   ],
   "query": {
     "bool": {
-      "filter": [
-        {
-          "match_all": {}
-        }
-      ],
+      "filter": [field_value],
       "should": [],
       "must_not": []
     }

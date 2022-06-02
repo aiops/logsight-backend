@@ -20,12 +20,10 @@ class QueryBuilderHelper() {
         val filterQuery = mutableListOf<JSONObject>()
         if (applicationIndices == "*") {
             filterTags.forEach {
-                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tag_keys.keyword" to it.tagName)))))
                 filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("tags.${it.tagName}.keyword" to it.tagValue)))))
             }
         } else if (applicationIndices == "*_verifications") {
             filterTags.forEach {
-                filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("baseline_tag_keys.keyword" to it.tagName)))))
                 filterQuery.add(JSONObject(mapOf("match_phrase" to JSONObject(mapOf("baseline_tags.${it.tagName}.keyword" to it.tagValue)))))
             }
         }

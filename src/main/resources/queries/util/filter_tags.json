@@ -27,9 +27,7 @@
   "query": {
     "bool": {
       "must": [],
-      "filter":
-        [field_value]
-      ,
+      "filter": [field_value],
       "should": [],
       "must_not": []
     }

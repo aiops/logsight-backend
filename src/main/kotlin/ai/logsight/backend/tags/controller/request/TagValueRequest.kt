@@ -10,5 +10,6 @@ import javax.validation.constraints.Pattern
 
 data class TagValueRequest(
     val tagName: String,
-    val indexType: String = "*"
+    val indexType: String = "*",
+    val listTags: List<TagEntry> = mutableListOf(),
 )

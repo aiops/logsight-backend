@@ -30,8 +30,9 @@ class TagController(
         authentication: Authentication,
         @RequestBody tagValueRequest: TagValueRequest
     ): TagValueResponse {
+        println(tagValueRequest)
         val user = userStorageService.findUserByEmail(authentication.name)
-        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagValueRequest.tagName, tagValueRequest.indexType))
+        return TagValueResponse(tagValues = tagService.getCompareTagValues(user, tagValueRequest.tagName, tagValueRequest.indexType, tagValueRequest.listTags))
     }
 
     @ApiOperation("Get all available tags given selected tags")

@@ -8,6 +8,7 @@ class ESQueryBuilder {
         return this.loadJsonQuery(parameters["feature"].toString(), parameters["type"].toString())
             .modifyTime(parameters["startTime"].toString(), parameters["stopTime"].toString())
             .modifyField(parameters["field"].toString())
+            .modifyFilter(parameters["filter"].toString())
             .modifyCompareId(parameters["compareId"].toString())
             .modifyBaselineTags(parameters["baselineTags"].toString()).query
     }

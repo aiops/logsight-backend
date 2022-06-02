@@ -7,15 +7,10 @@ import ai.logsight.backend.compare.controller.request.TagValueRequest
 import ai.logsight.backend.compare.controller.request.TagValueResponse
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
-import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.*
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,7 +24,6 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
-import org.springframework.web.bind.MethodArgumentNotValidException
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -74,7 +68,7 @@ internal class TagsControllerTest {
         @Test
         fun `should return list of values for a tag name`() {
             // given
-            Mockito.`when`(esChartsServiceImpl.getCompareTagValues(any(), any(), any()))
+            Mockito.`when`(esChartsServiceImpl.getCompareTagValues(any(), any(), any(), any()))
                 .thenReturn(listOf(Tag("tag", "default", 1)))
             // when
             val result = mockMvc.post(getCompareTagEndpoint) {
