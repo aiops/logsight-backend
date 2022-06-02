@@ -162,7 +162,7 @@ class ApplicationLifecycleControllerIntegrationTest {
                 .andReturn().resolvedException
             assertThat(exc is UserNotFoundException)
         }
-        
+
         @Test
         fun `should use caching correctly on finding application by user and name`() {
             for (i in 0..9) {
