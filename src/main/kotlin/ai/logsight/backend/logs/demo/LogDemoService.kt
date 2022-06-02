@@ -6,12 +6,18 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.LogBatch
+import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
 import org.springframework.stereotype.Service
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.stream.Stream
+import kotlin.streams.toList
 
 @Service
 class LogDemoService(
@@ -26,7 +32,7 @@ class LogDemoService(
     }
 
     fun createHadoopDemoForUser(user: User): List<LogsReceipt> {
-        val appNames = listOf("hdfs_node", "node_manager", "resource_manager", "name_node")
+        val appNames = listOf("hdfs_node-v1.0.0", "node_manager-v1.1.0", "resource_manager", "name_node-v1.0.0")
 
         // delete dangling applications if already created
         appNames.forEach { name ->
@@ -36,32 +42,42 @@ class LogDemoService(
             }
         }
 
-        // create fresh applications
-        val applications = appNames.map { name ->
-            applicationLifecycleService.createApplication(
-                CreateApplicationCommand(
-                    applicationName = name,
-                    user = user,
-                    displayName = name
+        val logReceipts = this.listDemoFiles()
+            .map { filePath ->
+                val fileName = filePath.fileName.toString()
+                // read file
+                val logMessages = this.readSampleFile(fileName)
+                // create application
+                val appName = fileName.split("-")[0]
+                val application = applicationLifecycleService.createApplication(
+                    CreateApplicationCommand(
+                        applicationName = appName,
+                        user = user,
+                        displayName = appName
+                    )
                 )
-            )
-        }
-
-        val logReceipts = applications.map { application ->
-            // load sample data
-            // todo extract in function
-            val fileAsInputStream = LogDemoService::class.java.classLoader.getResourceAsStream(
-                "${SampleLogConstants.SAMPLE_LOG_DIR}/${application.name}"
-            )!!
-            val logMessages = LogFileReader().readDemoFile(application.name, fileAsInputStream)
-
-            logIngestionService.processLogBatch(
-                LogBatch(
-                    application = application,
-                    logs = logMessages,
+                // process logs
+                logIngestionService.processLogBatch(
+                    LogBatch(
+                        application = application,
+                        logs = logMessages,
+                    )
                 )
-            )
-        }
+            }.toList()
+
         return logReceipts
+    }
+
+    private fun listDemoFiles(): Stream<Path> {
+        val folderName = LogDemoService::class.java.classLoader.getResource(SampleLogConstants.SAMPLE_LOG_DIR)!!.file
+        return Files.walk(Paths.get(folderName))
+            .filter { Files.isRegularFile(it) }
+    }
+
+    private fun readSampleFile(fileName: String): List<LogsightLog> {
+        val fileAsInputStream = LogDemoService::class.java.classLoader.getResourceAsStream(
+            "${SampleLogConstants.SAMPLE_LOG_DIR}/$fileName"
+        )!!
+        return LogFileReader().readDemoFile(fileName, fileAsInputStream)
     }
 }
