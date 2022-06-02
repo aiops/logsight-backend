@@ -33,7 +33,7 @@ data class SendLogMessage(
         regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$",
         message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE"
     )
-    val level: String? = null,
+    val level: String? = "INFO",
     val metadata: Map<String, String>? = null,
 ) {
     @AssertTrue(message = "One of applicationId or applicationName must not be empty")
