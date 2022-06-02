@@ -3,11 +3,9 @@ package ai.logsight.backend.application.ports.out.persistence
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.ApplicationStatus
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
-import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.extensions.toApplication
 import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.application.utils.NameParser
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -46,10 +44,9 @@ class ApplicationStorageServiceImpl(private val appRepository: ApplicationReposi
 
     private fun findApplicationByUserAndNamePrivate(user: User, applicationName: String): ApplicationEntity? =
         appRepository.findByUserAndName(user.toUserEntity(), applicationName)
-    
-    override fun findApplicationByUserAndName(user: User, applicationName: String): Application =
+
+    override fun findApplicationByUserAndName(user: User, applicationName: String): Application? =
         findApplicationByUserAndNamePrivate(user, applicationName)?.toApplication()
-            ?: throw ApplicationNotFoundException("Application $applicationName does not exist for user ${user.id}.")
 
     override fun applicationByUserAndNameExists(user: User, applicationName: String): Boolean =
         findApplicationByUserAndNamePrivate(user, applicationName) != null

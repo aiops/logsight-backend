@@ -11,7 +11,7 @@ interface ApplicationStorageService {
     fun deleteApplication(applicationId: UUID)
     fun findApplicationById(applicationId: UUID): Application
     fun applicationByIdExists(applicationId: UUID): Boolean
-    fun findApplicationByUserAndName(user: User, applicationName: String): Application
+    fun findApplicationByUserAndName(user: User, applicationName: String): Application?
     fun applicationByUserAndNameExists(user: User, applicationName: String): Boolean
     fun findAllApplicationsByUser(user: User): List<Application>
     fun setApplicationStatus(application: Application, applicationStatus: ApplicationStatus): Application

@@ -2,7 +2,6 @@ package ai.logsight.backend.application.ports.web
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
@@ -163,26 +162,7 @@ class ApplicationLifecycleControllerIntegrationTest {
                 .andReturn().resolvedException
             assertThat(exc is UserNotFoundException)
         }
-
-        @Test
-        fun `should return conflict if App already exists in database`() {
-            // given
-            val request = CreateApplicationRequest(TestInputConfig.baseAppName)
-            // when
-            val result = mockMvc.post(createEndpoint) {
-                contentType = MediaType.APPLICATION_JSON
-                content = mapper.writeValueAsString(request)
-                accept = MediaType.APPLICATION_JSON
-            }
-            // then
-            val exc = result.andExpect {
-                status { isConflict() }
-                content { contentType(MediaType.APPLICATION_JSON) }
-            }
-                .andReturn().resolvedException
-            assertThat(exc is ApplicationAlreadyCreatedException)
-        }
-
+        
         @Test
         fun `should use caching correctly on finding application by user and name`() {
             for (i in 0..9) {

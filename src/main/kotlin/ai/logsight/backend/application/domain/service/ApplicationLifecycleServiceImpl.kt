@@ -3,7 +3,6 @@ package ai.logsight.backend.application.domain.service
 import ai.logsight.backend.application.domain.Application
 import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
-import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.utils.NameParser
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -31,21 +30,9 @@ class ApplicationLifecycleServiceImpl(
     }
 
     override fun createApplication(createAppCmd: CreateApplicationCommand): Application {
-        if (applicationStorageService.applicationByUserAndNameExists(createAppCmd.user, createAppCmd.applicationName)) {
-            val msg =
-                "Application with name ${createAppCmd.applicationName} already exists for user ${createAppCmd.user.id}."
-            logger.error(msg)
-            throw ApplicationAlreadyCreatedException(msg)
-        }
-        return createApplicationPrivate(createAppCmd)
+        return applicationStorageService.findApplicationByUserAndName(createAppCmd.user, createAppCmd.applicationName)
+            ?: return createApplicationPrivate(createAppCmd)
     }
-
-    override fun autoCreateApplication(createAppCmd: CreateApplicationCommand): Application =
-        if (applicationStorageService.applicationByUserAndNameExists(createAppCmd.user, createAppCmd.applicationName)) {
-            applicationStorageService.findApplicationByUserAndName(createAppCmd.user, createAppCmd.applicationName)
-        } else {
-            this.createApplicationPrivate(createAppCmd)
-        }
 
     override fun deleteApplication(deleteAppCmd: DeleteApplicationCommand) {
         val application = applicationStorageService.findApplicationById(deleteAppCmd.applicationId)
