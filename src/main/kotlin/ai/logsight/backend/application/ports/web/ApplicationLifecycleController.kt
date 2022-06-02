@@ -6,6 +6,7 @@ import ai.logsight.backend.application.domain.service.command.DeleteApplicationC
 import ai.logsight.backend.application.extensions.toApplicationResponse
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.application.ports.web.requests.CreateApplicationRequest
+import ai.logsight.backend.application.ports.web.responses.ApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.CreateApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.DeleteApplicationResponse
 import ai.logsight.backend.application.ports.web.responses.GetAllApplicationsResponse

@@ -7,9 +7,11 @@ import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class CompareDataResponse(
-    var applicationId: UUID? = null,
-    var logsReceiptId: UUID? = null,
     var link: String? = "",
+    var baselineTags: Map<String, String> = mapOf(),
+    var candidateTags: Map<String, String> = mapOf(),
+    @JsonAlias("compareId")
+    val compareId: String,
     @JsonAlias("risk")
     val risk: Long,
     @JsonAlias("total_n_log_messages")

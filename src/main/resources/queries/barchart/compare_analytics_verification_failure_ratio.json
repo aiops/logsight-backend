@@ -1,0 +1,41 @@
+{
+  "aggs": {
+    "listAggregations": {
+      "date_histogram": {
+        "field": "timestamp",
+        "calendar_interval": "1w",
+        "time_zone": "Europe/Berlin"
+      },
+      "aggs": {
+        "bucketFailureRatio": {
+          "avg": {
+            "field": "is_failure"
+          }
+        }
+      }
+    }
+  },
+  "size": 0,
+  "fields": [
+    {
+      "field": "timestamp",
+      "format": "date_time"
+    }
+  ],
+  "script_fields": {},
+  "stored_fields": [
+    "*"
+  ],
+  "runtime_mappings": {},
+  "_source": {
+    "excludes": []
+  },
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [baselineTags_value],
+      "should": [],
+      "must_not": []
+    }
+  }
+}

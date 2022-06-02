@@ -2,19 +2,17 @@ package ai.logsight.backend.compare.ports.web
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.config.CommonConfigProperties
-import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
-import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
 import ai.logsight.backend.compare.domain.dto.CompareDTO
-import ai.logsight.backend.compare.domain.dto.Tag
 import ai.logsight.backend.compare.domain.service.CompareService
+import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
+import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
+import ai.logsight.backend.compare.ports.web.response.*
+import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import springfox.documentation.annotations.ApiIgnore
-import java.util.*
-import javax.naming.AuthenticationException
 import javax.validation.Valid
 
 @Api(tags = ["Compare"], description = "Comparison between log data")
@@ -23,66 +21,76 @@ import javax.validation.Valid
 class CompareController(
     val compareService: CompareService,
     val applicationStorageService: ApplicationStorageService,
+    val userStorageService: UserStorageService,
     val commonConfigProperties: CommonConfigProperties
 ) {
 
-    @ApiOperation("Obtain log compare results between two tags")
+    @ApiOperation("Create log compare between baseline and candidate tags")
     @PostMapping("")
-    @ResponseStatus(HttpStatus.OK)
-    fun getCompareResults(
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createCompare(
         authentication: Authentication,
         @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
     ): CompareDataResponse {
-        val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
-        if (application.user.email != authentication.name) {
-            throw AuthenticationException("Unauthorized")
-        }
+        val user = userStorageService.findUserByEmail(authentication.name)
         val compareDTO = CompareDTO(
-            applicationId = application.id,
-            applicationName = application.name,
             logsReceiptId = getCompareResultRequest.logsReceiptId,
-            baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.candidateTag,
-            privateKey = application.user.key
+            baselineTags = getCompareResultRequest.baselineTags,
+            candidateTags = getCompareResultRequest.candidateTags,
+            privateKey = user.key
         )
         val compareResponse = compareService.getCompareData(compareDTO)
-        compareResponse.applicationId = application.id
-        compareResponse.logsReceiptId = getCompareResultRequest.logsReceiptId
         compareResponse.link =
-            "${commonConfigProperties.baseURL}/pages/compare?applicationId=${application.id}&baselineTag=${getCompareResultRequest.baselineTag}&compareTag=${getCompareResultRequest.candidateTag}"
+            "${commonConfigProperties.baseURL}/pages/compare?compareId=${compareResponse.compareId}"
+        compareResponse.baselineTags = getCompareResultRequest.baselineTags
+        compareResponse.candidateTags = getCompareResultRequest.candidateTags
         return compareResponse
     }
 
-    @ApiIgnore
-    @PostMapping("/view")
+    @ApiOperation("Get compare by ID")
+    @GetMapping("/{compareId}")
     @ResponseStatus(HttpStatus.OK)
-    fun getCompareViewResults(
-        @Valid @RequestBody getCompareResultRequest: GetCompareResultRequest
-    ): String {
-        val application = applicationStorageService.findApplicationById(getCompareResultRequest.applicationId)
-        val compareDTO = CompareDTO(
-            applicationId = application.id,
-            applicationName = application.name,
-            logsReceiptId = getCompareResultRequest.logsReceiptId,
-            baselineTag = getCompareResultRequest.baselineTag,
-            compareTag = getCompareResultRequest.candidateTag,
-            privateKey = application.user.key
-        )
-        return compareService.getCompareDataView(compareDTO)
+    fun getCompareByID(
+        authentication: Authentication,
+        @PathVariable compareId: String,
+    ): GetCompareByIdResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return GetCompareByIdResponse(compareService.getCompareByID(compareId, user))
     }
 
-    @ApiOperation("Get all available tags for specific application")
-    @GetMapping("/tags")
+    @ApiOperation("Get all compares")
+    @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    fun getCompareTags(
+    fun getAllCompares(
         authentication: Authentication,
-        @RequestParam(required = true) applicationId: UUID,
-        @RequestParam(required = true) userId: UUID
-    ): MutableList<Tag> {
-        val application = applicationStorageService.findApplicationById(applicationId)
-        if (application.user.email != authentication.name) {
-            throw AuthenticationException("Unauthorized")
-        }
-        return compareService.getCompareTags(userId, applicationId) // use response here
+    ): GetAllCompareResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return GetAllCompareResponse(compareService.getAllCompares(user))
+    }
+
+    @ApiOperation("Delete compare by ID")
+    @DeleteMapping("{compareId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteCompareByID(
+        authentication: Authentication,
+        @PathVariable compareId: String,
+    ): DeleteCompareByIdResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return DeleteCompareByIdResponse(compareService.deleteCompareByID(compareId, user))
+    }
+
+    @ApiOperation("Update compare status by ID")
+    @PostMapping("/status")
+    @ResponseStatus(HttpStatus.OK)
+    fun updateCompareStatusByID(
+        authentication: Authentication,
+        @Valid @RequestBody updateCompareStatusRequest: UpdateCompareStatusRequest
+    ): UpdateCompareStatusResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        return UpdateCompareStatusResponse(
+            compareService.updateCompareStatusByID(
+                updateCompareStatusRequest.compareId, updateCompareStatusRequest.compareStatus, user
+            )
+        )
     }
 }

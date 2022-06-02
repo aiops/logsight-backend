@@ -1,0 +1,24 @@
+{
+  "size": 500,
+  "version": true,
+  "fields": [
+    {
+      "field": "*",
+      "include_unmapped": "true"
+    },
+    {
+      "field": "timestamp",
+      "format": "strict_date_optional_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [],
+      "filter": [
+          compare_id
+      ],
+      "should": [],
+      "must_not": []
+    }
+  }
+}
