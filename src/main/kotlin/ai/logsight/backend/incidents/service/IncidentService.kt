@@ -39,18 +39,20 @@ class IncidentService(
         val getChartDataQuery = GetChartDataQuery(
             application = application, user = application.user,
             chartConfig = ChartConfig(
-                "tablechart",
-                incidentQuery.startTime,
-                incidentQuery.stopTime,
-                "incidents",
-                "incidents"
+                mapOf(
+                    "type" to "tablechart",
+                    "startTime" to incidentQuery.startTime,
+                    "stopTime" to incidentQuery.stopTime,
+                    "feature" to "incidents",
+                    "indexType" to "incidents"
+                )
             ),
             credentials = Credentials(application.user.email, application.user.key)
         )
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.indexType
+            getChartDataQuery.chartConfig.parameters["indexType"] as String
         )
         val incidentResultData =
             mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
