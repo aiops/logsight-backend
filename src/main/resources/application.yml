@@ -54,14 +54,14 @@ logsight:
       port: ${LOGS_STREAM_ZMQ_PORT:5559}
       hwm: 1000000
     kafka:
-      bootstrapServer: ${LOGSIGHT_KAFKA_SERVER:localhost:9092}
+      bootstrapServer: ${KAFKA_SERVER:localhost:9092}
       topic: "log-batches"
       partitions: 5
       replication_factor: 1
 
   logs:
     sink:
-      type: "zmq" # "queued-zmq", "kafka"
+      type: ${LOG_SINK_CONNECTION:zmq} # "queued-zmq", "kafka"
       queue:
         max-size: 100000
 
