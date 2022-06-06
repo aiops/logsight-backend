@@ -2,7 +2,7 @@
   "aggs": {
     "listAggregations": {
       "terms": {
-        "field": "tag.keyword",
+        "field": "tags.field_name.keyword",
         "order": {
           "_count": "desc"
         },
@@ -20,17 +20,13 @@
   "script_fields": {},
   "docvalue_fields": [
     {
-      "field": "@timestamp",
+      "field": "timestamp",
       "format": "date_time"
     }
   ],
   "query": {
     "bool": {
-      "filter": [
-        {
-          "match_all": {}
-        }
-      ],
+      "filter": [field_value],
       "should": [],
       "must_not": []
     }

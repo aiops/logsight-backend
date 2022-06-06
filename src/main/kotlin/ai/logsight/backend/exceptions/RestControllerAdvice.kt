@@ -2,16 +2,13 @@ package ai.logsight.backend.exceptions
 
 import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
 import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.exceptions.ApplicationRemoteException
-import ai.logsight.backend.application.exceptions.ApplicationStatusException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
-import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
-import ai.logsight.backend.flush.exceptions.FlushNotFoundException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSinkException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
@@ -29,7 +26,6 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
-import java.io.IOException
 import javax.naming.AuthenticationException
 import javax.servlet.http.HttpServletRequest
 
@@ -37,7 +33,6 @@ import javax.servlet.http.HttpServletRequest
 class RestControllerAdvice {
 
     private val logger: Logger = LoggerImpl(RestControllerAdvice::class.java)
-
 
     @ExceptionHandler(
         BadCredentialsException::class, AuthenticationException::class
@@ -52,9 +47,7 @@ class RestControllerAdvice {
         EmailExistsException::class,
         TokenExpiredException::class,
         ApplicationAlreadyCreatedException::class,
-        ApplicationStatusException::class,
         UserAlreadyActivatedException::class,
-        FlushAlreadyPendingException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -65,10 +58,10 @@ class RestControllerAdvice {
         ElasticsearchException::class,
         MailException::class,
         LogFileIOException::class,
-        ApplicationRemoteException::class,
         Exception::class, // Wildcard,
         RemoteCompareException::class,
-        ExternalServiceException::class
+        ExternalServiceException::class,
+        LogSinkException::class
     )
     fun handleInternalServerError(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, request, e)
@@ -92,7 +85,6 @@ class RestControllerAdvice {
         TokenNotFoundException::class,
         ApplicationNotFoundException::class,
         LogsReceiptNotFoundException::class,
-        FlushNotFoundException::class
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)
@@ -138,6 +130,6 @@ class RestControllerAdvice {
 //            else -> stackTrace // default behavior
 //        }
 
-        return ResponseEntity(ErrorResponse(status, message, requestPath), status)
+        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTrace), status)
     }
 }

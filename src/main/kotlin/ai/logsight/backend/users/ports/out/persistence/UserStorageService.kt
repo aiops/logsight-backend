@@ -8,7 +8,7 @@ interface UserStorageService {
     fun createOnlineUser(email: String, password: String): OnlineUser
     fun findUserById(userId: UUID): User
     fun findUserByEmail(email: String): User
-    fun changePassword(id: UUID, newPassword: String, confirmNewPassword: String): User
+    fun changePassword(id: UUID, newPassword: String): User
     fun activateUser(email: String): User
     fun createUser(email: String, password: String): User
     fun checkEmailExists(email: String): Boolean

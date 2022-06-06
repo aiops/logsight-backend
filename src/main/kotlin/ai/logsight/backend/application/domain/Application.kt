@@ -6,7 +6,9 @@ import java.util.*
 data class Application(
     val id: UUID,
     val name: String,
-    var status: ApplicationStatus,
+    val displayName: String?,
+    val status: ApplicationStatus,
     val user: User,
-    val applicationKey: String
+    val applicationKey: String,
+    val index: String
 )

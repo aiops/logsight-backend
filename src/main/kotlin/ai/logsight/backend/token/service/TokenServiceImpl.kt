@@ -29,8 +29,8 @@ class TokenServiceImpl(
         ).toToken()
     }
 
-    override fun checkActivationToken(activationToken: Token): Boolean {
-        return checkToken(activationToken, TokenType.ACTIVATION_TOKEN)
+    override fun checkActivationToken(activationToken: Token) {
+        checkToken(activationToken, TokenType.ACTIVATION_TOKEN)
     }
 
     override fun createPasswordResetToken(userId: UUID): Token {
@@ -43,11 +43,11 @@ class TokenServiceImpl(
         ).toToken()
     }
 
-    override fun checkPasswordResetToken(passwordToken: Token): Boolean {
+    override fun checkPasswordResetToken(passwordToken: Token) {
         return checkToken(passwordToken, TokenType.PASSWORD_RESET_TOKEN)
     }
 
-    private fun checkToken(token: Token, tokenType: TokenType): Boolean {
+    private fun checkToken(token: Token, tokenType: TokenType) {
         // validateAndDelete token
         if (token.tokenType != tokenType) {
             throw InvalidTokenTypeException()
@@ -58,6 +58,5 @@ class TokenServiceImpl(
         }
 
         tokenRepository.deleteById(token.token)
-        return true
     }
 }

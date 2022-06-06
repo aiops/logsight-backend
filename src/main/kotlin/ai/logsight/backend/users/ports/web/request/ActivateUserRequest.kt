@@ -4,7 +4,7 @@ import java.util.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
-class ActivateUserRequest(
+data class ActivateUserRequest(
     @get:NotNull(message = "id must not be empty.")
     @get:Pattern(
         regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",

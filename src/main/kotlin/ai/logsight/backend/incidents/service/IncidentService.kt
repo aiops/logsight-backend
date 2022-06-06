@@ -9,13 +9,10 @@ import ai.logsight.backend.charts.repository.entities.elasticsearch.TableChartDa
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
-import ai.logsight.backend.compare.controller.request.GetIncidentResultRequest
 import ai.logsight.backend.compare.controller.response.CreateIncidentDataResponse
 import ai.logsight.backend.compare.controller.response.IncidentResponse
-import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.flush.domain.service.FlushStatus
-import ai.logsight.backend.flush.exceptions.FlushAlreadyPendingException
-import ai.logsight.backend.flush.ports.persistence.FlushStorageService
+import ai.logsight.backend.incidents.controller.request.GetIncidentResultRequest
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -24,38 +21,38 @@ import org.springframework.stereotype.Service
 @Service
 class IncidentService(
     private val applicationStorageService: ApplicationStorageService,
-    private val flushStorageService: FlushStorageService,
     private val chartsRepository: ESChartRepository,
+    private val logsReceiptStorageService: LogsReceiptStorageService,
     private val applicationIndicesBuilder: ApplicationIndicesBuilder
 ) {
-    val resetTemplate = RestTemplateConnector()
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
     fun getIncidentResult(incidentQuery: GetIncidentResultRequest): CreateIncidentDataResponse {
         val application = applicationStorageService.findApplicationById(incidentQuery.applicationId)
-        val flush = incidentQuery.flushId?.let {
-            flushStorageService.findFlushById(it)
+        val logsReceipt = incidentQuery.flushId?.let {
+            logsReceiptStorageService.findLogsReceiptById(it)
         }
-        if (flush != null && flush.status != FlushStatus.DONE) {
-            throw FlushAlreadyPendingException("Result init is not yet ready. Please try again later, initiate new result, or send a request without an ID to force getting results.")
-        }
+        // TODO check if logs with logs receipt ID are already in elsticsearch
+
         val getChartDataQuery = GetChartDataQuery(
             application = application, user = application.user,
             chartConfig = ChartConfig(
-                "tablechart",
-                incidentQuery.startTime,
-                incidentQuery.stopTime,
-                "incidents",
-                "incidents"
+                mutableMapOf(
+                    "type" to "tablechart",
+                    "startTime" to incidentQuery.startTime,
+                    "stopTime" to incidentQuery.stopTime,
+                    "feature" to "incidents",
+                    "indexType" to "incidents"
+                )
             ),
             credentials = Credentials(application.user.email, application.user.key)
         )
         val applicationIndices = applicationIndicesBuilder.buildIndices(
             getChartDataQuery.user,
             getChartDataQuery.application,
-            getChartDataQuery.chartConfig.indexType
+            getChartDataQuery.chartConfig.parameters["indexType"] as String
         )
         val incidentResultData =
             mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))

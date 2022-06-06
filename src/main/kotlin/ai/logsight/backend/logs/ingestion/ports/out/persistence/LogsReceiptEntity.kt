@@ -1,7 +1,6 @@
 package ai.logsight.backend.logs.ingestion.ports.out.persistence
 
 import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
-import ai.logsight.backend.flush.ports.persistence.FlushEntity
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import java.util.*
@@ -21,14 +20,7 @@ class LogsReceiptEntity(
     @Column(name = "logs_count", nullable = false)
     var logsCount: Int,
 
-    @Column(name = "source")
-    val source: String,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")
     val application: ApplicationEntity,
-
-    @OneToMany(mappedBy = "logsReceipt", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @Column(name = "flushs")
-    val flushs: List<FlushEntity> = listOf()
 )

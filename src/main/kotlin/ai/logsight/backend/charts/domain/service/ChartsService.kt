@@ -14,4 +14,5 @@ interface ChartsService {
     fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart
     fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart
     fun getChartQuery(userId: UUID, createChartRequest: ChartRequest): GetChartDataQuery
+    fun getAnalyticsIssuesKPI(userId: UUID, baselineTags: Map<String, String>): Map<Long, Long>
 }
