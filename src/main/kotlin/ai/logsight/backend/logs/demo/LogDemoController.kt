@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Api(tags = ["Logs"], description = "Upload sample logs for demo application.")
+@Api(tags = ["Logs"], description = "Upload sample logs for demo.")
 @RestController
 @RequestMapping("/api/v1/demo")
 class LogDemoController(

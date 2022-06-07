@@ -1,6 +1,5 @@
 package ai.logsight.backend.users.ports.web
 
-import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.common.config.LogsightDeploymentType
 import ai.logsight.backend.common.logging.Logger
@@ -31,7 +30,7 @@ class UserController(
     val commonConfigProperties: CommonConfigProperties
 ) {
 
-    private val logger: Logger = LoggerImpl(ApplicationLifecycleService::class.java)
+    private val logger: Logger = LoggerImpl(UserController::class.java)
 
     /**
      * Register a new user in the system.

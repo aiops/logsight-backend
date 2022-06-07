@@ -8,7 +8,6 @@ import ai.logsight.backend.compare.ports.web.request.GetCompareAnalyticsIssueKPI
 import ai.logsight.backend.compare.ports.web.response.CompareAnalyticsIssueKPIResponse
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
-import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import springfox.documentation.annotations.ApiIgnore
 import java.util.*
@@ -95,7 +94,10 @@ class ChartsController(
         ) @NotEmpty(message = "userId must not be empty.") userId: String,
         @Valid @RequestBody getCompareAnalyticsIssueKPIRequest: GetCompareAnalyticsIssueKPIRequest
     ): CompareAnalyticsIssueKPIResponse {
-        val result = chartsService.getAnalyticsIssuesKPI(UUID.fromString(userId), getCompareAnalyticsIssueKPIRequest.baselineTags)
+        val result = chartsService.getAnalyticsIssuesKPI(
+            UUID.fromString(userId),
+            getCompareAnalyticsIssueKPIRequest.baselineTags
+        )
         return CompareAnalyticsIssueKPIResponse(result)
     }
 }
