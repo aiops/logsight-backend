@@ -1,32 +1,29 @@
 package ai.logsight.backend.logs.ingestion.ports.web
 
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.domain.LogBatch
-import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
+import ai.logsight.backend.logs.ingestion.domain.dto.LogListDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.logs.ingestion.ports.web.responses.LogsReceiptResponse
-import ai.logsight.backend.logs.ingestion.ports.web.responses.NotImplementedResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
-import java.util.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
-import javax.validation.constraints.NotNull
 
 @Api(tags = ["Logs"], description = "Send logs")
 @RestController
 @RequestMapping("/api/v1/logs")
 class LogsController(
     val logsService: LogIngestionService,
-    val userStorageService: UserStorageService,
-    val applicationStorageService: ApplicationStorageService
+    val userStorageService: UserStorageService
 ) {
 
     @ApiOperation("Send list of log messages for analysis")
@@ -36,14 +33,17 @@ class LogsController(
         authentication: Authentication,
         @RequestBody @Valid logListRequest: SendLogListRequest
     ): LogsReceiptResponse {
-        val logs = logListRequest.logs.map { LogsightLog(tags = logListRequest.tags, event = it) }
-        val logBatchDTO = LogBatch(
-            application = applicationStorageService.findApplicationById(logListRequest.applicationId),
-            logs = logs
+
+        val logEventsDTO = LogListDTO(
+            index = userStorageService.findUserByEmail(authentication.name).key,
+            logs = logListRequest.logs,
+            tags = logListRequest.tags
         )
-        val logsReceipt = logsService.processLogBatch(logBatchDTO)
+        val logsReceipt = logsService.processLogList(logEventsDTO)
         return LogsReceiptResponse(
-            logsReceipt.id, logsReceipt.logsCount, logsReceipt.application.id
+            logsReceipt.id, logsReceipt.logCount, logsReceipt.processedLogCount,
+            logsReceipt.batchId,
+            logsReceipt.status
         )
     }
 
@@ -53,29 +53,18 @@ class LogsController(
     fun sendLogSingles(
         authentication: Authentication,
         @RequestBody @Valid logListRequest: MutableList<SendLogMessage>
-    ): List<LogsReceiptResponse> {
+    ): LogsReceiptResponse {
         val logSinglesDTO = LogEventsDTO(
-            user = userStorageService.findUserByEmail(authentication.name),
+            index = userStorageService.findUserByEmail(authentication.name).key,
             logs = logListRequest,
         )
-        val logsReceipts = logsService.processLogEvents(logSinglesDTO)
-        return logsReceipts.map { logsReceipt ->
-            LogsReceiptResponse(
-                logsReceipt.id,
-                logsReceipt.logsCount,
-                logsReceipt.application.id
-            )
-        }
-    }
-
-    @ApiOperation("Send log file for analysis")
-    @PostMapping("/file")
-    fun uploadFile(
-        authentication: Authentication,
-        @RequestPart("file") @NotNull(message = "file must not be empty.") file: MultipartFile,
-        @RequestParam("applicationId") @NotNull(message = "applicationId must not be empty.") applicationId: UUID,
-        @RequestParam("tag", defaultValue = "default") tag: String,
-    ): NotImplementedResponse {
-        return NotImplementedResponse("Not implemented.")
+        val logsReceipt = logsService.processLogEvents(logSinglesDTO)
+        return LogsReceiptResponse(
+            logsReceipt.id,
+            logsReceipt.logCount,
+            logsReceipt.processedLogCount,
+            logsReceipt.batchId,
+            logsReceipt.status
+        )
     }
 }

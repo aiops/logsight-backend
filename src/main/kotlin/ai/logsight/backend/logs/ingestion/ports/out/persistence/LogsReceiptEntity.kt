@@ -1,10 +1,11 @@
 package ai.logsight.backend.logs.ingestion.ports.out.persistence
 
-import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
-import org.hibernate.annotations.Generated
-import org.hibernate.annotations.GenerationTime
+import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
 import java.util.*
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "logs_receipt")
@@ -12,15 +13,15 @@ class LogsReceiptEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    // the columnDefinition annotation works only with PostgresDB
-    @Generated(GenerationTime.INSERT)
-    @Column(name = "order_num", columnDefinition = "serial", nullable = false, unique = true)
-    val orderNum: Long = -1,
+    @Column(name = "log_count", nullable = false)
+    val logCount: Int,
 
-    @Column(name = "logs_count", nullable = false)
-    var logsCount: Int,
+    @Column(name = "processed_log_count", nullable = false)
+    val processedLogCount: Int = 0,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
-    val application: ApplicationEntity,
+    @Column(name = "batch_id", nullable = false)
+    val batchId: UUID,
+
+    @Column(name = "status", nullable = false)
+    var status: LogBatchStatus
 )

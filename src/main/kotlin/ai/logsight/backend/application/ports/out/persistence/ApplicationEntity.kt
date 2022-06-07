@@ -1,7 +1,6 @@
 package ai.logsight.backend.application.ports.out.persistence
 
 import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptEntity
 import ai.logsight.backend.security.KeyGenerator
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import java.util.*
@@ -31,9 +30,5 @@ class ApplicationEntity(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    val user: UserEntity,
-
-    @OneToMany(mappedBy = "application", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @Column(name = "logs_receipts")
-    val logsReceipts: List<LogsReceiptEntity> = listOf()
+    val user: UserEntity
 )

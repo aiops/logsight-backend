@@ -1,24 +1,25 @@
 package ai.logsight.backend.logs.ingestion.ports.web
 
 import ai.logsight.backend.TestInputConfig
-import ai.logsight.backend.TestInputConfig.baseApp
 import ai.logsight.backend.TestInputConfig.baseUser
 import ai.logsight.backend.TestInputConfig.defaultTag
 import ai.logsight.backend.TestInputConfig.logBatch
 import ai.logsight.backend.TestInputConfig.logEvent
-import ai.logsight.backend.TestInputConfig.logsReceipt
 import ai.logsight.backend.TestInputConfig.sendLogMessage
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
+import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
+import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptRepository
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
+import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
+import ai.logsight.backend.logs.ingestion.ports.web.responses.LogsReceiptResponse
 import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import logCount.LogReceipt
 import org.joda.time.DateTime
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -33,36 +34,44 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.ResultActions
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.post
+import java.util.*
 import javax.validation.Validation
 import javax.validation.Validator
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext
+@ActiveProfiles("test")
 internal class LogsControllerIntegrationTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @MockBean
-    private lateinit var userStorageService: UserStorageService
-
     @Autowired
     private lateinit var userRepository: UserRepository
 
     @Autowired
-    private lateinit var applicationRepository: ApplicationRepository
+    private lateinit var logReceiptRepository: LogsReceiptRepository
 
     @MockBean
-    private lateinit var applicationStorageService: ApplicationStorageService
+    private lateinit var logsReceiptStorageService: LogsReceiptStorageService
 
     @MockBean
-    private lateinit var logsService: LogIngestionService
+    private lateinit var logSink: LogSink
+
+    @MockBean
+    private lateinit var userStorageService: UserStorageService
+
+    private val logReceipt = LogReceipt(
+        id = UUID.randomUUID(),
+        logCount = logBatch.logs.size,
+        batchId = logBatch.id,
+        processedLogCount = 0,
+        status = LogBatchStatus.PROCESSING
+    )
 
     @Nested
     @DisplayName("POST /api/v1/logs")
@@ -72,56 +81,57 @@ internal class LogsControllerIntegrationTest {
 
         @BeforeAll
         fun setUp() {
-            applicationRepository.deleteAll()
             userRepository.deleteAll()
+            logReceiptRepository.deleteAll()
             userRepository.save(TestInputConfig.baseUserEntity)
-            applicationRepository.save(TestInputConfig.baseAppEntityReady)
+        }
+
+        @AfterAll
+        fun tearDown() {
+            userRepository.deleteAll()
+            logReceiptRepository.deleteAll()
         }
 
         private val logsUriPath = "/api/v1/logs"
 
         private val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
-        private val defaultBody = SendLogListRequest(applicationId = baseApp.id, logs = listOf(logEvent))
+        private val defaultBody = SendLogListRequest(logs = listOf(logEvent))
 
         @Test
         fun `should return valid log receipt response`() {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
                 .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogBatch(any()))
-                .thenReturn(logsReceipt)
+            Mockito.`when`(logsReceiptStorageService.saveLogReceipt(any()))
+                .thenReturn(logReceipt)
 
+            val expectedResult = LogsReceiptResponse(
+                logsCount = logReceipt.logCount,
+                receiptId = logReceipt.id,
+                processedLogsCount = logReceipt.processedLogCount,
+                status = logReceipt.status,
+                batchId = logReceipt.batchId
+            )
             // when
-            val result = performRequest()
+            val result = mockMvc.post(logsUriPath) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(defaultBody)
+                accept = MediaType.APPLICATION_JSON
+            }
 
-            // then
-            result.andExpect(status().isOk)
-                .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.applicationId")
-                        .value(baseApp.id.toString())
-                )
-                .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.logsCount")
-                        .value(logBatch.logs.size)
-                )
-        }
-
-        @Test
-        fun `should return not found because application is not found`() {
-            // given
-            Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
-                .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenThrow(ApplicationNotFoundException::class.java)
-
-            // when
-            val result = performRequest()
-
-            // then
-            result.andExpect(status().isNotFound)
+            result.andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            expectedResult
+                        )
+                    )
+                }
+                // then
+            }
         }
 
         @Test
@@ -129,23 +139,27 @@ internal class LogsControllerIntegrationTest {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
                 .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogBatch(any()))
-                .thenThrow(RuntimeException::class.java)
+            Mockito.`when`(logSink.sendLogBatch(any()))
+                .thenThrow(LogSinkException::class.java)
+            Mockito.`when`(logsReceiptStorageService.saveLogReceipt(any()))
+                .thenReturn(logReceipt)
 
             // when
-            val result = performRequest()
+            val result = mockMvc.post(logsUriPath) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(defaultBody)
+                accept = MediaType.APPLICATION_JSON
+            }
+
+            val exception = result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertTrue(exception is LogSinkException)
 
             // then
-            result.andExpect(status().isInternalServerError)
         }
-
-        private fun performRequest(requestBody: SendLogListRequest = defaultBody): ResultActions = mockMvc.perform(
-            post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(requestBody))
-                .accept(MediaType.APPLICATION_JSON)
-        )
     }
 
     @Nested
@@ -160,23 +174,40 @@ internal class LogsControllerIntegrationTest {
 
         private val validator: Validator = Validation.buildDefaultValidatorFactory().validator
 
-        private val defaultBody = listOf(sendLogMessage)
-
         @Test
         fun `should return valid log receipt response`() {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
                 .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogBatch(any()))
-                .thenReturn(logsReceipt)
+            Mockito.`when`(logsReceiptStorageService.saveLogReceipt(any()))
+                .thenReturn(logReceipt)
 
+            val expectedResult = LogsReceiptResponse(
+                logsCount = logReceipt.logCount,
+                receiptId = logReceipt.id,
+                processedLogsCount = logReceipt.processedLogCount,
+                status = logReceipt.status,
+                batchId = logReceipt.batchId
+            )
             // when
-            val result = performRequest()
+            val result = mockMvc.post(logsUriPath) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(listOf(sendLogMessage))
+                accept = MediaType.APPLICATION_JSON
+            }
 
-            // then
-            result.andExpect(status().isOk)
+            result.andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            expectedResult
+                        )
+                    )
+                }
+                // then
+            }
         }
 
         @Test
@@ -186,10 +217,16 @@ internal class LogsControllerIntegrationTest {
                 .thenThrow(UserNotFoundException::class.java)
 
             // when
-            val result = performRequest()
+            val result = mockMvc.post(logsUriPath) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(listOf(sendLogMessage))
+                accept = MediaType.APPLICATION_JSON
+            }
 
             // then
-            result.andExpect(status().isNotFound)
+            result.andExpect {
+                status { isNotFound() }
+            }
         }
 
         @Test
@@ -197,16 +234,23 @@ internal class LogsControllerIntegrationTest {
             // given
             Mockito.`when`(userStorageService.findUserByEmail(baseUser.email))
                 .thenReturn(baseUser)
-            Mockito.`when`(applicationStorageService.findApplicationById(baseApp.id))
-                .thenReturn(baseApp)
-            Mockito.`when`(logsService.processLogEvents(any()))
-                .thenThrow(RuntimeException::class.java)
-
+            Mockito.`when`(logSink.sendLogBatch(any()))
+                .thenThrow(LogSinkException::class.java)
+            Mockito.`when`(logsReceiptStorageService.saveLogReceipt(any()))
+                .thenReturn(logReceipt)
             // when
-            val result = performRequest()
+            val result = mockMvc.post(logsUriPath) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(listOf(sendLogMessage))
+                accept = MediaType.APPLICATION_JSON
+            }
 
-            // then
-            result.andExpect(status().isInternalServerError)
+            val exception = result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+                .andReturn().resolvedException
+            Assertions.assertTrue(exception is LogSinkException)
         }
 
         private fun getInvalidLogs(): List<Arguments> {
@@ -219,13 +263,11 @@ internal class LogsControllerIntegrationTest {
                 "Invalid time format" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T15:54:14.876+02:00Z",
-                    applicationId = baseApp.id,
                     tags = defaultTag
-                ), // invalid email and not matching passwords
+                ),
                 "Invalid timestamp" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T12:",
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
 
@@ -237,31 +279,26 @@ internal class LogsControllerIntegrationTest {
                 "case 1" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = DateTime.now().toString(),
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
                 "case 2" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T15:54:14.876Z",
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
                 "case 3" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T15:54:14Z",
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
                 "case 4" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T15:54:14.876",
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
                 "case 5" to SendLogMessage(
                     message = "Hello World!",
                     timestamp = "2016-05-24T15:54:14.876+02:00",
-                    applicationId = baseApp.id,
                     tags = defaultTag
                 ),
 
@@ -285,11 +322,5 @@ internal class LogsControllerIntegrationTest {
         ) {
             Assertions.assertTrue(validator.validate(request).isEmpty())
         }
-
-        private fun performRequest(requestBody: List<SendLogMessage> = defaultBody): ResultActions = mockMvc.perform(
-            post(logsUriPath).contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(requestBody))
-                .accept(MediaType.APPLICATION_JSON)
-        )
     }
 }

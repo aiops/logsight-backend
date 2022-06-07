@@ -1,42 +1,43 @@
 package ai.logsight.backend.logs.ingestion.ports.out.persistence
 
-import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
+import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
 import ai.logsight.backend.logs.ingestion.extensions.toLogsReceipt
+import logCount.LogReceipt
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class LogsReceiptStorageServiceImpl(
     private val logsReceiptRepository: LogsReceiptRepository,
-    private val applicationStorageService: ApplicationStorageService
 ) : LogsReceiptStorageService {
-    override fun saveLogsReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogsReceipt {
+    override fun saveLogReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
-            logsCount = createLogsReceiptCommand.logsCount,
-            application = applicationStorageService
-                .findApplicationById(createLogsReceiptCommand.application.id)
-                .toApplicationEntity()
+            logCount = createLogsReceiptCommand.logsCount,
+            batchId = createLogsReceiptCommand.batchId,
+            status = LogBatchStatus.PROCESSING
         )
         return logsReceiptRepository.save(logsReceiptEntity).toLogsReceipt()
     }
 
-    override fun findLogsReceiptById(logReceiptId: UUID): LogsReceipt {
+    override fun findLogReceiptById(logReceiptId: UUID): LogReceipt {
         return findLogsReceiptByIdPrivate(logReceiptId).toLogsReceipt()
-    }
-
-    override fun updateLogsCount(logsReceipt: LogsReceipt, logsCount: Int): LogsReceipt {
-        val logsReceiptEntity = findLogsReceiptByIdPrivate(logsReceipt.id)
-        logsReceiptEntity.logsCount = logsCount
-        return logsReceiptRepository.save(logsReceiptEntity)
-            .toLogsReceipt()
     }
 
     private fun findLogsReceiptByIdPrivate(logsReceiptId: UUID): LogsReceiptEntity {
         return logsReceiptRepository.findById(logsReceiptId)
             .orElseThrow { LogsReceiptNotFoundException("LogRequest receipt with id $logsReceiptId is not found") }
+    }
+
+    override fun updateLogReceiptStatus(logReceiptId: UUID, status: LogBatchStatus): LogReceipt {
+        val logReceiptEntity = findLogsReceiptByIdPrivate(logReceiptId)
+        logReceiptEntity.status = status
+        logsReceiptRepository.save(logReceiptEntity)
+        return logReceiptEntity.toLogsReceipt()
+    }
+
+    override fun deleteLogReceipt(logReceiptId: UUID) {
+        logsReceiptRepository.deleteById(logReceiptId)
     }
 }

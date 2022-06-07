@@ -1,8 +1,8 @@
 package ai.logsight.backend.logs.ingestion.domain.service.command
 
-import ai.logsight.backend.application.domain.Application
+import java.util.*
 
 data class CreateLogsReceiptCommand(
-    val logsCount: Int,
-    val application: Application
+    val batchId: UUID,
+    val logsCount: Int
 )

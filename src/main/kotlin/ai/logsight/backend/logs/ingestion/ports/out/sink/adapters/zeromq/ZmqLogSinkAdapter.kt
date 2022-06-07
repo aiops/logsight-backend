@@ -2,7 +2,7 @@ package ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.zeromq
 
 import ai.logsight.backend.connectors.sink.zmq.ZmqSinkConnector
 import ai.logsight.backend.logs.ingestion.domain.dto.LogBatchDTO
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSinkException
+import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.LogSinkAdapter
 import ai.logsight.backend.logs.ingestion.ports.out.sink.serializer.LogBatchSerializer
 import org.springframework.stereotype.Component

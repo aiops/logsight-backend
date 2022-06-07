@@ -1,17 +1,16 @@
 package ai.logsight.backend.logs.demo
 
 import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
-import ai.logsight.backend.application.domain.service.command.CreateApplicationCommand
 import ai.logsight.backend.application.domain.service.command.DeleteApplicationCommand
 import ai.logsight.backend.application.ports.out.persistence.ApplicationRepository
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
-import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.extensions.toUserEntity
+import logCount.LogReceipt
 import org.springframework.stereotype.Service
 
 @Service
@@ -37,28 +36,26 @@ class LogDemoService(
         }
     }
 
-    fun createHadoopDemoForUser(user: User): List<LogsReceipt> {
+    fun createHadoopDemoForUser(user: User): List<LogReceipt> {
         deleteDanglingApplications(user)
 
-        val fileNames = listOf("hdfs_node-v1.0.0", "hdfs_node-v1.1.0", "node_manager-v1.0.0", "node_manager-v1.1.0", "resource_manager-v1.0.0", "resource_manager-v1.1.0", "name_node-v1.0.0", "name_node-v1.1.0")
+        val fileNames = listOf(
+            "hdfs_node-v1.0.0",
+            "hdfs_node-v1.1.0",
+            "node_manager-v1.0.0",
+            "node_manager-v1.1.0",
+            "resource_manager-v1.0.0",
+            "resource_manager-v1.1.0",
+            "name_node-v1.0.0",
+            "name_node-v1.1.0"
+        )
         val logReceipts = fileNames.map { fileName ->
             // read file
             val logMessages = this.readSampleFile(fileName)
-            // create application
-            val appName = fileName.split("-")[0]
-            val application = applicationLifecycleService.createApplication(
-                CreateApplicationCommand(
-                    applicationName = appName,
-                    user = user,
-                    displayName = appName
-                )
-            )
+
             // process logs
             logIngestionService.processLogBatch(
-                LogBatch(
-                    application = application,
-                    logs = logMessages,
-                )
+                LogBatch(logs = logMessages, index = user.key)
             )
         }.toList()
 

@@ -32,7 +32,7 @@ class IncidentService(
     fun getIncidentResult(incidentQuery: GetIncidentResultRequest): CreateIncidentDataResponse {
         val application = applicationStorageService.findApplicationById(incidentQuery.applicationId)
         val logsReceipt = incidentQuery.flushId?.let {
-            logsReceiptStorageService.findLogsReceiptById(it)
+            logsReceiptStorageService.findLogReceiptById(it)
         }
         // TODO check if logs with logs receipt ID are already in elsticsearch
 

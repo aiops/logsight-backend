@@ -8,15 +8,16 @@ import java.io.InputStream
 
 class LogFileReader {
 
-    fun readFile(fileName: String, inputStream: InputStream): List<LogEvent> {
+    private fun readFile(fileName: String, inputStream: InputStream): List<LogEvent> {
         val fileContent = readFileContent(fileName, inputStream)
         return logLinesToList(fileContent)
     }
 
     fun readDemoFile(fileName: String, inputStream: InputStream): List<LogsightLog> {
         val version = fileName.split("-")[1]
+        val appName = fileName.split("-")[0]
         val logs = readFile(fileName, inputStream)
-        return logs.map { LogsightLog(event = it, tags = mapOf("version" to version)) }
+        return logs.map { LogsightLog(event = it, tags = mapOf("version" to version, "name" to appName)) }
     }
 
     private fun readFileContent(fileName: String, inputStream: InputStream): String =
@@ -30,7 +31,7 @@ class LogFileReader {
     private fun logLinesToList(fileContent: String): List<LogEvent> {
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
         val logMessages = fileContent.lines().filter { it.isNotEmpty() }.map {
-            mapper.readValue<LogEvent>(it, LogEvent::class.java)
+            mapper.readValue(it, LogEvent::class.java)
         }
         return logMessages
     }

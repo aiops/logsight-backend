@@ -8,7 +8,7 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSinkException
+import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
