@@ -41,7 +41,7 @@ class LogsController(
         )
         val logsReceipt = logsService.processLogList(logEventsDTO)
         return LogsReceiptResponse(
-            logsReceipt.id, logsReceipt.logCount, logsReceipt.processedLogCount,
+            logsReceipt.id, logsReceipt.logsCount, logsReceipt.processedLogCount,
             logsReceipt.batchId,
             logsReceipt.status
         )
@@ -61,7 +61,7 @@ class LogsController(
         val logsReceipt = logsService.processLogEvents(logSinglesDTO)
         return LogsReceiptResponse(
             logsReceipt.id,
-            logsReceipt.logCount,
+            logsReceipt.logsCount,
             logsReceipt.processedLogCount,
             logsReceipt.batchId,
             logsReceipt.status

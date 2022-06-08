@@ -1,6 +1,5 @@
 package ai.logsight.backend.compare.ports.web
 
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.common.config.CommonConfigProperties
 import ai.logsight.backend.compare.domain.dto.CompareDTO
 import ai.logsight.backend.compare.domain.service.CompareService
@@ -20,7 +19,6 @@ import javax.validation.Valid
 @RequestMapping("/api/v1/logs/compare")
 class CompareController(
     val compareService: CompareService,
-    val applicationStorageService: ApplicationStorageService,
     val userStorageService: UserStorageService,
     val commonConfigProperties: CommonConfigProperties
 ) {

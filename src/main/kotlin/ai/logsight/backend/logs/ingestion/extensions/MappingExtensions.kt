@@ -5,7 +5,7 @@ import logCount.LogReceipt
 
 fun LogsReceiptEntity.toLogsReceipt() = LogReceipt(
     id = this.id,
-    logCount = this.logCount,
+    logsCount = this.logsCount,
     status = this.status,
     batchId = this.batchId,
     processedLogCount = this.processedLogCount
@@ -13,7 +13,7 @@ fun LogsReceiptEntity.toLogsReceipt() = LogReceipt(
 
 fun LogReceipt.toLogsReceiptEntity() = LogsReceiptEntity(
     id = this.id,
-    logCount = this.logCount,
+    logsCount = this.logsCount,
     status = this.status,
     batchId = this.batchId,
     processedLogCount = this.processedLogCount

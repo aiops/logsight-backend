@@ -67,7 +67,7 @@ internal class LogsControllerIntegrationTest {
 
     private val logReceipt = LogReceipt(
         id = UUID.randomUUID(),
-        logCount = logBatch.logs.size,
+        logsCount = logBatch.logs.size,
         batchId = logBatch.id,
         processedLogCount = 0,
         status = LogBatchStatus.PROCESSING
@@ -107,7 +107,7 @@ internal class LogsControllerIntegrationTest {
                 .thenReturn(logReceipt)
 
             val expectedResult = LogsReceiptResponse(
-                logsCount = logReceipt.logCount,
+                logsCount = logReceipt.logsCount,
                 receiptId = logReceipt.id,
                 processedLogsCount = logReceipt.processedLogCount,
                 status = logReceipt.status,
@@ -183,7 +183,7 @@ internal class LogsControllerIntegrationTest {
                 .thenReturn(logReceipt)
 
             val expectedResult = LogsReceiptResponse(
-                logsCount = logReceipt.logCount,
+                logsCount = logReceipt.logsCount,
                 receiptId = logReceipt.id,
                 processedLogsCount = logReceipt.processedLogCount,
                 status = logReceipt.status,

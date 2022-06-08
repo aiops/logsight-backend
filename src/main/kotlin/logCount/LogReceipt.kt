@@ -5,7 +5,7 @@ import java.util.*
 
 data class LogReceipt(
     val id: UUID,
-    val logCount: Int,
+    val logsCount: Int,
     val processedLogCount: Int,
     val batchId: UUID,
     val status: LogBatchStatus

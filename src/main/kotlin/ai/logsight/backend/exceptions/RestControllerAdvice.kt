@@ -1,7 +1,5 @@
 package ai.logsight.backend.exceptions
 
-import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -46,7 +44,6 @@ class RestControllerAdvice {
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
-        ApplicationAlreadyCreatedException::class,
         UserAlreadyActivatedException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
@@ -83,7 +80,6 @@ class RestControllerAdvice {
     @ExceptionHandler(
         UserNotFoundException::class,
         TokenNotFoundException::class,
-        ApplicationNotFoundException::class,
         LogsReceiptNotFoundException::class,
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {

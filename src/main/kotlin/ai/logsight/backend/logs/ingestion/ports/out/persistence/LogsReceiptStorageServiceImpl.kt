@@ -14,7 +14,7 @@ class LogsReceiptStorageServiceImpl(
 ) : LogsReceiptStorageService {
     override fun saveLogReceipt(createLogsReceiptCommand: CreateLogsReceiptCommand): LogReceipt {
         val logsReceiptEntity = LogsReceiptEntity(
-            logCount = createLogsReceiptCommand.logsCount,
+            logsCount = createLogsReceiptCommand.logsCount,
             batchId = createLogsReceiptCommand.batchId,
             status = LogBatchStatus.PROCESSING
         )

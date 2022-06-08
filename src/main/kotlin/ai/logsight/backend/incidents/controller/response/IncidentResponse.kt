@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.util.*
 
 data class IncidentResponse(
-    val applicationId: UUID?,
     val startTimestamp: String,
     val stopTimestamp: String,
     val semanticThreats: JsonNode,

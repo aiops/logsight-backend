@@ -25,7 +25,7 @@ internal class LogIngestionServiceImplTest {
     companion object {
         private val logBatch = TestInputConfig.logBatch
         private val logReceipt = LogReceipt(
-            id = UUID.randomUUID(), logCount = logBatch.logs.size, batchId = logBatch.id,
+            id = UUID.randomUUID(), logsCount = logBatch.logs.size, batchId = logBatch.id,
             processedLogCount = 0, status = LogBatchStatus.PROCESSING
         )
     }
@@ -66,7 +66,7 @@ internal class LogIngestionServiceImplTest {
 
         // when
         val result = ingestionService.processLogList(logListDTO)
-        Assertions.assertEquals(result.logCount, logReceipt.logCount)
+        Assertions.assertEquals(result.logsCount, logReceipt.logsCount)
         Assertions.assertEquals(result.processedLogCount, logReceipt.processedLogCount)
         verify(exactly = 1) { logSink.sendLogBatch(any()) }
     }
@@ -81,7 +81,7 @@ internal class LogIngestionServiceImplTest {
 
         val result = ingestionService.processLogEvents(logEventsDTO)
 
-        Assertions.assertEquals(result.logCount, logReceipt.logCount)
+        Assertions.assertEquals(result.logsCount, logReceipt.logsCount)
         Assertions.assertEquals(result.processedLogCount, logReceipt.processedLogCount)
         verify(exactly = 1) { logSink.sendLogBatch(any()) }
     }

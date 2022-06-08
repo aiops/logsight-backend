@@ -24,21 +24,6 @@ class ChartsController(
 
     private val logger = LoggerImpl(ChartsController::class.java)
 
-    @PostMapping("/heatmap")
-    @ResponseStatus(HttpStatus.OK)
-    fun createHeatmap(
-        @PathVariable @Pattern(
-            regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
-            message = "userId must be UUID type."
-        ) @NotEmpty(message = "userId must not be empty.") userId: String,
-        @Valid @RequestBody createChartRequest: ChartRequest
-    ): CreateChartResponse {
-        logger.debug("Getting chart data with query parameters: ${createChartRequest.chartConfig}")
-        val query = chartsService.getChartQuery(UUID.fromString(userId), createChartRequest)
-        // Create charts command
-        return CreateChartResponse(chartsService.createHeatMap(query))
-    }
-
     @PostMapping("/barchart")
     @ResponseStatus(HttpStatus.OK)
     fun createBarchart(

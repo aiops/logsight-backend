@@ -5,7 +5,6 @@ import java.util.*
 
 data class LogBatchDTO(
     val id: UUID,
-    val metadata: Map<String, Any> = emptyMap(),
     val logs: List<LogsightLog>,
     val index: String
 )

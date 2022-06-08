@@ -9,7 +9,6 @@ operator fun LogBatchDTO.plus(batch: LogBatchDTO): LogBatchDTO {
             this.id,
             index = this.index,
             logs = this.logs + batch.logs,
-            metadata = this.metadata + batch.metadata
         )
     } else {
         throw InvalidIdException("Combine batches with different IDs")

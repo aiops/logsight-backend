@@ -1,6 +1,5 @@
 package ai.logsight.backend.common.logging
 
-import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
 import org.slf4j.LoggerFactory
 
 class LoggerImpl(kClass: Class<*>) : Logger {

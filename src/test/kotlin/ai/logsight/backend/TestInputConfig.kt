@@ -1,8 +1,5 @@
 package ai.logsight.backend
 
-import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.application.extensions.toApplication
-import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogEvent
 import ai.logsight.backend.logs.domain.LogsightLog
@@ -20,7 +17,6 @@ object TestInputConfig {
 
     const val baseEmail = "testemail@gmail.com"
     const val basePassword = "testpassword"
-    const val baseAppName = "test_app"
 
     val baseUserEntity = UserEntity(
         email = baseEmail,
@@ -29,12 +25,6 @@ object TestInputConfig {
         activated = true
     )
     val baseUser = baseUserEntity.toUser()
-
-    val baseAppEntityReady = ApplicationEntity(
-        name = baseAppName, user = baseUserEntity, status = ApplicationStatus.READY,
-        index = baseAppName
-    )
-    val baseApp = baseAppEntityReady.toApplication()
 
     // Logs
     val defaultTag = mapOf("default" to "default")

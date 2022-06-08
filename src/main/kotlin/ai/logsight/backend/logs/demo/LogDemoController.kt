@@ -24,7 +24,7 @@ class LogDemoController(
         return logsReceipts.map { logsReceipt ->
             LogsReceiptResponse(
                 logsReceipt.id,
-                logsReceipt.logCount,
+                logsReceipt.logsCount,
                 logsReceipt.processedLogCount,
                 logsReceipt.batchId,
                 logsReceipt.status

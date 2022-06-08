@@ -13,8 +13,8 @@ class LogsReceiptEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "log_count", nullable = false)
-    val logCount: Int,
+    @Column(name = "logs_count", nullable = false)
+    val logsCount: Int,
 
     @Column(name = "processed_log_count", nullable = false)
     val processedLogCount: Int = 0,
