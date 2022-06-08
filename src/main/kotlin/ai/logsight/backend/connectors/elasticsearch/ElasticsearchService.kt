@@ -60,12 +60,7 @@ class ElasticsearchService(
         val updateResponse: UpdateResponse = client.update(
             request, RequestOptions.DEFAULT
         )
-        val responseId: String = updateResponse.id
-        if (updateResponse.result === DocWriteResponse.Result.UPDATED) {
-            return responseId
-        } else {
-            throw ElasticsearchException("Update was not successful. Please try again.")
-        }
+        return updateResponse.id
     }
 
     fun deleteESUser(username: String) {
