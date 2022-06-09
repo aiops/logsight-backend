@@ -1,6 +1,5 @@
 package ai.logsight.backend.users.ports.out.persistence
 
-import ai.logsight.backend.application.ports.out.persistence.ApplicationEntity
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.jpa.repository.JpaRepository

@@ -1,8 +1,9 @@
 package ai.logsight.backend.logs.domain
 
-import ai.logsight.backend.application.domain.Application
+import java.util.*
 
 data class LogBatch(
-    val application: Application,
-    var logs: List<LogsightLog>,
+    val id: UUID = UUID.randomUUID(),
+    val logs: List<LogsightLog>,
+    val index: String,
 )

@@ -1,14 +1,12 @@
 package ai.logsight.backend.exceptions
 
-import ai.logsight.backend.application.exceptions.ApplicationAlreadyCreatedException
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
-import ai.logsight.backend.logs.ingestion.exceptions.LogsReceiptNotFoundException
-import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSinkException
+import ai.logsight.backend.logs.ingestion.exceptions.LogReceiptNotFoundException
+import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.utils.LogFileIOException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
@@ -46,7 +44,6 @@ class RestControllerAdvice {
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
-        ApplicationAlreadyCreatedException::class,
         UserAlreadyActivatedException::class,
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
@@ -83,8 +80,7 @@ class RestControllerAdvice {
     @ExceptionHandler(
         UserNotFoundException::class,
         TokenNotFoundException::class,
-        ApplicationNotFoundException::class,
-        LogsReceiptNotFoundException::class,
+        LogReceiptNotFoundException::class,
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)

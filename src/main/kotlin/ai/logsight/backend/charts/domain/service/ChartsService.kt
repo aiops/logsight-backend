@@ -9,7 +9,6 @@ import ai.logsight.backend.charts.ports.web.request.ChartRequest
 import java.util.*
 
 interface ChartsService {
-    fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart
     fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart
     fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart
     fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart

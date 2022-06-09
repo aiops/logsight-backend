@@ -1,10 +1,6 @@
 package ai.logsight.backend.charts.domain.service
 
-import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.exceptions.ApplicationNotFoundException
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
 import ai.logsight.backend.charts.domain.charts.BarChart
-import ai.logsight.backend.charts.domain.charts.HeatmapChart
 import ai.logsight.backend.charts.domain.charts.PieChart
 import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.charts.models.ChartSeries
@@ -16,7 +12,6 @@ import ai.logsight.backend.charts.repository.ESChartRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.common.utils.ApplicationIndicesBuilder
 import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
@@ -36,47 +31,13 @@ import kotlin.reflect.full.memberProperties
 @Service
 class ESChartsServiceImpl(
     private val chartsRepository: ESChartRepository,
-    private val applicationStorageService: ApplicationStorageService,
     private val userStorageService: UserStorageService,
-    private val applicationIndicesBuilder: ApplicationIndicesBuilder,
     private val queryBuilderHelper: QueryBuilderHelper
 ) : ChartsService {
     val mapper: ObjectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
     private val logger = LoggerImpl(ESChartsServiceImpl::class.java)
-
-    override fun createHeatMap(getChartDataQuery: GetChartDataQuery): HeatmapChart {
-        // get the String response from elasticsearch and map it into a HeatMapData Object.
-        val applicationIndices = applicationIndicesBuilder.buildIndices(
-            getChartDataQuery.user,
-            getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
-        )
-        logger.debug("Obtained application indices: $applicationIndices.", this::createHeatMap.name)
-        val heatMapData = mapper.readValue<HeatMapData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
-        logger.debug(
-            "Obtained data from elasticsearch indices and successfully converted into an object",
-            this::createHeatMap.name
-        )
-        // map the HeatMapDataObject into HeatMapChart Object
-        val heatMapSeries = mutableListOf<ChartSeries>()
-        logger.debug("Mapping the data to an output chart.", this::createHeatMap.name)
-        heatMapData.aggregations.listAggregations.buckets.forEach {
-            val heatMapListPoints = mutableListOf<ChartSeriesPoint>()
-            for (i in it.listBuckets.buckets) {
-                val name = i.key.split("_").subList(1, i.key.split("_").size - 1).joinToString("_")
-                val app = applicationStorageService.findApplicationByUserAndName(user = getChartDataQuery.user, name)
-                heatMapListPoints.add(
-                    ChartSeriesPoint(
-                        name = name, value = i.valueData.value, applicationId = app!!.id
-                    )
-                )
-            }
-            heatMapSeries.add(ChartSeries(name = it.date.toString(), series = heatMapListPoints))
-        }
-        return HeatmapChart(data = heatMapSeries)
-    }
 
     override fun createBarChart(getChartDataQuery: GetChartDataQuery): BarChart {
         var barChartSeries = mutableListOf<ChartSeries>()
@@ -190,13 +151,13 @@ class ESChartsServiceImpl(
     }
 
     fun createDashboardBarChart(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        val applicationIndices = applicationIndicesBuilder.buildIndices(
-            getChartDataQuery.user,
-            getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
-        )
         val barChartData =
-            mapper.readValue<BarChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+            mapper.readValue<BarChartData>(
+                chartsRepository.getData(
+                    getChartDataQuery,
+                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
+                )
+            )
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -210,14 +171,13 @@ class ESChartsServiceImpl(
 
     override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
-        val applicationIndices = applicationIndicesBuilder.buildIndices(
-            getChartDataQuery.user,
-            getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
-        )
-        logger.debug("Obtained application indices: $applicationIndices.", this::createPieChart.name)
         val pieChartData =
-            mapper.readValue<PieChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+            mapper.readValue<PieChartData>(
+                chartsRepository.getData(
+                    getChartDataQuery,
+                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
+                )
+            )
         logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createPieChart.name
@@ -235,14 +195,13 @@ class ESChartsServiceImpl(
     }
 
     override fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart {
-        val applicationIndices = applicationIndicesBuilder.buildIndices(
-            getChartDataQuery.user,
-            getChartDataQuery.application,
-            getChartDataQuery.chartConfig.parameters["indexType"].toString()
-        )
-        logger.debug("Obtained application indices: $applicationIndices.", this::createTableChart.name)
         val tableChartData =
-            mapper.readValue<TableChartData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+            mapper.readValue<TableChartData>(
+                chartsRepository.getData(
+                    getChartDataQuery,
+                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
+                )
+            )
         logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createTableChart.name
@@ -272,7 +231,6 @@ class ESChartsServiceImpl(
 
     fun getCompareByID(compareId: String?, user: User): List<HitsCompareDataPoint> {
         val chartRequest = ChartRequest(
-            applicationId = null,
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
@@ -295,7 +253,6 @@ class ESChartsServiceImpl(
 
     fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
         val chartRequest = ChartRequest(
-            applicationId = null,
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
@@ -318,7 +275,6 @@ class ESChartsServiceImpl(
 
     fun getCompareTagFilter(user: User, listTags: List<TagEntry>, applicationIndices: String): List<TagKey> {
         val chartRequest = ChartRequest(
-            applicationId = null,
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
@@ -343,7 +299,6 @@ class ESChartsServiceImpl(
         listTags: List<TagEntry>
     ): List<Tag> {
         val chartRequest = ChartRequest(
-            applicationId = null,
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
@@ -364,7 +319,6 @@ class ESChartsServiceImpl(
     override fun getAnalyticsIssuesKPI(userId: UUID, baselineTags: Map<String, String>): Map<Long, Long> {
         val user = userStorageService.findUserById(userId)
         val chartRequest = ChartRequest(
-            applicationId = null,
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
@@ -385,16 +339,10 @@ class ESChartsServiceImpl(
 
     override fun getChartQuery(userId: UUID, createChartRequest: ChartRequest): GetChartDataQuery {
         val user = userStorageService.findUserById(userId)
-        val application: Application? = try {
-            createChartRequest.applicationId?.let { applicationStorageService.findApplicationById(it) }
-        } catch (e: ApplicationNotFoundException) {
-            null
-        }
         return GetChartDataQuery(
             credentials = Credentials(user.email, user.key),
             chartConfig = createChartRequest.chartConfig,
             user = user,
-            application = application
         )
     }
 }

@@ -1,20 +1,20 @@
 package ai.logsight.backend.logs.ingestion.extensions
 
-import ai.logsight.backend.application.extensions.toApplication
-import ai.logsight.backend.application.extensions.toApplicationEntity
-import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
-import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptEntity
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogReceiptEntity
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 
-fun LogsReceiptEntity.toLogsReceipt() = LogsReceipt(
+fun LogReceiptEntity.toLogReceipt() = LogReceipt(
     id = this.id,
-    orderNum = this.orderNum,
     logsCount = this.logsCount,
-    application = this.application.toApplication()
+    status = this.status,
+    batchId = this.batchId,
+    processedLogCount = this.processedLogCount
 )
 
-fun LogsReceipt.toLogsReceiptEntity() = LogsReceiptEntity(
+fun LogReceipt.toLogReceiptEntity() = LogReceiptEntity(
     id = this.id,
-    orderNum = this.orderNum,
     logsCount = this.logsCount,
-    application = this.application.toApplicationEntity()
+    status = this.status,
+    batchId = this.batchId,
+    processedLogCount = this.processedLogCount
 )

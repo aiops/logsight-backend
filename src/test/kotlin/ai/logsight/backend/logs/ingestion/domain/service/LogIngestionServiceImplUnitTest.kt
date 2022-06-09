@@ -1,133 +1,88 @@
 package ai.logsight.backend.logs.ingestion.domain.service
 
 import ai.logsight.backend.TestInputConfig
-import ai.logsight.backend.application.domain.Application
-import ai.logsight.backend.application.domain.ApplicationStatus
-import ai.logsight.backend.application.domain.service.ApplicationLifecycleService
-import ai.logsight.backend.application.ports.out.persistence.ApplicationStorageService
-import ai.logsight.backend.logs.ingestion.domain.LogsReceipt
+import ai.logsight.backend.logs.extensions.toLogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
-import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogsReceiptCommand
-import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogsReceiptStorageService
+import ai.logsight.backend.logs.ingestion.domain.dto.LogListDTO
+import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
+import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
+import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogReceiptStorageService
 import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.doReturn
-import org.mockito.stubbing.Answer
-import org.springframework.test.annotation.DirtiesContext
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import java.util.*
 
-@ExtendWith(MockitoExtension::class)
-@DirtiesContext
 internal class LogIngestionServiceImplUnitTest {
 
-    @Mock
-    private lateinit var applicationStorageService: ApplicationStorageService
+    private val logSink: LogSink = mockk(relaxed = true)
+    private val logReceiptStorageService: LogReceiptStorageService = mockk(relaxed = true)
+    private val ingestionService = LogIngestionServiceImpl(logReceiptStorageService, logSink)
 
-    @Mock
-    private lateinit var applicationLifecycleService: ApplicationLifecycleService
-
-    @Mock
-    private lateinit var logsReceiptStorageService: LogsReceiptStorageService
-
-    @Mock
-    private lateinit var logSink: LogSink
-
-    @InjectMocks
-    private lateinit var logIngestionServiceImpl: LogIngestionServiceImpl
-
-    @Test
-    fun `should return valid log receipt for logBatch`() {
-        // given
-        val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
-        val createLogsReceiptCommand = CreateLogsReceiptCommand(TestInputConfig.logBatch.logs.size, appReady)
-        Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand))
-            .doReturn(TestInputConfig.logsReceipt)
-        // when
-
-        val logsReceipt = logIngestionServiceImpl.processLogBatch(TestInputConfig.logBatch)
-
-        // then
-        assertNotNull(logsReceipt)
-        assertEquals(TestInputConfig.logBatch.logs.size, logsReceipt.logsCount)
-        assertEquals(1, logsReceipt.orderNum)
-        assertEquals(appReady, logsReceipt.application)
+    companion object {
+        private val logBatch = TestInputConfig.logBatch
+        private val logReceipt = LogReceipt(
+            id = UUID.randomUUID(), logsCount = logBatch.logs.size, batchId = logBatch.id,
+            processedLogCount = 0, status = LogBatchStatus.PROCESSING
+        )
     }
 
-    @Nested
-    @DisplayName("Process Log Events")
-    @TestInstance(TestInstance.Lifecycle.PER_METHOD)
-    inner class ProcessLogEvents {
+    @Test
+    fun processLogBatch() {
+        every { logReceiptStorageService.saveLogReceipt(any()) } returns logReceipt
 
-        @Test
-        fun `should return valid log receipt for log events by id`() {
-            // given
-            val logEventsDTOById = TestInputConfig.logEventsDTOById
-            val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
-            Mockito.`when`(applicationStorageService.findApplicationById(appReady.id))
-                .doReturn(appReady)
-            runLogEventsTest(logEventsDTOById, TestInputConfig.getLogsReceipts(1), appReady)
-        }
+        // when
+        val receiptResult = ingestionService.processLogBatch(logBatch)
 
-        @Test
-        fun `should return valid log receipt for log events by name`() {
-            // given
-            val logEventsDTOByName = TestInputConfig.logEventsDTOByName
-            val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
-            Mockito.`when`(applicationLifecycleService.createApplication(TestInputConfig.createApplicationCommand))
-                .doReturn(appReady)
-            runLogEventsTest(logEventsDTOByName, TestInputConfig.getLogsReceipts(1), appReady)
-        }
+        // then
+        Assertions.assertEquals(receiptResult, logReceipt)
+        verify(exactly = 1) { logSink.sendLogBatch(logBatch.toLogBatchDTO()) }
+    }
 
-        @Test
-        fun `should return valid log receipt for log events mixed`() {
-            // given
-            val logEventsDTOMixed = TestInputConfig.logEventsDTOMixed
-            val appReady = TestInputConfig.getAppWithStatus(ApplicationStatus.READY)
-            Mockito.`when`(applicationStorageService.findApplicationById(appReady.id))
-                .doReturn(appReady)
-            Mockito.`when`(applicationLifecycleService.createApplication(TestInputConfig.createApplicationCommand))
-                .doReturn(appReady)
-            runLogEventsTest(logEventsDTOMixed, TestInputConfig.getLogsReceipts(2), appReady)
-        }
+    @Test
+    fun `should set receipt to failed on LogSinkException`() {
+        // given
+        every { logReceiptStorageService.saveLogReceipt(any()) } returns logReceipt
+        every { logSink.sendLogBatch(any()) } throws LogSinkException()
 
-        private fun runLogEventsTest(
-            logEventsDTO: LogEventsDTO,
-            expectedLogsReceipts: List<LogsReceipt>,
-            appReady: Application
-        ) {
-            // given
-            val createLogsReceiptCommand = CreateLogsReceiptCommand(TestInputConfig.numMessages, appReady)
-            Mockito.`when`(logsReceiptStorageService.saveLogsReceipt(createLogsReceiptCommand)).thenAnswer(
-                object : Answer<LogsReceipt> {
-                    private var i = 0
-                    override fun answer(invocation: InvocationOnMock?): LogsReceipt {
-                        return expectedLogsReceipts[i++]
-                    }
-                }
-            )
+        // when
+        Assertions.assertThrows(LogSinkException::class.java) { ingestionService.processLogBatch(logBatch) }
+        // then
+        verify(exactly = 1) { logSink.sendLogBatch(logBatch.toLogBatchDTO()) }
+        verify(exactly = 1) { logReceiptStorageService.deleteLogReceipt(any()) }
+    }
 
-            // when
-            val logsReceipts = logIngestionServiceImpl.processLogEvents(logEventsDTO)
+    @Test
+    fun processLogList() {
+        val logListDTO = LogListDTO(
+            index = TestInputConfig.baseUser.key,
+            logs = List(TestInputConfig.numMessages) { TestInputConfig.logEvent }
+        )
 
-            // then
-            assertNotNull(logsReceipts)
-            assertEquals(expectedLogsReceipts.size, logsReceipts.size)
-            var counter: Long = 1
-            logsReceipts.forEach {
-                assertEquals(TestInputConfig.numMessages, it.logsCount)
-                assertEquals(counter++, it.orderNum)
-                assertEquals(appReady, it.application)
-            }
-        }
+        every { logReceiptStorageService.saveLogReceipt(any()) } returns logReceipt
+
+        // when
+        val result = ingestionService.processLogList(logListDTO)
+        Assertions.assertEquals(result.logsCount, logReceipt.logsCount)
+        Assertions.assertEquals(result.processedLogCount, logReceipt.processedLogCount)
+        verify(exactly = 1) { logSink.sendLogBatch(any()) }
+    }
+
+    @Test
+    fun processLogEvents() {
+        every { logReceiptStorageService.saveLogReceipt(any()) } returns logReceipt
+        val logEventsDTO = LogEventsDTO(
+            index = TestInputConfig.baseUser.key,
+            logs = List(TestInputConfig.numMessages) { TestInputConfig.sendLogMessage }
+        )
+
+        val result = ingestionService.processLogEvents(logEventsDTO)
+
+        Assertions.assertEquals(result.logsCount, logReceipt.logsCount)
+        Assertions.assertEquals(result.processedLogCount, logReceipt.processedLogCount)
+        verify(exactly = 1) { logSink.sendLogBatch(any()) }
     }
 }
