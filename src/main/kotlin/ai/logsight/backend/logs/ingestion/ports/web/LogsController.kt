@@ -5,7 +5,7 @@ import ai.logsight.backend.logs.ingestion.domain.dto.LogListDTO
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogListRequest
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
-import ai.logsight.backend.logs.ingestion.ports.web.responses.LogsReceiptResponse
+import ai.logsight.backend.logs.ingestion.ports.web.responses.LogReceiptResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -32,18 +32,19 @@ class LogsController(
     fun sendLogList(
         authentication: Authentication,
         @RequestBody @Valid logListRequest: SendLogListRequest
-    ): LogsReceiptResponse {
+    ): LogReceiptResponse {
 
         val logEventsDTO = LogListDTO(
             index = userStorageService.findUserByEmail(authentication.name).key,
             logs = logListRequest.logs,
             tags = logListRequest.tags
         )
-        val logsReceipt = logsService.processLogList(logEventsDTO)
-        return LogsReceiptResponse(
-            logsReceipt.id, logsReceipt.logsCount, logsReceipt.processedLogCount,
-            logsReceipt.batchId,
-            logsReceipt.status
+        val logReceipt = logsService.processLogList(logEventsDTO)
+        return LogReceiptResponse(
+            logReceipt.id,
+            logReceipt.logsCount,
+            logReceipt.batchId,
+            logReceipt.status
         )
     }
 
@@ -53,18 +54,17 @@ class LogsController(
     fun sendLogSingles(
         authentication: Authentication,
         @RequestBody @Valid logListRequest: MutableList<SendLogMessage>
-    ): LogsReceiptResponse {
+    ): LogReceiptResponse {
         val logSinglesDTO = LogEventsDTO(
             index = userStorageService.findUserByEmail(authentication.name).key,
             logs = logListRequest,
         )
-        val logsReceipt = logsService.processLogEvents(logSinglesDTO)
-        return LogsReceiptResponse(
-            logsReceipt.id,
-            logsReceipt.logsCount,
-            logsReceipt.processedLogCount,
-            logsReceipt.batchId,
-            logsReceipt.status
+        val logReceipt = logsService.processLogEvents(logSinglesDTO)
+        return LogReceiptResponse(
+            logReceipt.id,
+            logReceipt.logsCount,
+            logReceipt.batchId,
+            logReceipt.status
         )
     }
 }

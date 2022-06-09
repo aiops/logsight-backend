@@ -1,4 +1,4 @@
-package logCount
+package ai.logsight.backend.logs.ingestion.domain
 
 import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
 import java.util.*

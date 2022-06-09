@@ -15,9 +15,9 @@ class LogFileReader {
 
     fun readDemoFile(fileName: String, inputStream: InputStream): List<LogsightLog> {
         val version = fileName.split("-")[1]
-        val appName = fileName.split("-")[0]
+        val service = fileName.split("-")[0]
         val logs = readFile(fileName, inputStream)
-        return logs.map { LogsightLog(event = it, tags = mapOf("version" to version, "name" to appName)) }
+        return logs.map { LogsightLog(event = it, tags = mapOf("version" to version, "service" to service)) }
     }
 
     private fun readFileContent(fileName: String, inputStream: InputStream): String =

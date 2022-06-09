@@ -6,7 +6,7 @@ import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.domain.User
-import logCount.LogReceipt
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import org.springframework.stereotype.Service
 
 @Service

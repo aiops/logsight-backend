@@ -9,7 +9,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "logs_receipt")
-class LogsReceiptEntity(
+class LogReceiptEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 

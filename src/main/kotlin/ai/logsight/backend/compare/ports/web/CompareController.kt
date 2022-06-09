@@ -32,7 +32,7 @@ class CompareController(
     ): CompareDataResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         val compareDTO = CompareDTO(
-            logsReceiptId = getCompareResultRequest.logsReceiptId,
+            logReceiptId = getCompareResultRequest.logReceiptId,
             baselineTags = getCompareResultRequest.baselineTags,
             candidateTags = getCompareResultRequest.candidateTags,
             privateKey = user.key

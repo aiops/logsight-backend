@@ -4,12 +4,16 @@ import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogEvent
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
+import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
+import ai.logsight.backend.logs.ingestion.ports.web.responses.LogReceiptResponse
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserType
 import org.joda.time.DateTime
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import java.util.*
 
 object TestInputConfig {
 
@@ -50,4 +54,17 @@ object TestInputConfig {
         logs = List(numMessages) { logsightLog }
     )
     val logBatchDTO = logBatch.toLogBatchDTO()
+    val logReceipt = LogReceipt(
+        id = UUID.randomUUID(),
+        logsCount = logBatch.logs.size,
+        batchId = logBatch.id,
+        processedLogCount = 0,
+        status = LogBatchStatus.PROCESSING
+    )
+    val logReceiptResponse = LogReceiptResponse(
+        logsCount = logReceipt.logsCount,
+        receiptId = logReceipt.id,
+        status = logReceipt.status,
+        batchId = logReceipt.batchId
+    )
 }

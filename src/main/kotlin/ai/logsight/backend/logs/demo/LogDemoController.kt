@@ -1,6 +1,6 @@
 package ai.logsight.backend.logs.demo
 
-import ai.logsight.backend.logs.ingestion.ports.web.responses.LogsReceiptResponse
+import ai.logsight.backend.logs.ingestion.ports.web.responses.LogReceiptResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -18,16 +18,15 @@ class LogDemoController(
 ) {
     @ApiOperation("Load sample log data")
     @PostMapping("/hadoop")
-    fun sampleData(authentication: Authentication): List<LogsReceiptResponse> {
+    fun sampleData(authentication: Authentication): List<LogReceiptResponse> {
         val user = userStorageService.findUserByEmail(authentication.name)
-        val logsReceipts = logDemoService.createHadoopDemoForUser(user)
-        return logsReceipts.map { logsReceipt ->
-            LogsReceiptResponse(
-                logsReceipt.id,
-                logsReceipt.logsCount,
-                logsReceipt.processedLogCount,
-                logsReceipt.batchId,
-                logsReceipt.status
+        val logReceipts = logDemoService.createHadoopDemoForUser(user)
+        return logReceipts.map { logReceipt ->
+            LogReceiptResponse(
+                logReceipt.id,
+                logReceipt.logsCount,
+                logReceipt.batchId,
+                logReceipt.status
             )
         }
     }
