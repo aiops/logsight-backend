@@ -1,7 +1,6 @@
 package ai.logsight.backend
 
 import ai.logsight.backend.logs.domain.LogBatch
-import ai.logsight.backend.logs.domain.LogEvent
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.LogReceipt
@@ -32,21 +31,19 @@ object TestInputConfig {
 
     // Logs
     val defaultTag = mapOf("default" to "default")
-    val logEvent = LogEvent(
+
+    val sendLogMessage = SendLogMessage(
         message = "Hello World!",
         timestamp = DateTime.now()
             .toString(),
-        level = "INFO"
-    )
-
-    val sendLogMessage = SendLogMessage(
-        message = logEvent.message,
-        timestamp = logEvent.timestamp,
-        level = logEvent.level,
+        level = "INFO",
         tags = defaultTag
     )
     val logsightLog = LogsightLog(
-        event = logEvent, tags = defaultTag
+        message = "Hello World!",
+        timestamp = DateTime.now()
+            .toString(),
+        level = "INFO", tags = defaultTag
     )
     const val numMessages = 100
     val logBatch = LogBatch(

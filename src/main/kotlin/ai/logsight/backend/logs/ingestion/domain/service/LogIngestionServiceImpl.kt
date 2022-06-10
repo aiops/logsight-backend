@@ -4,13 +4,13 @@ import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.extensions.toLogsightLog
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import ai.logsight.backend.logs.ingestion.domain.dto.LogEventsDTO
 import ai.logsight.backend.logs.ingestion.domain.dto.LogListDTO
 import ai.logsight.backend.logs.ingestion.domain.service.command.CreateLogReceiptCommand
 import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogReceiptStorageService
 import ai.logsight.backend.logs.ingestion.ports.out.sink.LogSink
-import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import org.springframework.stereotype.Service
 
 @Service
@@ -53,9 +53,11 @@ class LogIngestionServiceImpl(
 
     private fun logBatchFromLogList(logList: LogListDTO) = LogBatch(
         index = logList.index,
-        logs = logList.logs.map { logEvent ->
+        logs = logList.logs.map {
             LogsightLog(
-                event = logEvent,
+                timestamp = it.timestamp,
+                message = it.message,
+                level = it.level,
                 tags = logList.tags
             )
         }
