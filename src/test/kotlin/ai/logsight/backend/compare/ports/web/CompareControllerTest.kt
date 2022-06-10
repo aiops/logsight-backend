@@ -8,7 +8,6 @@ import ai.logsight.backend.compare.ports.web.request.GetCompareResultRequest
 import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
 import ai.logsight.backend.compare.ports.web.response.DeleteCompareByIdResponse
-import ai.logsight.backend.compare.ports.web.response.GetCompareByIdResponse
 import ai.logsight.backend.compare.ports.web.response.UpdateCompareStatusResponse
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
@@ -70,14 +69,11 @@ internal class CompareControllerTest {
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
         var json = "{ \"f1\" : \"v1\" } "
         var objectMapper = ObjectMapper()
-        var jsonNode = objectMapper.readTree(json)
+        var jsonNode = objectMapper.readTree(json)!!
 
-        val compareId = "exampleCompareId"
+        const val compareId = "exampleCompareId"
 
         val updateCompareStatusRequest = UpdateCompareStatusRequest(compareId, 1)
-        val getCompareByIdResponse = GetCompareByIdResponse(
-            listOf(HitsCompareDataPoint(compareId = "compareId", source = jsonNode))
-        )
 
         val createCompareRequest =
             GetCompareResultRequest(baselineTags = mapOf("tag" to "default"), candidateTags = mapOf("tag" to "default"))
@@ -134,8 +130,7 @@ internal class CompareControllerTest {
 //            Mockito.`when`(mockedResponse.statusCode()).thenReturn(200)
 //            Mockito.`when`(mockedResponse.body()).thenReturn("ok")
 
-            Mockito.`when`(httpClientFactory.create())
-                .thenReturn(httpClientMock)
+            Mockito.`when`(httpClientFactory.create()).thenReturn(httpClientMock)
             Mockito.`when`(httpClientMock.send(any(), any<HttpResponse.BodyHandler<String>>()))
                 .thenReturn(mockedResponse)
             // when
@@ -161,12 +156,10 @@ internal class CompareControllerTest {
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
                 "Empty baseline tags" to GetCompareResultRequest(
-                    baselineTags = mapOf(),
-                    candidateTags = mapOf("tag" to "default")
+                    baselineTags = mapOf(), candidateTags = mapOf("tag" to "default")
                 ),
                 "Empty candidate tags" to GetCompareResultRequest(
-                    baselineTags = mapOf(),
-                    candidateTags = mapOf("tag" to "default")
+                    baselineTags = mapOf(), candidateTags = mapOf("tag" to "default")
                 ),
             ).map { x -> Arguments.of(x.key, x.value) }
         }
@@ -174,8 +167,7 @@ internal class CompareControllerTest {
         @ParameterizedTest(name = "Bad request for {0}. ")
         @MethodSource("getInvalidRequests")
         fun `Bad request for invalid input`(
-            reason: String,
-            request: GetCompareResultRequest
+            reason: String, request: GetCompareResultRequest
         ) {
 
             // given
@@ -189,8 +181,7 @@ internal class CompareControllerTest {
             val exception = result.andExpect {
                 status { isBadRequest() }
                 content { contentType(MediaType.APPLICATION_JSON) }
-            }
-                .andReturn().resolvedException
+            }.andReturn().resolvedException
             Assertions.assertThat(exception is MethodArgumentNotValidException)
         }
     }
@@ -200,8 +191,7 @@ internal class CompareControllerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class GetCompareById {
-        private val getCompareByIdEndpoint =
-            "$endpoint/$compareId"
+        private val getCompareByIdEndpoint = "$endpoint/$compareId"
 
         @BeforeAll
         fun setup() {
@@ -239,8 +229,7 @@ internal class CompareControllerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class DeleteCompareById {
-        private val deleteCompareByIdEndpoint =
-            "$endpoint/$compareId"
+        private val deleteCompareByIdEndpoint = "$endpoint/$compareId"
 
         @BeforeAll
         fun setup() {
@@ -287,8 +276,7 @@ internal class CompareControllerTest {
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @WithMockUser(username = TestInputConfig.baseEmail)
     inner class UpdateCompareById {
-        private val updateCompareByIdEndpoint =
-            "$endpoint/status"
+        private val updateCompareByIdEndpoint = "$endpoint/status"
 
         @BeforeAll
         fun setup() {

@@ -9,7 +9,7 @@ class ESQueryBuilder {
             .modifyTime(parameters["startTime"].toString(), parameters["stopTime"].toString())
             .modifyField(parameters["field"].toString())
             .modifyFilter(parameters["filter"].toString())
-            .modifyCompareId(parameters["compareId"].toString())
+            .modifyPropertyId(parameters["propertyId"].toString())
             .modifyBaselineTags(parameters["baselineTags"].toString()).query
     }
 

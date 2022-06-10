@@ -16,6 +16,7 @@ import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
+import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -236,13 +237,35 @@ class ESChartsServiceImpl(
                     "type" to "util",
                     "feature" to "compare_id",
                     "indexType" to "verifications",
-                    "compareId" to (compareId ?: "")
+                    "propertyId" to (compareId ?: "")
                 )
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val verification =
             mapper.readValue<TableCompare>(
+                chartsRepository.getData(
+                    getChartDataQuery,
+                    "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
+                )
+            )
+        return verification.hits.hits
+    }
+
+    fun getIncidentByID(incidentId: String?, user: User): List<HitsIncidentDataPoint> {
+        val chartRequest = ChartRequest(
+            chartConfig = ChartConfig(
+                mutableMapOf(
+                    "type" to "util",
+                    "feature" to "incidents_id",
+                    "indexType" to "incidents",
+                    "propertyId" to (incidentId ?: "")
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val verification =
+            mapper.readValue<TableIncident>(
                 chartsRepository.getData(
                     getChartDataQuery,
                     "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
@@ -258,7 +281,7 @@ class ESChartsServiceImpl(
                     "type" to "util",
                     "feature" to "compare_id",
                     "indexType" to "verifications",
-                    "compareId" to ""
+                    "propertyId" to ""
                 )
             )
         )
@@ -272,6 +295,29 @@ class ESChartsServiceImpl(
             )
         return verification.hits.hits
     }
+
+    fun getAllIncidents(user: User, getAllIncidentsRequest: GetAllIncidentsRequest): List<HitsIncidentAllDataPoint> {
+        val chartRequest = ChartRequest(
+            chartConfig = ChartConfig(
+                mutableMapOf(
+                    "type" to "util",
+                    "feature" to "incidents_id",
+                    "indexType" to "incidents",
+                    "propertyId" to ""
+                )
+            )
+        )
+        val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val incidents =
+            mapper.readValue<TableIncidentAll>(
+                chartsRepository.getData(
+                    getChartDataQuery,
+                    "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
+                )
+            )
+        return incidents.hits.hits
+    }
+
 
     fun getCompareTagFilter(user: User, listTags: List<TagEntry>, applicationIndices: String): List<TagKey> {
         val chartRequest = ChartRequest(
