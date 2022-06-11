@@ -1,0 +1,42 @@
+{
+  "size": 500,
+  "version": true,
+  "fields": [
+    {
+      "field": "*",
+      "include_unmapped": "true"
+    },
+    {
+      "field": "timestamp",
+      "format": "strict_date_optional_time"
+    }
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
+      "filter": [
+          property_id
+      ],
+      "should": [],
+      "must_not": [
+        {
+          "match_phrase": {
+            "risk": {
+              "query": "0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

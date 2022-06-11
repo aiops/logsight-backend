@@ -12,7 +12,7 @@ class UserEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "key", nullable = false)
+    @Column(name = "key", nullable = false, unique = true)
     var key: String = KeyGenerator.generate(),
 
     @Column(name = "email", nullable = false, unique = true)

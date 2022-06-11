@@ -8,8 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode
 data class IncidentSourcePoint(
     val tags: Map<String, String>,
     val timestamp: String,
+    @JsonProperty("timestamp_start")
+    val timestampStart: String,
+    @JsonProperty("timestamp_end")
+    val timestampEnd: String,
     val risk: Long,
     val severity: Long,
     val status: Long,
-    val message: String,
+    val message: JsonNode,
 )

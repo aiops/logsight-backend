@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.post
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext
-internal class IncidentsControllerTest {
+internal class IncidentControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc

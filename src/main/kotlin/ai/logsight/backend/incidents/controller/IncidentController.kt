@@ -19,10 +19,10 @@ import javax.validation.Valid
 @Api(tags = ["Incidents"], description = "Obtain incidents from log data")
 @RestController
 @RequestMapping("/api/v1/logs/incidents")
-class IncidentsController(
+class IncidentController(
     val incidentService: IncidentService, val userStorageService: UserStorageService
 ) {
-    private val logger: LoggerImpl = LoggerImpl(IncidentsController::class.java)
+    private val logger: LoggerImpl = LoggerImpl(IncidentController::class.java)
 
     @ApiOperation("Get incident by ID")
     @GetMapping("/{incidentId}")
