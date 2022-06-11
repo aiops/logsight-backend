@@ -301,9 +301,11 @@ class ESChartsServiceImpl(
             chartConfig = ChartConfig(
                 mutableMapOf(
                     "type" to "util",
-                    "feature" to "incidents_id",
+                    "feature" to "incidents_all",
                     "indexType" to "incidents",
-                    "propertyId" to ""
+                    "propertyId" to "",
+                    "startTime" to getAllIncidentsRequest.startTime,
+                    "stopTime" to getAllIncidentsRequest.stopTime
                 )
             )
         )
