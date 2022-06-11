@@ -14,6 +14,7 @@ data class IncidentSourcePoint(
     val timestampEnd: String,
     val risk: Long,
     val severity: Long,
+    val added_states: Long,
     val status: Long,
     val message: JsonNode,
 )
