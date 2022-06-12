@@ -1,9 +1,9 @@
 package ai.logsight.backend.incidents.service
 
+import ai.logsight.backend.charts.domain.charts.IncidentData
+import ai.logsight.backend.charts.domain.charts.IncidentsAll
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.ports.web.ChartsController
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsIncidentAllDataPoint
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsIncidentDataPoint
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
@@ -22,11 +22,11 @@ class IncidentService(
     private val logger = LoggerImpl(ChartsController::class.java)
 
 
-    fun getIncidentByID(incidentId: String?, user: User): List<HitsIncidentDataPoint> {
+    fun getIncidentByID(incidentId: String?, user: User): IncidentData {
         return esChartsServiceImpl.getIncidentByID(incidentId, user)
     }
 
-    fun getAllIncidents(user: User, getAllIncidentsRequest: GetAllIncidentsRequest): List<HitsIncidentAllDataPoint> {
+    fun getAllIncidents(user: User, getAllIncidentsRequest: GetAllIncidentsRequest): List<IncidentsAll> {
         return esChartsServiceImpl.getAllIncidents(user, getAllIncidentsRequest)
     }
 

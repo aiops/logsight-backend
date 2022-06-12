@@ -59,7 +59,7 @@ internal class LogIngestionServiceImplUnitTest {
     fun processLogList() {
         val logListDTO = LogListDTO(
             index = TestInputConfig.baseUser.key,
-            logs = List(TestInputConfig.numMessages) { TestInputConfig.logEvent }
+            logs = List(TestInputConfig.numMessages) { TestInputConfig.logsightLog }
         )
 
         every { logReceiptStorageService.saveLogReceipt(any()) } returns logReceipt
