@@ -7,6 +7,7 @@ import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequ
 import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
 import ai.logsight.backend.incidents.controller.response.GetAllIncidentResponse
 import ai.logsight.backend.incidents.controller.response.GetIncidentByIdResponse
+import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
 import ai.logsight.backend.incidents.service.IncidentService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
@@ -61,9 +62,9 @@ class IncidentController(
     @ResponseStatus(HttpStatus.OK)
     fun updateIncidentStatusByID(
         authentication: Authentication, @Valid @RequestBody updateIncidentStatusRequest: UpdateIncidentStatusRequest
-    ): UpdateCompareStatusResponse {
+    ): UpdateIncidentStatusResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return UpdateCompareStatusResponse(
+        return UpdateIncidentStatusResponse(
             incidentService.updateIncidentStatusByID(
                 updateIncidentStatusRequest.incidentId, updateIncidentStatusRequest.incidentStatus, user
             )

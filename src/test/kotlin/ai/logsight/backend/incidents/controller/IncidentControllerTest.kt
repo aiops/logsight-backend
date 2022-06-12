@@ -1,8 +1,10 @@
 package ai.logsight.backend.incidents.controller
 
 import ai.logsight.backend.TestInputConfig
+import ai.logsight.backend.charts.domain.charts.IncidentData
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
-import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsIncidentDataPoint
+import ai.logsight.backend.charts.repository.entities.elasticsearch.IncidentMessageOut
+import ai.logsight.backend.charts.repository.entities.elasticsearch.IncidentSourceDataOut
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
@@ -52,9 +54,35 @@ internal class IncidentControllerTest {
     companion object {
         const val endpoint = "/api/v1/logs/incidents"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
-        var json = "{ \"f1\" : \"v1\" } "
-        var objectMapper = ObjectMapper()
-        var jsonNode = objectMapper.readTree(json)!!
+        private val incidentMessage = IncidentMessageOut(
+            "timestamp",
+            "template",
+            "level",
+            0.0,
+            "message",
+            mapOf("tag" to "default"),
+            0,
+            0,
+            0,
+            ""
+        )
+        val incidentData = IncidentData(
+            "incidentId",
+            IncidentSourceDataOut(
+                "timestamp",
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                mapOf("tag" to "default"),
+                0,
+                incidentMessage,
+                data = listOf(incidentMessage)
+            )
+        )
 
         const val incidentId = "exampleIncidentId"
 
@@ -81,20 +109,16 @@ internal class IncidentControllerTest {
         }
 
         @Test
-        fun `should return a list of incidents successfully`() {
+        fun `should return an incident successfully`() {
             // given
-            Mockito.`when`(esChartsServiceImpl.getIncidentByID(any(), any())).thenReturn(
-                listOf(HitsIncidentDataPoint(incidentId = incidentId, source = jsonNode))
-            )
+            Mockito.`when`(esChartsServiceImpl.getIncidentByID(any(), any())).thenReturn(incidentData)
             // when
             val result = mockMvc.get(getIncidentByIdEndpoint) // then
             result.andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 content {
-                    JSONArray(
-                        "[{\"_id\":\"exampleIncidentId\",\"_source\":{\"f1\":\"v1\"}}]"
-                    )
+                    mapper.writeValueAsString(incidentData)
                 }
             }
         }
