@@ -315,7 +315,8 @@ class ESChartsServiceImpl(
         val incidents = data.hits.hits
         return incidents.map {
             IncidentsAll(
-                it.incidentId, IncidentSourceAllOut(
+                it.incidentId,
+                IncidentSourceAllOut(
                     it.source.timestamp,
                     it.source.risk,
                     it.source.countMessages,
