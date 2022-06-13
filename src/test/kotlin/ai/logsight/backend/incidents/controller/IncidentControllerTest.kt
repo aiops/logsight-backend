@@ -1,19 +1,17 @@
 package ai.logsight.backend.incidents.controller
 
 import ai.logsight.backend.TestInputConfig
-import ai.logsight.backend.charts.domain.charts.IncidentData
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
-import ai.logsight.backend.charts.repository.entities.elasticsearch.IncidentMessageOut
-import ai.logsight.backend.charts.repository.entities.elasticsearch.IncidentSourceDataOut
+import ai.logsight.backend.charts.repository.entities.elasticsearch.incidents.IncidentMessage
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
 import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
 import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
+import ai.logsight.backend.incidents.domain.Incident
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.json.JSONArray
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import org.mockito.kotlin.any
@@ -50,11 +48,10 @@ internal class IncidentControllerTest {
     @MockBean
     private lateinit var elasticsearchService: ElasticsearchService
 
-
     companion object {
         const val endpoint = "/api/v1/logs/incidents"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
-        private val incidentMessage = IncidentMessageOut(
+        private val incidentMessage = IncidentMessage(
             "timestamp",
             "template",
             "level",
@@ -66,29 +63,26 @@ internal class IncidentControllerTest {
             0,
             ""
         )
-        val incidentData = IncidentData(
+        val incident = Incident(
             "incidentId",
-            IncidentSourceDataOut(
-                "timestamp",
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                mapOf("tag" to "default"),
-                0,
-                incidentMessage,
-                data = listOf(incidentMessage)
-            )
+            "timestamp",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            mapOf("tag" to "default"),
+            0,
+            incidentMessage,
+            data = listOf(incidentMessage)
         )
 
         const val incidentId = "exampleIncidentId"
 
         val updateIncidentStatusRequest = UpdateIncidentStatusRequest(incidentId, 1)
     }
-
 
     @Nested
     @DisplayName("GET $endpoint/{incidentId}")
@@ -111,14 +105,14 @@ internal class IncidentControllerTest {
         @Test
         fun `should return an incident successfully`() {
             // given
-            Mockito.`when`(esChartsServiceImpl.getIncidentByID(any(), any())).thenReturn(incidentData)
+            Mockito.`when`(esChartsServiceImpl.getIncidentByID(any(), any())).thenReturn(incident)
             // when
             val result = mockMvc.get(getIncidentByIdEndpoint) // then
             result.andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 content {
-                    mapper.writeValueAsString(incidentData)
+                    mapper.writeValueAsString(incident)
                 }
             }
         }

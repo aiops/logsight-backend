@@ -1,15 +1,16 @@
 package ai.logsight.backend.incidents.controller
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.compare.ports.web.response.UpdateCompareStatusResponse
 import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
 import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
 import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
 import ai.logsight.backend.incidents.controller.response.GetAllIncidentResponse
 import ai.logsight.backend.incidents.controller.response.GetIncidentByIdResponse
 import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
+import ai.logsight.backend.incidents.domain.IncidentViews
 import ai.logsight.backend.incidents.service.IncidentService
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
+import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import org.springframework.http.HttpStatus
@@ -21,13 +22,15 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/api/v1/logs/incidents")
 class IncidentController(
-    val incidentService: IncidentService, val userStorageService: UserStorageService
+    val incidentService: IncidentService,
+    val userStorageService: UserStorageService
 ) {
     private val logger: LoggerImpl = LoggerImpl(IncidentController::class.java)
 
     @ApiOperation("Get incident by ID")
     @GetMapping("/{incidentId}")
     @ResponseStatus(HttpStatus.OK)
+    @JsonView(IncidentViews.Complete::class)
     fun getIncidentByID(
         authentication: Authentication,
         @PathVariable incidentId: String,
@@ -39,8 +42,10 @@ class IncidentController(
     @ApiOperation("Get all incidents for time interval")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
+    @JsonView(IncidentViews.Reduced::class)
     fun getAllIncidents(
-        @Valid @RequestBody getAllIncidentsRequest: GetAllIncidentsRequest, authentication: Authentication
+        @Valid @RequestBody getAllIncidentsRequest: GetAllIncidentsRequest,
+        authentication: Authentication
     ): GetAllIncidentResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         return GetAllIncidentResponse(incidentService.getAllIncidents(user, getAllIncidentsRequest))
@@ -61,7 +66,8 @@ class IncidentController(
     @PostMapping("/status")
     @ResponseStatus(HttpStatus.OK)
     fun updateIncidentStatusByID(
-        authentication: Authentication, @Valid @RequestBody updateIncidentStatusRequest: UpdateIncidentStatusRequest
+        authentication: Authentication,
+        @Valid @RequestBody updateIncidentStatusRequest: UpdateIncidentStatusRequest
     ): UpdateIncidentStatusResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         return UpdateIncidentStatusResponse(

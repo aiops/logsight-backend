@@ -1,4 +1,4 @@
-package ai.logsight.backend.charts.repository.entities.elasticsearch
+package ai.logsight.backend.charts.repository.entities.elasticsearch.incidents
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -8,15 +8,15 @@ data class IncidentMessage(
     val timestamp: String,
     val template: String,
     val level: String,
-    @JsonProperty("risk_score")
+    @param:JsonProperty("risk_score")
     val riskScore: Double,
     val message: String,
     val tags: Map<String, String>,
-    @JsonProperty("added_state")
+    @param:JsonProperty("added_state")
     val addedState: Long,
     val prediction: Long,
-    @JsonProperty("risk_severity")
+    @param:JsonProperty("risk_severity")
     val riskSeverity: Long,
-    @JsonProperty("tag_string")
+    @param:JsonProperty("tag_string")
     val tagString: String,
 )

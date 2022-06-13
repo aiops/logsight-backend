@@ -1,10 +1,10 @@
-package ai.logsight.backend.charts.repository.entities.elasticsearch
+package ai.logsight.backend.charts.repository.entities.elasticsearch.incidents
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class IncidentSourceAll(
+data class ESIncidentSource(
     val timestamp: String,
     val risk: Long,
     @JsonProperty("count_messages")
@@ -19,5 +19,5 @@ data class IncidentSourceAll(
     val severity: Long,
     val tags: Map<String, String>,
     val countSemanticAnomaly: Long,
-    val message: IncidentMessage,
+    val data: List<IncidentMessage>
 )

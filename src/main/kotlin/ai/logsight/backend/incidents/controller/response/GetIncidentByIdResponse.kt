@@ -1,7 +1,7 @@
 package ai.logsight.backend.incidents.controller.response
 
-import ai.logsight.backend.charts.domain.charts.IncidentData
+import ai.logsight.backend.incidents.domain.Incident
 
 data class GetIncidentByIdResponse(
-    val incidentData: IncidentData
+    val incident: Incident
 )
