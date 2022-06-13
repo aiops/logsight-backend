@@ -34,6 +34,3 @@ spring:
       type: batch
     admin:
       client-id: admin-test-client-id
-
-logsight.application-rpc.zeromq.timeout: 200
-logsight.logs.stream.queue.max-size: 100

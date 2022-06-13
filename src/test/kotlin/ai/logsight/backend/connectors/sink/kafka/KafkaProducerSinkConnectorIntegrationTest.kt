@@ -15,11 +15,13 @@ import org.springframework.kafka.test.utils.ContainerTestUtils
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestPropertySource(properties = ["LOG_SINK_CONNECTION = kafka"]) // Set environment variable to use kafka connector
 @SpringBootTest
 @DirtiesContext
 internal class KafkaProducerSinkConnectorIntegrationTest {
