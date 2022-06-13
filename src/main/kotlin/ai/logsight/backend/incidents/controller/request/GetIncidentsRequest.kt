@@ -3,7 +3,7 @@ package ai.logsight.backend.incidents.controller.request
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
-data class GetAllIncidentsRequest(
+data class GetIncidentsRequest(
     @get:Pattern(
         regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[0-9+-:]+)",
         message = "startTime must be defined as ISO 8601 timestamp " +

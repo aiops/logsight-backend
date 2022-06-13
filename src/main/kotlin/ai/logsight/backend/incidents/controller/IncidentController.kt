@@ -1,10 +1,10 @@
 package ai.logsight.backend.incidents.controller
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
+import ai.logsight.backend.incidents.controller.request.GetIncidentsRequest
 import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
 import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
-import ai.logsight.backend.incidents.controller.response.GetAllIncidentResponse
+import ai.logsight.backend.incidents.controller.response.GetIncidentsResponse
 import ai.logsight.backend.incidents.controller.response.GetIncidentByIdResponse
 import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
 import ai.logsight.backend.incidents.domain.IncidentViews
@@ -43,12 +43,12 @@ class IncidentController(
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
     @JsonView(IncidentViews.Reduced::class)
-    fun getAllIncidents(
-        @Valid @RequestBody getAllIncidentsRequest: GetAllIncidentsRequest,
+    fun getIncidents(
+        @Valid @RequestBody getIncidentsRequest: GetIncidentsRequest,
         authentication: Authentication
-    ): GetAllIncidentResponse {
+    ): GetIncidentsResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return GetAllIncidentResponse(incidentService.getAllIncidents(user, getAllIncidentsRequest))
+        return GetIncidentsResponse(incidentService.getIncidents(user, getIncidentsRequest))
     }
 
     @ApiOperation("Delete incident by ID")

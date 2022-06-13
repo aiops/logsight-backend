@@ -5,7 +5,7 @@ import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.ports.web.ChartsController
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
-import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
+import ai.logsight.backend.incidents.controller.request.GetIncidentsRequest
 import ai.logsight.backend.users.domain.User
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -24,8 +24,8 @@ class IncidentService(
         return esChartsServiceImpl.getIncidentByID(incidentId, user)
     }
 
-    fun getAllIncidents(user: User, getAllIncidentsRequest: GetAllIncidentsRequest): List<Incident> {
-        return esChartsServiceImpl.getAllIncidents(user, getAllIncidentsRequest)
+    fun getIncidents(user: User, getIncidentsRequest: GetIncidentsRequest): List<Incident> {
+        return esChartsServiceImpl.getIncidents(user, getIncidentsRequest)
     }
 
     fun updateIncidentStatusByID(incidentId: String, incidentStatus: Long, user: User): String {

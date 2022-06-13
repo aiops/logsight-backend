@@ -19,7 +19,7 @@ import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
-import ai.logsight.backend.incidents.controller.request.GetAllIncidentsRequest
+import ai.logsight.backend.incidents.controller.request.GetIncidentsRequest
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -242,7 +242,7 @@ class ESChartsServiceImpl(
         return esIncident.toIncidents()[0]
     }
 
-    fun getAllIncidents(user: User, getAllIncidentsRequest: GetAllIncidentsRequest): List<Incident> {
+    fun getIncidents(user: User, getIncidentsRequest: GetIncidentsRequest): List<Incident> {
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
@@ -250,8 +250,8 @@ class ESChartsServiceImpl(
                     "feature" to "incidents_all",
                     "indexType" to "incidents",
                     "propertyId" to "",
-                    "startTime" to getAllIncidentsRequest.startTime,
-                    "stopTime" to getAllIncidentsRequest.stopTime
+                    "startTime" to getIncidentsRequest.startTime,
+                    "stopTime" to getIncidentsRequest.stopTime
                 )
             )
         )
