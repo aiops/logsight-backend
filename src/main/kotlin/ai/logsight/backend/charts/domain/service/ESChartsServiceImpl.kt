@@ -198,21 +198,23 @@ class ESChartsServiceImpl(
         tableChartData.hits.hits.sortedByDescending { it.source.totalScore }
         val numElements =
             if (getChartDataQuery.chartConfig.parameters.containsKey("numElements")) getChartDataQuery.chartConfig.parameters["numElements"] as Int else null
-        return TableChart(data = tableChartData.hits.hits.take(numElements ?: tableChartData.hits.hits.size).map {
-            IncidentRow(
-                applicationId = it.source.applicationId,
-                indexName = it.indexName,
-                timestamp = it.source.timestamp,
-                startTimestamp = it.source.startTimestamp,
-                stopTimestamp = it.source.stopTimestamp,
-                newTemplates = it.source.newTemplates.toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
-                semanticAD = it.source.semanticAD.toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
-                countAD = it.source.countAD.toString(),
-                scAnomalies = it.source.scAnomalies.toString(),
-                logs = it.source.logData.toString(),
-                totalScore = it.source.totalScore
-            )
-        })
+        return TableChart(
+            data = tableChartData.hits.hits.take(numElements ?: tableChartData.hits.hits.size).map {
+                IncidentRow(
+                    applicationId = it.source.applicationId,
+                    indexName = it.indexName,
+                    timestamp = it.source.timestamp,
+                    startTimestamp = it.source.startTimestamp,
+                    stopTimestamp = it.source.stopTimestamp,
+                    newTemplates = it.source.newTemplates.toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
+                    semanticAD = it.source.semanticAD.toString(), // jsonData.getJSONObject("_source")["first_log"].toString()
+                    countAD = it.source.countAD.toString(),
+                    scAnomalies = it.source.scAnomalies.toString(),
+                    logs = it.source.logData.toString(),
+                    totalScore = it.source.totalScore
+                )
+            }
+        )
     }
 
     fun getCompareByID(compareId: String?, user: User): List<HitsCompareDataPoint> {
@@ -254,7 +256,9 @@ class ESChartsServiceImpl(
         )
         val source = incident.hits.hits[0].source
         return IncidentData(
-            incident.hits.hits[0].incidentId, IncidentSourceDataOut(source.timestamp,
+            incident.hits.hits[0].incidentId,
+            IncidentSourceDataOut(
+                source.timestamp,
                 source.risk,
                 source.countMessages,
                 source.countStates,
@@ -289,7 +293,8 @@ class ESChartsServiceImpl(
                         it.riskSeverity,
                         it.tagString
                     )
-                })
+                }
+            )
         )
     }
 
@@ -341,7 +346,7 @@ class ESChartsServiceImpl(
                     )
                 )
             )
-         }
+        }
     }
 
     fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
@@ -360,7 +365,6 @@ class ESChartsServiceImpl(
         )
         return verification.hits.hits
     }
-
 
     fun getCompareTagFilter(user: User, listTags: List<TagEntry>, applicationIndices: String): List<TagKey> {
         val chartRequest = ChartRequest(
@@ -382,7 +386,10 @@ class ESChartsServiceImpl(
     }
 
     fun getCompareTagValues(
-        user: User, tagName: String, applicationIndices: String, listTags: List<TagEntry>
+        user: User,
+        tagName: String,
+        applicationIndices: String,
+        listTags: List<TagEntry>
     ): List<Tag> {
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
