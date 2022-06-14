@@ -22,7 +22,10 @@ spring:
 
   token:
     duration: 15
-
+  flyway:
+    baselineOnMigrate: true
+    enabled: true
+    target: 2
   kafka:
     consumer:
       auto-offset-reset: earliest
