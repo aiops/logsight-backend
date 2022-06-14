@@ -2,12 +2,12 @@ package ai.logsight.backend.incidents.controller
 
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
-import ai.logsight.backend.charts.repository.entities.elasticsearch.incidents.IncidentMessage
+import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
-import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
-import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
-import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
+import ai.logsight.backend.incidents.ports.web.request.UpdateIncidentRequest
+import ai.logsight.backend.incidents.ports.web.response.DeleteIncidentByIdResponse
+import ai.logsight.backend.incidents.ports.web.response.UpdateIncidentResponse
 import ai.logsight.backend.incidents.domain.Incident
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -51,7 +51,7 @@ internal class IncidentControllerTest {
     companion object {
         const val endpoint = "/api/v1/logs/incidents"
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
-        private val incidentMessage = IncidentMessage(
+        private val ESIncidentMessage = ESIncidentMessage(
             "timestamp",
             "template",
             "level",
@@ -75,13 +75,13 @@ internal class IncidentControllerTest {
             1,
             mapOf("tag" to "default"),
             0,
-            incidentMessage,
-            data = listOf(incidentMessage)
+            ESIncidentMessage,
+            data = listOf(ESIncidentMessage)
         )
 
         const val incidentId = "exampleIncidentId"
 
-        val updateIncidentStatusRequest = UpdateIncidentStatusRequest(incidentId, 1)
+        val updateIncidentRequest = UpdateIncidentRequest(incidentId, 1)
     }
 
     @Nested
@@ -186,18 +186,18 @@ internal class IncidentControllerTest {
         @Test
         fun `should update a incident by ID successfully`() {
             // given
-            Mockito.`when`(elasticsearchService.updateFieldByIndexAndDocID(any(), any(), any())).thenReturn(incidentId)
+            Mockito.`when`(elasticsearchService.updateFieldsByIndexAndDocID(any(), any(), any())).thenReturn(incidentId)
             // when
             val result = mockMvc.post(updateIncidentByIdEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
-                content = mapper.writeValueAsString(updateIncidentStatusRequest)
+                content = mapper.writeValueAsString(updateIncidentRequest)
                 accept = MediaType.APPLICATION_JSON
             } // then
             result.andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 content {
-                    json(mapper.writeValueAsString(UpdateIncidentStatusResponse(incidentId)))
+                    json(mapper.writeValueAsString(UpdateIncidentResponse(incidentId)))
                 }
             }
         }
@@ -205,7 +205,7 @@ internal class IncidentControllerTest {
         @Test
         fun `should throw elasticsearch exception when the entry cannot be deleted`() {
             // given
-            Mockito.`when`(elasticsearchService.updateFieldByIndexAndDocID(any(), any(), any()))
+            Mockito.`when`(elasticsearchService.updateFieldsByIndexAndDocID(any(), any(), any()))
                 .thenThrow(ElasticsearchException::class.java)
             // when
             val result = mockMvc.delete(updateIncidentByIdEndpoint) // then

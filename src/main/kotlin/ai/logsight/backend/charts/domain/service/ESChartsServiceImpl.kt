@@ -5,21 +5,17 @@ import ai.logsight.backend.charts.domain.charts.PieChart
 import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.charts.models.ChartSeries
 import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
-import ai.logsight.backend.incidents.domain.Incident
 import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
-import ai.logsight.backend.charts.repository.ESChartRepository
+import ai.logsight.backend.charts.repository.ElasticsearchRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
-import ai.logsight.backend.charts.repository.entities.elasticsearch.incidents.ESIncidents
-import ai.logsight.backend.charts.repository.entities.elasticsearch.incidents.toIncidents
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
-import ai.logsight.backend.incidents.controller.request.GetIncidentsRequest
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -34,7 +30,7 @@ import kotlin.reflect.full.memberProperties
 
 @Service
 class ESChartsServiceImpl(
-    private val chartsRepository: ESChartRepository,
+    private val chartsRepository: ElasticsearchRepository,
     private val userStorageService: UserStorageService,
     private val queryBuilderHelper: QueryBuilderHelper
 ) : ChartsService {
@@ -220,46 +216,6 @@ class ESChartsServiceImpl(
             )
         )
         return verification.hits.hits
-    }
-
-    fun getIncidentByID(incidentId: String?, user: User): Incident {
-        val chartRequest = ChartRequest(
-            chartConfig = ChartConfig(
-                mutableMapOf(
-                    "type" to "util",
-                    "feature" to "incidents_id",
-                    "indexType" to "incidents",
-                    "propertyId" to (incidentId ?: "")
-                )
-            )
-        )
-        return queryIncidents(chartRequest, user)[0]
-    }
-
-    fun getIncidents(user: User, getIncidentsRequest: GetIncidentsRequest): List<Incident> {
-        val chartRequest = ChartRequest(
-            chartConfig = ChartConfig(
-                mutableMapOf(
-                    "type" to "util",
-                    "feature" to "incidents_all",
-                    "indexType" to "incidents",
-                    "propertyId" to "",
-                    "startTime" to getIncidentsRequest.startTime,
-                    "stopTime" to getIncidentsRequest.stopTime
-                )
-            )
-        )
-        return queryIncidents(chartRequest, user)
-    }
-
-    private fun queryIncidents(chartRequest: ChartRequest, user: User): List<Incident> {
-        val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val esIncidents = mapper.readValue<ESIncidents>(
-            chartsRepository.getData(
-                getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
-            )
-        )
-        return esIncidents.toIncidents()
     }
 
     fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {

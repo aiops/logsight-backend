@@ -1,4 +1,4 @@
-package ai.logsight.backend.incidents.controller.request
+package ai.logsight.backend.incidents.ports.web.request
 
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern

@@ -1,4 +1,4 @@
-package ai.logsight.backend.charts.repository.entities.elasticsearch.incidents
+package ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

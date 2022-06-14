@@ -3,7 +3,7 @@ package ai.logsight.backend.tags.service
 import ai.logsight.backend.charts.domain.service.ChartsService
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.ports.web.ChartsController
-import ai.logsight.backend.charts.repository.ESChartRepository
+import ai.logsight.backend.charts.repository.ElasticsearchRepository
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class TagService(
     private val chartsService: ChartsService,
-    private val chartsRepository: ESChartRepository,
+    private val chartsRepository: ElasticsearchRepository,
     private val esChartsServiceImpl: ESChartsServiceImpl
 ) {
     val mapper = ObjectMapper().registerModule(KotlinModule())!!

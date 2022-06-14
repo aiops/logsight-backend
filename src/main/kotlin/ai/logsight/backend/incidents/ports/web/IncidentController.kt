@@ -1,14 +1,16 @@
-package ai.logsight.backend.incidents.controller
+package ai.logsight.backend.incidents.ports.web
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.incidents.controller.request.GetIncidentsRequest
-import ai.logsight.backend.incidents.controller.request.UpdateIncidentStatusRequest
-import ai.logsight.backend.incidents.controller.response.DeleteIncidentByIdResponse
-import ai.logsight.backend.incidents.controller.response.GetIncidentsResponse
-import ai.logsight.backend.incidents.controller.response.GetIncidentByIdResponse
-import ai.logsight.backend.incidents.controller.response.UpdateIncidentStatusResponse
-import ai.logsight.backend.incidents.domain.IncidentViews
-import ai.logsight.backend.incidents.service.IncidentService
+import ai.logsight.backend.incidents.ports.web.request.GetIncidentsRequest
+import ai.logsight.backend.incidents.ports.web.request.UpdateIncidentRequest
+import ai.logsight.backend.incidents.ports.web.response.DeleteIncidentByIdResponse
+import ai.logsight.backend.incidents.ports.web.response.GetIncidentsResponse
+import ai.logsight.backend.incidents.ports.web.response.GetIncidentByIdResponse
+import ai.logsight.backend.incidents.ports.web.response.UpdateIncidentResponse
+import ai.logsight.backend.incidents.domain.dto.IncidentDTOViews
+import ai.logsight.backend.incidents.domain.service.IncidentService
+import ai.logsight.backend.incidents.extensions.toIncident
+import ai.logsight.backend.incidents.extensions.toIncidentDTO
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.annotations.Api
@@ -30,25 +32,29 @@ class IncidentController(
     @ApiOperation("Get incident by ID")
     @GetMapping("/{incidentId}")
     @ResponseStatus(HttpStatus.OK)
-    @JsonView(IncidentViews.Complete::class)
+    @JsonView(IncidentDTOViews.Complete::class)
     fun getIncidentByID(
         authentication: Authentication,
         @PathVariable incidentId: String,
     ): GetIncidentByIdResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return GetIncidentByIdResponse(incidentService.getIncidentByID(incidentId, user))
+        val incident = incidentService.getIncidentByID(incidentId, user)
+        return GetIncidentByIdResponse(incident = incident.toIncidentDTO())
     }
 
     @ApiOperation("Get all incidents for time interval")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
-    @JsonView(IncidentViews.Reduced::class)
-    fun getIncidents(
+    @JsonView(IncidentDTOViews.Reduced::class)
+    fun getIncidentsInTimeRange(
         @Valid @RequestBody getIncidentsRequest: GetIncidentsRequest,
         authentication: Authentication
     ): GetIncidentsResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return GetIncidentsResponse(incidentService.getIncidents(user, getIncidentsRequest))
+        val incidents = incidentService.getIncidentsInTimeRange(
+            getIncidentsRequest.startTime, getIncidentsRequest.stopTime,user
+        )
+        return GetIncidentsResponse(incidents.map { it.toIncidentDTO() })
     }
 
     @ApiOperation("Delete incident by ID")
@@ -62,18 +68,16 @@ class IncidentController(
         return DeleteIncidentByIdResponse(incidentService.deleteIncidentByID(incidentId, user))
     }
 
-    @ApiOperation("Update incident status by ID")
-    @PostMapping("/status")
+    @ApiOperation("Update incident by ID")
+    @PutMapping("/{incidentId}")
     @ResponseStatus(HttpStatus.OK)
     fun updateIncidentStatusByID(
         authentication: Authentication,
-        @Valid @RequestBody updateIncidentStatusRequest: UpdateIncidentStatusRequest
-    ): UpdateIncidentStatusResponse {
+        @PathVariable incidentId: String,
+        @Valid @RequestBody updateIncidentRequest: UpdateIncidentRequest
+    ): UpdateIncidentResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return UpdateIncidentStatusResponse(
-            incidentService.updateIncidentStatusByID(
-                updateIncidentStatusRequest.incidentId, updateIncidentStatusRequest.incidentStatus, user
-            )
-        )
+        val incident = incidentService.updateIncident(updateIncidentRequest.incident.toIncident(), user)
+        return UpdateIncidentResponse(incident.toIncidentDTO())
     }
 }

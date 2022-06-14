@@ -52,7 +52,7 @@ class ElasticsearchService(
         return deletedId
     }
 
-    fun updateFieldByIndexAndDocID(parameters: HashMap<String, Any>, index: String, id: String): String {
+    fun updateFieldsByIndexAndDocID(parameters: Map<String, Any>, index: String, id: String): String {
         val request = UpdateRequest(
             index, id
         ).doc(parameters)

@@ -292,7 +292,7 @@ internal class CompareControllerTest {
         @Test
         fun `should update a compare by ID successfully`() {
             // given
-            Mockito.`when`(elasticsearchService.updateFieldByIndexAndDocID(any(), any(), any())).thenReturn(compareId)
+            Mockito.`when`(elasticsearchService.updateFieldsByIndexAndDocID(any(), any(), any())).thenReturn(compareId)
             // when
             val result = mockMvc.post(updateCompareByIdEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -311,7 +311,7 @@ internal class CompareControllerTest {
         @Test
         fun `should throw elasticsearch exception when the entry cannot be deleted`() {
             // given
-            Mockito.`when`(elasticsearchService.updateFieldByIndexAndDocID(any(), any(), any()))
+            Mockito.`when`(elasticsearchService.updateFieldsByIndexAndDocID(any(), any(), any()))
                 .thenThrow(ElasticsearchException::class.java)
             // when
             val result = mockMvc.delete(updateCompareByIdEndpoint) // then
