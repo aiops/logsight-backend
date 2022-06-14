@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "2.5.7"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.flywaydb.flyway") version "8.5.11"
     kotlin("jvm") version "1.6.10"
     kotlin("plugin.spring") version "1.6.10"
     kotlin("plugin.jpa") version "1.6.10"
@@ -27,8 +28,8 @@ repositories {
 
 dependencies {
 //    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
-
-    implementation("org.springframework.integration:spring-integration-zeromq:5.5.8")
+    implementation("org.flywaydb:flyway-core:8.5.11")
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.11")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

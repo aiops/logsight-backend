@@ -7,7 +7,9 @@ spring:
     url: jdbc:postgresql://localhost:5431/logsight_test
     username: logsight
     password: logsight
-
+  flyway:
+    baselineOnMigrate: true
+    enabled: true
   elasticsearch:
     host: "localhost"
     port: "9200"
