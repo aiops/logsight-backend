@@ -8,7 +8,7 @@ import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
-import ai.logsight.backend.charts.repository.ESChartRepository
+import ai.logsight.backend.charts.repository.ElasticsearchRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
 import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
@@ -30,7 +30,7 @@ import kotlin.reflect.full.memberProperties
 
 @Service
 class ESChartsServiceImpl(
-    private val chartsRepository: ESChartRepository,
+    private val chartsRepository: ElasticsearchRepository,
     private val userStorageService: UserStorageService,
     private val queryBuilderHelper: QueryBuilderHelper
 ) : ChartsService {
@@ -58,14 +58,7 @@ class ESChartsServiceImpl(
     }
 
     fun createCompareAnalyticsBarChartVelocityFailureRatio(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        getChartDataQuery.chartConfig.parameters["baselineTags"] =
-            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
-        val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
-                getChartDataQuery,
-                "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
-            )
-        )
+        val barChartData = getBarChartData(getChartDataQuery)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -76,14 +69,7 @@ class ESChartsServiceImpl(
     }
 
     fun createCompareAnalyticsBarChart(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        getChartDataQuery.chartConfig.parameters["baselineTags"] =
-            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
-        val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
-                getChartDataQuery,
-                "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
-            )
-        )
+        val barChartData = getBarChartData(getChartDataQuery)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -96,14 +82,7 @@ class ESChartsServiceImpl(
     }
 
     fun createCompareAnalyticsBarChartVelocity(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        getChartDataQuery.chartConfig.parameters["baselineTags"] =
-            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
-        val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
-                getChartDataQuery,
-                "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
-            )
-        )
+        val barChartData = getBarChartData(getChartDataQuery)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -114,14 +93,7 @@ class ESChartsServiceImpl(
     }
 
     fun createCompareAnalyticsBarChartVelocityMinMax(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        getChartDataQuery.chartConfig.parameters["baselineTags"] =
-            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
-        val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
-                getChartDataQuery,
-                "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
-            )
-        )
+        val barChartData = getBarChartData(getChartDataQuery)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -133,14 +105,7 @@ class ESChartsServiceImpl(
     }
 
     fun createCompareAnalyticsBarChartFrequency(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        getChartDataQuery.chartConfig.parameters["baselineTags"] =
-            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
-        val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
-                getChartDataQuery,
-                "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
-            )
-        )
+        val barChartData = getBarChartData(getChartDataQuery)
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -150,14 +115,22 @@ class ESChartsServiceImpl(
         return barChartSeries
     }
 
-    fun createDashboardBarChart(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
-        val barChartData =
-            mapper.readValue<BarChartData>(
-                chartsRepository.getData(
-                    getChartDataQuery,
-                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
-                )
+    private fun getBarChartData(getChartDataQuery: GetChartDataQuery): BarChartData {
+        getChartDataQuery.chartConfig.parameters["baselineTags"] =
+            queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
+        return mapper.readValue<BarChartData>(
+            chartsRepository.getData(
+                getChartDataQuery, "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
             )
+        )
+    }
+
+    fun createDashboardBarChart(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
+        val barChartData = mapper.readValue<BarChartData>(
+            chartsRepository.getData(
+                getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
+            )
+        )
         val barChartSeries = mutableListOf<ChartSeries>()
         val barChartSeriesPoints = mutableListOf<ChartSeriesPoint>()
         barChartData.aggregations.listAggregations.buckets.forEach {
@@ -171,13 +144,11 @@ class ESChartsServiceImpl(
 
     override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
-        val pieChartData =
-            mapper.readValue<PieChartData>(
-                chartsRepository.getData(
-                    getChartDataQuery,
-                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
-                )
+        val pieChartData = mapper.readValue<PieChartData>(
+            chartsRepository.getData(
+                getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
             )
+        )
         logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createPieChart.name
@@ -195,13 +166,11 @@ class ESChartsServiceImpl(
     }
 
     override fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart {
-        val tableChartData =
-            mapper.readValue<TableChartData>(
-                chartsRepository.getData(
-                    getChartDataQuery,
-                    getChartDataQuery.chartConfig.parameters["indexType"].toString()
-                )
+        val tableChartData = mapper.readValue<TableChartData>(
+            chartsRepository.getData(
+                getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
             )
+        )
         logger.debug(
             "Obtained data from elasticsearch indices and successfully converted into an object",
             this::createTableChart.name
@@ -236,18 +205,16 @@ class ESChartsServiceImpl(
                     "type" to "util",
                     "feature" to "compare_id",
                     "indexType" to "verifications",
-                    "compareId" to (compareId ?: "")
+                    "propertyId" to (compareId ?: "")
                 )
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val verification =
-            mapper.readValue<TableCompare>(
-                chartsRepository.getData(
-                    getChartDataQuery,
-                    "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
-                )
+        val verification = mapper.readValue<TableCompare>(
+            chartsRepository.getData(
+                getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
             )
+        )
         return verification.hits.hits
     }
 
@@ -255,21 +222,16 @@ class ESChartsServiceImpl(
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
-                    "type" to "util",
-                    "feature" to "compare_id",
-                    "indexType" to "verifications",
-                    "compareId" to ""
+                    "type" to "util", "feature" to "compare_id", "indexType" to "verifications", "propertyId" to ""
                 )
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val verification =
-            mapper.readValue<TableCompareAll>(
-                chartsRepository.getData(
-                    getChartDataQuery,
-                    "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
-                )
+        val verification = mapper.readValue<TableCompareAll>(
+            chartsRepository.getData(
+                getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
             )
+        )
         return verification.hits.hits
     }
 

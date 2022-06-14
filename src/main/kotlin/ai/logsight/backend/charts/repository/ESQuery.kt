@@ -22,11 +22,11 @@ class ESQuery(
         this.query = this.query.replace("baselineTags_value", baselineTags)
         return this
     }
-    fun modifyCompareId(compareId: String): ESQuery {
+    fun modifyPropertyId(compareId: String): ESQuery {
         if (compareId.isNotEmpty()) {
-            this.query = this.query.replace("compare_id", "{\"match_phrase\": {\"_id\": \"$compareId\"}}")
+            this.query = this.query.replace("property_id", "{\"match_phrase\": {\"_id\": \"$compareId\"}}")
         } else {
-            this.query = this.query.replace("compare_id", "")
+            this.query = this.query.replace("property_id", "")
         }
         return this
     }

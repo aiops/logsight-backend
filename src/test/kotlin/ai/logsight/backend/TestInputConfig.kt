@@ -1,7 +1,10 @@
 package ai.logsight.backend
 
+import ai.logsight.backend.incidents.domain.Incident
+import ai.logsight.backend.incidents.domain.dto.IncidentDTO
+import ai.logsight.backend.incidents.extensions.toIncidentMessage
+import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage
 import ai.logsight.backend.logs.domain.LogBatch
-import ai.logsight.backend.logs.domain.LogEvent
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
 import ai.logsight.backend.logs.ingestion.domain.LogReceipt
@@ -32,21 +35,19 @@ object TestInputConfig {
 
     // Logs
     val defaultTag = mapOf("default" to "default")
-    val logEvent = LogEvent(
+
+    val sendLogMessage = SendLogMessage(
         message = "Hello World!",
         timestamp = DateTime.now()
             .toString(),
-        level = "INFO"
-    )
-
-    val sendLogMessage = SendLogMessage(
-        message = logEvent.message,
-        timestamp = logEvent.timestamp,
-        level = logEvent.level,
+        level = "INFO",
         tags = defaultTag
     )
     val logsightLog = LogsightLog(
-        event = logEvent, tags = defaultTag
+        message = "Hello World!",
+        timestamp = DateTime.now()
+            .toString(),
+        level = "INFO", tags = defaultTag
     )
     const val numMessages = 100
     val logBatch = LogBatch(
@@ -66,5 +67,20 @@ object TestInputConfig {
         receiptId = logReceipt.id,
         status = logReceipt.status,
         batchId = logReceipt.batchId
+    )
+
+    val incidentId = "exampleIncidentId"
+    val esIncidentMessage = ESIncidentMessage(
+        "timestamp", "template", "level", 0.0, "message",
+        defaultTag, 0, 0, 0, ""
+    )
+    val incidentMessage = esIncidentMessage.toIncidentMessage()
+    val incident = Incident(
+        incidentId, "timestamp", 0, 0, 0, 1, 0,
+        0, 1, defaultTag, 0, message = incidentMessage, data = listOf(incidentMessage)
+    )
+    val incidentDTO = IncidentDTO(
+        incidentId, "timestamp", 0, 0, 0, 1, 0,
+        0, 1, defaultTag, 0, message = incidentMessage
     )
 }

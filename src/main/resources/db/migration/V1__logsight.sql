@@ -31,7 +31,7 @@ CREATE TABLE token_entity
 CREATE TABLE users
 (
     id                UUID                        NOT NULL,
-    key               VARCHAR(255)                NOT NULL,
+    key               VARCHAR(255)                NOT NULL UNIQUE,
     email             VARCHAR(255)                NOT NULL,
     password          VARCHAR(255)                NOT NULL,
     date_created      TIMESTAMP WITHOUT TIME ZONE NOT NULL,

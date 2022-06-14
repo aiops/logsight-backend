@@ -31,13 +31,13 @@ class AuthController(
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     fun login(@Valid @RequestBody loginUserRequest: LoginUserRequest): LoginResponse {
-        logger.info("Login initiated for user ${loginUserRequest.email}.")
+        logger.debug("Login initiated for user ${loginUserRequest.email}.")
         val user = userService.findUserByEmail(loginUserRequest.email)
         if (!user.activated) throw UserNotActivatedException()
         val token = authService.authenticateUser(
             username = loginUserRequest.email, password = loginUserRequest.password
         )
-        logger.info("Login token sent back as a response for user ${loginUserRequest.email}.")
+        logger.debug("Login token sent back as a response for user ${loginUserRequest.email}.")
         return LoginResponse(token = token.token, user = UserDTO(user.id, user.email))
     }
 
@@ -45,9 +45,9 @@ class AuthController(
     @GetMapping("/user")
     @ResponseStatus(HttpStatus.OK)
     fun getUser(authentication: Authentication): GetUserResponse {
-        logger.info("Getting information for the already authenticated user.")
+        logger.debug("Getting information for the already authenticated user.")
         val user = userService.findUserByEmail(authentication.name)
-        logger.info("User found in database. Sending response.", this::getUser.name)
+        logger.debug("User found in database. Sending response.", this::getUser.name)
         return GetUserResponse(user.id, user.email)
     }
 }

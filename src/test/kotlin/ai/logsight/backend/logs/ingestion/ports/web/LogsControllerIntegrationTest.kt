@@ -3,9 +3,9 @@ package ai.logsight.backend.logs.ingestion.ports.web
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.TestInputConfig.baseUser
 import ai.logsight.backend.TestInputConfig.defaultTag
-import ai.logsight.backend.TestInputConfig.logEvent
 import ai.logsight.backend.TestInputConfig.logReceipt
 import ai.logsight.backend.TestInputConfig.logReceiptResponse
+import ai.logsight.backend.TestInputConfig.logsightLog
 import ai.logsight.backend.TestInputConfig.sendLogMessage
 import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.ingestion.ports.out.persistence.LogReceiptRepository
@@ -85,7 +85,7 @@ internal class LogsControllerIntegrationTest {
 
         private val mapper = ObjectMapper().registerModule(KotlinModule())!!
 
-        private val defaultBody = SendLogListRequest(logs = listOf(logEvent))
+        private val defaultBody = SendLogListRequest(logs = listOf(logsightLog))
 
         @Test
         fun `should return valid log receipt response`() {

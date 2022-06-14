@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.web.util.UriComponentsBuilder
 
 @Repository
-class ESChartRepository(val elasticsearchConfig: ElasticsearchConfigProperties) {
+class ElasticsearchRepository(val elasticsearchConfig: ElasticsearchConfigProperties) {
     private val connector = RestTemplateConnector()
 
     fun getData(getDataQuery: GetChartDataQuery, applicationIndices: String): String {
