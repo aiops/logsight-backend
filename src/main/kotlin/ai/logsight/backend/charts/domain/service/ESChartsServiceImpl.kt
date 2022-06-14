@@ -233,13 +233,7 @@ class ESChartsServiceImpl(
                 )
             )
         )
-        val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val esIncident = mapper.readValue<ESIncidents>(
-            chartsRepository.getData(
-                getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
-            )
-        )
-        return esIncident.toIncidents()[0]
+        return queryIncidents(chartRequest, user)[0]
     }
 
     fun getIncidents(user: User, getIncidentsRequest: GetIncidentsRequest): List<Incident> {
@@ -255,6 +249,10 @@ class ESChartsServiceImpl(
                 )
             )
         )
+        return queryIncidents(chartRequest, user)
+    }
+
+    private fun queryIncidents(chartRequest: ChartRequest, user: User): List<Incident> {
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val esIncidents = mapper.readValue<ESIncidents>(
             chartsRepository.getData(
