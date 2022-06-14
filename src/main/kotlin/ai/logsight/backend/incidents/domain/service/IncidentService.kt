@@ -9,16 +9,12 @@ import ai.logsight.backend.incidents.domain.service.query.FindIncidentByIdQuery
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentInTimeRangeQuery
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.IncidentStorageService
 import ai.logsight.backend.users.domain.User
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.stereotype.Service
 
 @Service
 class IncidentService(
     private val incidentStorageService: IncidentStorageService
 ) {
-    val mapper = ObjectMapper().registerModule(KotlinModule())!!
-
     private val logger = LoggerImpl(ChartsController::class.java)
 
     fun getIncidentByID(incidentId: String, user: User): Incident {
