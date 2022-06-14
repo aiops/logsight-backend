@@ -31,7 +31,8 @@ spring:
   flyway:
     baselineOnMigrate: true
     enabled: true
-
+    target: 1
+    
 springdoc:
   swagger-ui:
     path: '/swagger-ui.html'
