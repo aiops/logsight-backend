@@ -1,16 +1,16 @@
 package ai.logsight.backend.incidents.ports.web
 
 import ai.logsight.backend.common.logging.LoggerImpl
-import ai.logsight.backend.incidents.ports.web.request.GetIncidentsRequest
-import ai.logsight.backend.incidents.ports.web.request.UpdateIncidentRequest
-import ai.logsight.backend.incidents.ports.web.response.DeleteIncidentByIdResponse
-import ai.logsight.backend.incidents.ports.web.response.GetIncidentsResponse
-import ai.logsight.backend.incidents.ports.web.response.GetIncidentByIdResponse
-import ai.logsight.backend.incidents.ports.web.response.UpdateIncidentResponse
 import ai.logsight.backend.incidents.domain.dto.IncidentDTOViews
 import ai.logsight.backend.incidents.domain.service.IncidentService
 import ai.logsight.backend.incidents.extensions.toIncident
 import ai.logsight.backend.incidents.extensions.toIncidentDTO
+import ai.logsight.backend.incidents.ports.web.request.GetIncidentsRequest
+import ai.logsight.backend.incidents.ports.web.request.UpdateIncidentRequest
+import ai.logsight.backend.incidents.ports.web.response.DeleteIncidentByIdResponse
+import ai.logsight.backend.incidents.ports.web.response.GetIncidentByIdResponse
+import ai.logsight.backend.incidents.ports.web.response.GetIncidentsResponse
+import ai.logsight.backend.incidents.ports.web.response.UpdateIncidentResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.annotations.Api
@@ -52,7 +52,7 @@ class IncidentController(
     ): GetIncidentsResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
         val incidents = incidentService.getIncidentsInTimeRange(
-            getIncidentsRequest.startTime, getIncidentsRequest.stopTime,user
+            getIncidentsRequest.startTime, getIncidentsRequest.stopTime, user
         )
         return GetIncidentsResponse(incidents.map { it.toIncidentDTO() })
     }
@@ -65,7 +65,8 @@ class IncidentController(
         @PathVariable incidentId: String,
     ): DeleteIncidentByIdResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return DeleteIncidentByIdResponse(incidentService.deleteIncidentByID(incidentId, user))
+        val deletedIncidentId = incidentService.deleteIncidentByID(incidentId, user)
+        return DeleteIncidentByIdResponse(deletedIncidentId)
     }
 
     @ApiOperation("Update incident by ID")

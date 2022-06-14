@@ -1,5 +1,9 @@
 package ai.logsight.backend
 
+import ai.logsight.backend.incidents.domain.Incident
+import ai.logsight.backend.incidents.domain.dto.IncidentDTO
+import ai.logsight.backend.incidents.extensions.toIncidentMessage
+import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.extensions.toLogBatchDTO
@@ -63,5 +67,20 @@ object TestInputConfig {
         receiptId = logReceipt.id,
         status = logReceipt.status,
         batchId = logReceipt.batchId
+    )
+
+    val incidentId = "exampleIncidentId"
+    val esIncidentMessage = ESIncidentMessage(
+        "timestamp", "template", "level", 0.0, "message",
+        defaultTag, 0, 0, 0, ""
+    )
+    val incidentMessage = esIncidentMessage.toIncidentMessage()
+    val incident = Incident(
+        incidentId, "timestamp", 0, 0, 0, 1, 0,
+        0, 1, defaultTag, 0, message = incidentMessage, data = listOf(incidentMessage)
+    )
+    val incidentDTO = IncidentDTO(
+        incidentId, "timestamp", 0, 0, 0, 1, 0,
+        0, 1, defaultTag, 0, message = incidentMessage
     )
 }

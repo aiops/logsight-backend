@@ -8,10 +8,6 @@ import javax.validation.constraints.*
 data class IncidentDTO(
     @JsonView(IncidentDTOViews.Reduced::class)
     @get:NotNull(message = "id must not be empty.")
-    @get:Pattern(
-        regexp = "^[\\dA-Fa-f]{8}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{4}-[\\dA-Fa-f]{12}$",
-        message = "id must be UUID type."
-    )
     val incidentId: String,
     @JsonView(IncidentDTOViews.Reduced::class)
     @get:Pattern(
