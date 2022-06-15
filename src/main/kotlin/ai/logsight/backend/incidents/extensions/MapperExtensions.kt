@@ -1,8 +1,11 @@
 package ai.logsight.backend.incidents.extensions
 
 import ai.logsight.backend.incidents.domain.Incident
+import ai.logsight.backend.incidents.domain.IncidentGroup
 import ai.logsight.backend.incidents.domain.IncidentMessage
 import ai.logsight.backend.incidents.domain.dto.IncidentDTO
+import ai.logsight.backend.incidents.domain.dto.IncidentGroupDTO
+import ai.logsight.backend.incidents.domain.dto.IncidentMessageDTO
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESHitsIncident
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncident
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage
@@ -58,6 +61,34 @@ fun IncidentMessage.toESIncidentMessage() =
         tagString = tagString
     )
 
+fun IncidentMessage.toIncidentMessageDTO() =
+    IncidentMessageDTO(
+        timestamp = timestamp,
+        template = template,
+        level = level,
+        riskScore = riskScore,
+        message = message,
+        tags = tags,
+        addedState = addedState,
+        prediction = prediction,
+        riskSeverity = riskSeverity,
+        tagString = tagString
+    )
+
+fun IncidentMessageDTO.toIncidentMessage() =
+    IncidentMessage(
+        timestamp = timestamp,
+        template = template,
+        level = level,
+        riskScore = riskScore,
+        message = message,
+        tags = tags,
+        addedState = addedState,
+        prediction = prediction,
+        riskSeverity = riskSeverity,
+        tagString = tagString
+    )
+
 fun Incident.toESIncident() =
     ESIncident(
         timestamp = timestamp,
@@ -86,8 +117,8 @@ fun Incident.toIncidentDTO() =
         severity = severity,
         tags = tags,
         countSemanticAnomaly = countSemanticAnomaly,
-        message = message,
-        data = data
+        message = message.toIncidentMessageDTO(),
+        data = data.map { it.toIncidentMessageDTO() }
     )
 
 fun IncidentDTO.toIncident() =
@@ -103,6 +134,12 @@ fun IncidentDTO.toIncident() =
         severity = severity,
         tags = tags,
         countSemanticAnomaly = countSemanticAnomaly,
-        message = message,
-        data = data ?: emptyList()
+        message = message.toIncidentMessage(),
+        data = data?.map { it.toIncidentMessage() } ?: emptyList()
+    )
+
+fun IncidentGroup.toIncidentGroupDTO() =
+    IncidentGroupDTO(
+        head = head.toIncidentDTO(),
+        incidents = incidents.map { it.toIncidentDTO() }
     )

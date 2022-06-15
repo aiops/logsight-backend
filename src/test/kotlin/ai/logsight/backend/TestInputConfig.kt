@@ -1,8 +1,12 @@
 package ai.logsight.backend
 
 import ai.logsight.backend.incidents.domain.Incident
+import ai.logsight.backend.incidents.domain.IncidentGroup
 import ai.logsight.backend.incidents.domain.dto.IncidentDTO
+import ai.logsight.backend.incidents.domain.dto.IncidentGroupDTO
+import ai.logsight.backend.incidents.extensions.toIncidentGroupDTO
 import ai.logsight.backend.incidents.extensions.toIncidentMessage
+import ai.logsight.backend.incidents.extensions.toIncidentMessageDTO
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
@@ -75,12 +79,18 @@ object TestInputConfig {
         defaultTag, 0, 0, 0, ""
     )
     val incidentMessage = esIncidentMessage.toIncidentMessage()
+    val incidentMessageDTO = incidentMessage.toIncidentMessageDTO()
     val incident = Incident(
         incidentId, "timestamp", 0, 0, 0, 1, 0,
         0, 1, defaultTag, 0, message = incidentMessage, data = listOf(incidentMessage)
     )
     val incidentDTO = IncidentDTO(
         incidentId, "timestamp", 0, 0, 0, 1, 0,
-        0, 1, defaultTag, 0, message = incidentMessage
+        0, 1, defaultTag, 0, message = incidentMessageDTO
+    )
+    val incidentGroupSize = 2
+    val incidentGroupDTO = IncidentGroupDTO(
+        head = incidentDTO,
+        incidents = List(incidentGroupSize) { incidentDTO }
     )
 }

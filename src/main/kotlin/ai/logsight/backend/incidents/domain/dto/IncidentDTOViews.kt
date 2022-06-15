@@ -4,4 +4,3 @@ object IncidentDTOViews {
     interface Reduced
     interface Complete : Reduced
 }
-

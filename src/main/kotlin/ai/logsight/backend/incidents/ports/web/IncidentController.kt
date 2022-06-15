@@ -5,12 +5,11 @@ import ai.logsight.backend.incidents.domain.dto.IncidentDTOViews
 import ai.logsight.backend.incidents.domain.service.IncidentService
 import ai.logsight.backend.incidents.extensions.toIncident
 import ai.logsight.backend.incidents.extensions.toIncidentDTO
+import ai.logsight.backend.incidents.extensions.toIncidentGroupDTO
+import ai.logsight.backend.incidents.ports.web.request.GetGroupedIncidentsRequest
 import ai.logsight.backend.incidents.ports.web.request.GetIncidentsRequest
 import ai.logsight.backend.incidents.ports.web.request.UpdateIncidentRequest
-import ai.logsight.backend.incidents.ports.web.response.DeleteIncidentByIdResponse
-import ai.logsight.backend.incidents.ports.web.response.GetIncidentByIdResponse
-import ai.logsight.backend.incidents.ports.web.response.GetIncidentsResponse
-import ai.logsight.backend.incidents.ports.web.response.UpdateIncidentResponse
+import ai.logsight.backend.incidents.ports.web.response.*
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.annotations.Api
@@ -29,19 +28,6 @@ class IncidentController(
 ) {
     private val logger: LoggerImpl = LoggerImpl(IncidentController::class.java)
 
-    @ApiOperation("Get incident by ID")
-    @GetMapping("/{incidentId}")
-    @ResponseStatus(HttpStatus.OK)
-    @JsonView(IncidentDTOViews.Complete::class)
-    fun getIncidentByID(
-        authentication: Authentication,
-        @PathVariable incidentId: String,
-    ): GetIncidentByIdResponse {
-        val user = userStorageService.findUserByEmail(authentication.name)
-        val incident = incidentService.getIncidentByID(incidentId, user)
-        return GetIncidentByIdResponse(incident = incident.toIncidentDTO())
-    }
-
     @ApiOperation("Get all incidents for time interval")
     @PostMapping("")
     @ResponseStatus(HttpStatus.OK)
@@ -55,6 +41,34 @@ class IncidentController(
             getIncidentsRequest.startTime, getIncidentsRequest.stopTime, user
         )
         return GetIncidentsResponse(incidents.map { it.toIncidentDTO() })
+    }
+
+    @ApiOperation("Get all grouped incidents for time interval")
+    @PostMapping("/grouped")
+    @ResponseStatus(HttpStatus.OK)
+    @JsonView(IncidentDTOViews.Reduced::class)
+    fun getGroupedIncidentsInTimeRange(
+        @Valid @RequestBody getGroupedIncidentsRequest: GetGroupedIncidentsRequest,
+        authentication: Authentication
+    ): GetGroupedIncidentsResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        val incidentGroups = incidentService.getGroupedIncidentsInTimeRange(
+            getGroupedIncidentsRequest.startTime, getGroupedIncidentsRequest.stopTime, user
+        )
+        return GetGroupedIncidentsResponse(incidentGroups.map { it.toIncidentGroupDTO() })
+    }
+
+    @ApiOperation("Get incident by ID")
+    @GetMapping("/{incidentId}")
+    @ResponseStatus(HttpStatus.OK)
+    @JsonView(IncidentDTOViews.Complete::class)
+    fun getIncidentByID(
+        authentication: Authentication,
+        @PathVariable incidentId: String,
+    ): GetIncidentByIdResponse {
+        val user = userStorageService.findUserByEmail(authentication.name)
+        val incident = incidentService.getIncidentByID(incidentId, user)
+        return GetIncidentByIdResponse(incident = incident.toIncidentDTO())
     }
 
     @ApiOperation("Delete incident by ID")
