@@ -421,8 +421,9 @@ internal class IncidentControllerIntegrationTest {
         @Test
         fun `should update an incident by ID successfully`() {
             // given
+            val incidentUpdated = incident.copy(status = 3)
             Mockito.`when`(incidentStorageService.findIncidentById(any())).thenReturn(incident)
-            Mockito.`when`(incidentStorageService.updateIncident(any())).thenReturn(incident)
+            Mockito.`when`(incidentStorageService.updateIncident(any())).thenReturn(incidentUpdated)
             // when
             val result = mockMvc.put(updateIncidentByIdEndpoint) {
                 contentType = MediaType.APPLICATION_JSON
@@ -434,13 +435,31 @@ internal class IncidentControllerIntegrationTest {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 content {
-                    json(mapper.writeValueAsString(UpdateIncidentResponse(incident.toIncidentDTO())))
+                    json(mapper.writeValueAsString(UpdateIncidentResponse(incidentUpdated.toIncidentDTO())))
                 }
             }
         }
 
         @Test
-        fun `should throw elasticsearch exception when the entry cannot be deleted`() {
+        fun `should return missing incident`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentById(any()))
+                .thenThrow(IncidentNotFoundException::class.java)
+            // when
+            val result = mockMvc.put(updateIncidentByIdEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(updateIncidentRequest)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isNotFound() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+        }
+
+        @Test
+        fun `should return internal error`() {
             // given
             Mockito.`when`(incidentStorageService.findIncidentById(any())).thenReturn(incident)
             Mockito.`when`(incidentStorageService.updateIncident(any())).thenThrow(ElasticsearchException::class.java)
