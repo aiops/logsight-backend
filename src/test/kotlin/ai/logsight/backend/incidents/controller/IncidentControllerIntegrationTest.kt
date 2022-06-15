@@ -7,11 +7,10 @@ import ai.logsight.backend.TestInputConfig.incidentGroupDTO
 import ai.logsight.backend.TestInputConfig.incidentId
 import ai.logsight.backend.TestInputConfig.incidentMessage
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
-import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.incidents.domain.dto.IncidentGroupDTO
+import ai.logsight.backend.incidents.exceptions.IncidentNotFoundException
 import ai.logsight.backend.incidents.extensions.toIncident
 import ai.logsight.backend.incidents.extensions.toIncidentDTO
-import ai.logsight.backend.incidents.extensions.toIncidentGroupDTO
 import ai.logsight.backend.incidents.extensions.toIncidentMessageDTO
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.IncidentStorageService
 import ai.logsight.backend.incidents.ports.web.request.GetGroupedIncidentsRequest
@@ -80,13 +79,42 @@ internal class IncidentControllerIntegrationTest {
             // given
             Mockito.`when`(incidentStorageService.findIncidentById(any())).thenReturn(incident)
             // when
-            val result = mockMvc.get(getIncidentByIdEndpoint) // then
+            val result = mockMvc.get(getIncidentByIdEndpoint)
+            // then
             result.andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
                 content {
                     json(mapper.writeValueAsString(GetIncidentByIdResponse(incidentDTO)))
                 }
+            }
+        }
+
+        @Test
+        fun `should throw incident not found exception`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentById(any()))
+                .thenThrow(IncidentNotFoundException::class.java)
+            // when
+            val result = mockMvc.get(getIncidentByIdEndpoint)
+            // then
+            result.andExpect {
+                status { isNotFound() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+            }
+        }
+
+        @Test
+        fun `should throw internal error`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentById(any()))
+                .thenThrow(ElasticsearchException::class.java)
+            // when
+            val result = mockMvc.get(getIncidentByIdEndpoint)
+            // then
+            result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
             }
         }
     }
@@ -110,7 +138,7 @@ internal class IncidentControllerIntegrationTest {
         }
 
         @Test
-        fun `should return grouped incidents successfully for one group`() {
+        fun `should return incidents successfully`() {
             // given
             Mockito.`when`(incidentStorageService.findIncidentsInTimeRange(any()))
                 .thenReturn(listOf(incident))
@@ -124,7 +152,6 @@ internal class IncidentControllerIntegrationTest {
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
             }
-
             // then
             result.andExpect {
                 status { isOk() }
@@ -136,6 +163,57 @@ internal class IncidentControllerIntegrationTest {
                         )
                     )
                 }
+            }
+        }
+
+        @Test
+        fun `should return empty list`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentsInTimeRange(any()))
+                .thenReturn(emptyList())
+            val request = GetIncidentsRequest(
+                startTime = "2021-03-23T01:02:51.00700",
+                stopTime = "2021-03-23T01:03:51.00700"
+            )
+            // when
+            val result = mockMvc.post(getIncidentInTimeRangeEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(
+                        mapper.writeValueAsString(
+                            GetIncidentsResponse(emptyList())
+                        )
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `should return internal server error`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentsInTimeRange(any()))
+                .thenThrow(ElasticsearchException::class.java)
+            val request = GetIncidentsRequest(
+                startTime = "2021-03-23T01:02:51.00700",
+                stopTime = "2021-03-23T01:03:51.00700"
+            )
+            // when
+            val result = mockMvc.post(getIncidentInTimeRangeEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
             }
         }
     }
@@ -173,7 +251,6 @@ internal class IncidentControllerIntegrationTest {
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
             }
-
             // then
             result.andExpect {
                 status { isOk() }
@@ -212,7 +289,6 @@ internal class IncidentControllerIntegrationTest {
                 content = mapper.writeValueAsString(request)
                 accept = MediaType.APPLICATION_JSON
             }
-
             // then
             result.andExpect {
                 status { isOk() }
@@ -224,6 +300,53 @@ internal class IncidentControllerIntegrationTest {
                         )
                     )
                 }
+            }
+        }
+
+        @Test
+        fun `should return empty grouped incidents list`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentsInTimeRange(any()))
+                .thenReturn(emptyList())
+            val request = GetGroupedIncidentsRequest(
+                startTime = "2021-03-23T01:02:51.00700",
+                stopTime = "2021-03-23T01:03:51.00700"
+            )
+            // when
+            val result = mockMvc.post(getGroupedIncidentInTimeRangeEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content {
+                    json(mapper.writeValueAsString(GetGroupedIncidentsResponse(emptyList())))
+                }
+            }
+        }
+
+        @Test
+        fun `should internal server error`() {
+            // given
+            Mockito.`when`(incidentStorageService.findIncidentsInTimeRange(any()))
+                .thenThrow(ElasticsearchException::class.java)
+            val request = GetGroupedIncidentsRequest(
+                startTime = "2021-03-23T01:02:51.00700",
+                stopTime = "2021-03-23T01:03:51.00700"
+            )
+            // when
+            val result = mockMvc.post(getGroupedIncidentInTimeRangeEndpoint) {
+                contentType = MediaType.APPLICATION_JSON
+                content = mapper.writeValueAsString(request)
+                accept = MediaType.APPLICATION_JSON
+            }
+            // then
+            result.andExpect {
+                status { isInternalServerError() }
+                content { contentType(MediaType.APPLICATION_JSON) }
             }
         }
     }
@@ -251,7 +374,8 @@ internal class IncidentControllerIntegrationTest {
             // given
             Mockito.`when`(incidentStorageService.deleteIncidentById(any())).thenReturn(incidentId)
             // when
-            val result = mockMvc.delete(deleteIncidentByIdEndpoint) // then
+            val result = mockMvc.delete(deleteIncidentByIdEndpoint)
+            // then
             result.andExpect {
                 status { isNoContent() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -267,7 +391,8 @@ internal class IncidentControllerIntegrationTest {
             Mockito.`when`(incidentStorageService.deleteIncidentById(any()))
                 .thenThrow(ElasticsearchException::class.java)
             // when
-            val result = mockMvc.delete(deleteIncidentByIdEndpoint) // then
+            val result = mockMvc.delete(deleteIncidentByIdEndpoint)
+            // then
             result.andExpect {
                 status { isInternalServerError() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -303,7 +428,8 @@ internal class IncidentControllerIntegrationTest {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(updateIncidentRequest)
                 accept = MediaType.APPLICATION_JSON
-            } // then
+            }
+            // then
             result.andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -323,7 +449,8 @@ internal class IncidentControllerIntegrationTest {
                 contentType = MediaType.APPLICATION_JSON
                 content = mapper.writeValueAsString(updateIncidentRequest)
                 accept = MediaType.APPLICATION_JSON
-            } // then
+            }
+            // then
             result.andExpect {
                 status { isInternalServerError() }
                 content { contentType(MediaType.APPLICATION_JSON) }
