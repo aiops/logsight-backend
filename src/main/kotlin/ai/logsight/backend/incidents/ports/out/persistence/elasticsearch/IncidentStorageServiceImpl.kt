@@ -12,6 +12,7 @@ import ai.logsight.backend.incidents.domain.service.command.UpdateIncidentComman
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentByIdQuery
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentInTimeRangeQuery
 import ai.logsight.backend.incidents.exceptions.IncidentNotFoundException
+import ai.logsight.backend.incidents.extensions.toESIncident
 import ai.logsight.backend.incidents.extensions.toIncidents
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidents
 import ai.logsight.backend.users.domain.User
@@ -29,7 +30,7 @@ class IncidentStorageServiceImpl(
     override fun updateIncident(updateIncidentCommand: UpdateIncidentCommand): Incident {
         @Suppress("UNCHECKED_CAST")
         val parameters: Map<String, Any> = mapper.convertValue(
-            updateIncidentCommand.incident, Map::class.java
+            updateIncidentCommand.incident.toESIncident(), Map::class.java
         ) as Map<String, Any>
 
         // TODO check success on returned value
