@@ -78,7 +78,6 @@ class IncidentStorageServiceImpl(
 
     private fun queryIncidents(chartRequest: ChartRequest, user: User): List<Incident> {
         val getChartDataQuery = GetChartDataQuery(
-            credentials = Credentials(user.email, user.key),
             chartConfig = chartRequest.chartConfig,
             user = user,
         )

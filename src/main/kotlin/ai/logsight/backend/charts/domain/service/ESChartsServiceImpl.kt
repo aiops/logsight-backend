@@ -302,7 +302,6 @@ class ESChartsServiceImpl(
     override fun getChartQuery(userId: UUID, createChartRequest: ChartRequest): GetChartDataQuery {
         val user = userStorageService.findUserById(userId)
         return GetChartDataQuery(
-            credentials = Credentials(user.email, user.key),
             chartConfig = createChartRequest.chartConfig,
             user = user,
         )

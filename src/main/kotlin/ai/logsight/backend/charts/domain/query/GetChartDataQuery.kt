@@ -6,6 +6,5 @@ import ai.logsight.backend.users.domain.User
 
 class GetChartDataQuery(
     val chartConfig: ChartConfig,
-    val user: User,
-    val credentials: Credentials
+    val user: User
 )
