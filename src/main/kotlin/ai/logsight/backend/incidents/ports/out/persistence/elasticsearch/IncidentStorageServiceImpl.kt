@@ -11,6 +11,7 @@ import ai.logsight.backend.incidents.domain.service.command.DeleteIncidentComman
 import ai.logsight.backend.incidents.domain.service.command.UpdateIncidentCommand
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentByIdQuery
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentInTimeRangeQuery
+import ai.logsight.backend.incidents.exceptions.IncidentNotFoundException
 import ai.logsight.backend.incidents.extensions.toIncidents
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidents
 import ai.logsight.backend.users.domain.User
@@ -52,8 +53,12 @@ class IncidentStorageServiceImpl(
                 )
             )
         )
-        // TODO fault tolerance in case no elements are found
-        return queryIncidents(chartRequest, findIncidentByIdQuery.user)[0]
+        val incidents = queryIncidents(chartRequest, findIncidentByIdQuery.user)
+        return if (incidents.isNotEmpty()) {
+            incidents[0]
+        } else {
+            throw IncidentNotFoundException("Incident with ID ${findIncidentByIdQuery.incidentId} cannot be found.")
+        }
     }
 
     override fun findIncidentsInTimeRange(findIncidentInTimeRangeQuery: FindIncidentInTimeRangeQuery): List<Incident> {

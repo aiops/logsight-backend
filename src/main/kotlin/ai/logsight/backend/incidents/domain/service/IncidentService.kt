@@ -3,6 +3,7 @@ package ai.logsight.backend.incidents.domain.service
 import ai.logsight.backend.charts.ports.web.ChartsController
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.incidents.domain.Incident
+import ai.logsight.backend.incidents.domain.IncidentGroup
 import ai.logsight.backend.incidents.domain.service.command.DeleteIncidentCommand
 import ai.logsight.backend.incidents.domain.service.command.UpdateIncidentCommand
 import ai.logsight.backend.incidents.domain.service.query.FindIncidentByIdQuery
@@ -26,6 +27,30 @@ class IncidentService(
         val findIncidentInTimeRangeQuery = FindIncidentInTimeRangeQuery(rangeStart, rangeEnd, user)
         return incidentStorageService.findIncidentsInTimeRange(findIncidentInTimeRangeQuery)
     }
+
+    fun getGroupedIncidentsInTimeRange(rangeStart: String, rangeEnd: String, user: User): List<IncidentGroup> {
+        val incidents = getIncidentsInTimeRange(rangeStart, rangeEnd, user)
+        return groupIncidents(incidents)
+    }
+
+    /**
+     * Group incidents. All incidents with the same representative template are put into the same group.
+     *
+     * @param incidents list of incidents that should be grouped.
+     * @return List of incident groups or empty if @param[incidents] is empty.
+     */
+    private fun groupIncidents(incidents: List<Incident>): List<IncidentGroup> =
+        if (incidents.isEmpty()) {
+            emptyList()
+        } else {
+            val incidentGroupLists = incidents.groupBy { it.message.template }
+            incidentGroupLists.map { (_, value) ->
+                IncidentGroup(
+                    head = value.maxByOrNull { it.risk }!!,
+                    incidents = value
+                )
+            }
+        }
 
     fun updateIncident(incident: Incident, user: User): Incident {
         val currentIncident = getIncidentByID(incident.incidentId, user)

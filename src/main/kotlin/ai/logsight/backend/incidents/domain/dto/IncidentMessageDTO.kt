@@ -2,13 +2,12 @@ package ai.logsight.backend.incidents.domain.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonView
-import javax.validation.constraints.*
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Pattern
+import javax.validation.constraints.PositiveOrZero
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class IncidentDTO(
-    @get:NotNull(message = "id must not be empty.")
-    @JsonView(IncidentDTOViews.Reduced::class)
-    val incidentId: String,
+data class IncidentMessageDTO(
     @get:Pattern(
         regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[\\d+-:]+)",
         message = "startTime must be defined as ISO 8601 timestamp " +
@@ -17,35 +16,34 @@ data class IncidentDTO(
     @get:NotEmpty(message = "startTime must not be empty.")
     @JsonView(IncidentDTOViews.Reduced::class)
     val timestamp: String,
+    @get:NotEmpty(message = "startTime must not be empty.")
+    @JsonView(IncidentDTOViews.Reduced::class)
+    val template: String,
+    @get:Pattern(
+        regexp = "^INFO$|^WARNING$|^WARN$|^FINER$|^FINE$|^DEBUG$|^ERROR$|^ERR$|^EXCEPTION$|^SEVERE$",
+        message = "level must be one of INFO|WARNING|WARN|FINE|FINER|DEBUG|ERR|ERROR|EXCEPTION|SEVERE"
+    )
+    @JsonView(IncidentDTOViews.Reduced::class)
+    val level: String,
     @PositiveOrZero
     @JsonView(IncidentDTOViews.Reduced::class)
-    val risk: Long,
-    @PositiveOrZero
+    val riskScore: Double,
+    @get:NotEmpty(message = "startTime must not be empty.")
     @JsonView(IncidentDTOViews.Reduced::class)
-    val countMessages: Long,
-    @PositiveOrZero
-    @JsonView(IncidentDTOViews.Reduced::class)
-    val countStates: Long,
-    @get:Min(1)
-    @get:Max(3)
-    @JsonView(IncidentDTOViews.Reduced::class)
-    val status: Long,
-    @PositiveOrZero
-    @JsonView(IncidentDTOViews.Reduced::class)
-    val countAddedState: Long,
-    @JsonView(IncidentDTOViews.Reduced::class)
-    @PositiveOrZero
-    val countLevelFault: Long,
-    @JsonView(IncidentDTOViews.Reduced::class)
-    @PositiveOrZero
-    val severity: Long,
+    val message: String,
+    @get:NotEmpty(message = "startTime must not be empty.")
     @JsonView(IncidentDTOViews.Reduced::class)
     val tags: Map<String, String>,
-    @JsonView(IncidentDTOViews.Reduced::class)
     @PositiveOrZero
-    val countSemanticAnomaly: Long,
     @JsonView(IncidentDTOViews.Reduced::class)
-    val message: IncidentMessageDTO,
-    @JsonView(IncidentDTOViews.Complete::class)
-    val data: List<IncidentMessageDTO>? = null
+    val addedState: Long,
+    @PositiveOrZero
+    @JsonView(IncidentDTOViews.Reduced::class)
+    val prediction: Long,
+    @PositiveOrZero
+    @JsonView(IncidentDTOViews.Reduced::class)
+    val riskSeverity: Long,
+    @get:NotEmpty(message = "startTime must not be empty.")
+    @JsonView(IncidentDTOViews.Reduced::class)
+    val tagString: String,
 )

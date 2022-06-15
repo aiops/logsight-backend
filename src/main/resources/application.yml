@@ -30,6 +30,8 @@ spring:
       matching-strategy: ant_path_matcher
   flyway:
     baselineOnMigrate: true
+  jackson:
+    default-property-inclusion: non_null
 
 
 springdoc:
