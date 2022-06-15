@@ -8,14 +8,13 @@ import ai.logsight.backend.charts.domain.charts.models.ChartSeriesPoint
 import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
-import ai.logsight.backend.charts.repository.ElasticsearchRepository
 import ai.logsight.backend.charts.repository.entities.elasticsearch.*
-import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.common.utils.QueryBuilderHelper
 import ai.logsight.backend.compare.controller.request.TagEntry
 import ai.logsight.backend.compare.dto.Tag
 import ai.logsight.backend.compare.dto.TagKey
+import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.users.domain.User
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -30,7 +29,7 @@ import kotlin.reflect.full.memberProperties
 
 @Service
 class ESChartsServiceImpl(
-    private val chartsRepository: ElasticsearchRepository,
+    private val elasticsearchService: ElasticsearchService,
     private val userStorageService: UserStorageService,
     private val queryBuilderHelper: QueryBuilderHelper
 ) : ChartsService {
@@ -119,7 +118,7 @@ class ESChartsServiceImpl(
         getChartDataQuery.chartConfig.parameters["baselineTags"] =
             queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
         return mapper.readValue<BarChartData>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, "*_${getChartDataQuery.chartConfig.parameters["indexType"]}"
             )
         )
@@ -127,7 +126,7 @@ class ESChartsServiceImpl(
 
     fun createDashboardBarChart(getChartDataQuery: GetChartDataQuery): MutableList<ChartSeries> {
         val barChartData = mapper.readValue<BarChartData>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
             )
         )
@@ -145,7 +144,7 @@ class ESChartsServiceImpl(
     override fun createPieChart(getChartDataQuery: GetChartDataQuery): PieChart {
         // get the String response from elasticsearch and map it into a BarChartData Object.
         val pieChartData = mapper.readValue<PieChartData>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
             )
         )
@@ -167,7 +166,7 @@ class ESChartsServiceImpl(
 
     override fun createTableChart(getChartDataQuery: GetChartDataQuery): TableChart {
         val tableChartData = mapper.readValue<TableChartData>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, getChartDataQuery.chartConfig.parameters["indexType"].toString()
             )
         )
@@ -211,7 +210,7 @@ class ESChartsServiceImpl(
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val verification = mapper.readValue<TableCompare>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
             )
         )
@@ -228,7 +227,7 @@ class ESChartsServiceImpl(
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val verification = mapper.readValue<TableCompareAll>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
             )
         )
@@ -247,7 +246,7 @@ class ESChartsServiceImpl(
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val tagData = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        val tagData = mapper.readValue<TagData>(elasticsearchService.getData(getChartDataQuery, applicationIndices))
         val tagDataFiltered = tagData.aggregations.listAggregations.buckets.filter { itFilter ->
             !listTags.map { itMap1 -> itMap1.tagName }.contains(itFilter.tagValue)
         }.map { itMap2 -> TagKey(tagName = itMap2.tagValue, itMap2.tagCount) }
@@ -272,7 +271,7 @@ class ESChartsServiceImpl(
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
-        val tagValues = mapper.readValue<TagData>(chartsRepository.getData(getChartDataQuery, applicationIndices))
+        val tagValues = mapper.readValue<TagData>(elasticsearchService.getData(getChartDataQuery, applicationIndices))
         return tagValues.aggregations.listAggregations.buckets.map {
             Tag(tagName = tagName, tagValue = it.tagValue, tagCount = it.tagCount)
         }
@@ -292,7 +291,7 @@ class ESChartsServiceImpl(
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
         val chart = mapper.readValue<VerticalBarChartData>(
-            chartsRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, "${user.key}_verifications"
             )
         )

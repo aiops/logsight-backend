@@ -3,8 +3,6 @@ package ai.logsight.backend.incidents.ports.out.persistence.elasticsearch
 import ai.logsight.backend.charts.domain.dto.ChartConfig
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery
 import ai.logsight.backend.charts.ports.web.request.ChartRequest
-import ai.logsight.backend.charts.repository.ElasticsearchRepository
-import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.incidents.domain.Incident
 import ai.logsight.backend.incidents.domain.service.command.DeleteIncidentCommand
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service
 
 @Service
 class IncidentStorageServiceImpl(
-    private val elasticsearchRepository: ElasticsearchRepository,
     private val elasticsearchService: ElasticsearchService,
     private val mapper: ObjectMapper
 ) : IncidentStorageService {
@@ -82,7 +79,7 @@ class IncidentStorageServiceImpl(
             user = user,
         )
         val esIncidents = mapper.readValue<ESIncidents>(
-            elasticsearchRepository.getData(
+            elasticsearchService.getData(
                 getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
             )
         )
