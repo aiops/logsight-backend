@@ -2,12 +2,16 @@ package ai.logsight.backend.connectors.rest
 
 import ai.logsight.backend.common.dto.Credentials
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForEntity
 import org.springframework.web.client.postForEntity
 
+@Component
 open class RestTemplateConnector {
     fun sendRequest(
         url: String,
