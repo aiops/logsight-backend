@@ -6,6 +6,7 @@ import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
+import org.elasticsearch.ElasticsearchStatusException
 import org.elasticsearch.action.DocWriteResponse
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
 import org.elasticsearch.action.delete.DeleteRequest
@@ -17,6 +18,8 @@ import org.elasticsearch.client.RestHighLevelClient
 import org.elasticsearch.client.security.DeleteUserRequest
 import org.elasticsearch.client.security.PutUserRequest
 import org.elasticsearch.client.security.RefreshPolicy
+import org.elasticsearch.index.query.TermQueryBuilder
+import org.elasticsearch.index.reindex.DeleteByQueryRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -25,12 +28,13 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.util.*
 import org.elasticsearch.client.security.user.User as ESUser
 
+
 @Service
 class ElasticsearchService(
     val client: RestHighLevelClient,
     val kibanaConfig: KibanaConfigProperties,
     val elasticsearchConfig: ElasticsearchConfigProperties,
-    val restConnector: RestTemplateConnector = RestTemplateConnector()
+    val restConnector: RestTemplateConnector = RestTemplateConnector(),
 ) {
     val logger: Logger = LoggerFactory.getLogger(ElasticsearchService::class.java)
 
@@ -69,6 +73,17 @@ class ElasticsearchService(
             restConnector.sendRequest(
                 url, Credentials(getDataQuery.user.email, getDataQuery.user.key), query
             ).body!!
+        }
+    }
+
+    fun deleteDemoData(index: String, fieldName: String, fieldValue: String){
+        val request = DeleteByQueryRequest(index)
+        request.setConflicts("proceed");
+        request.setQuery(TermQueryBuilder(fieldName, fieldValue))
+        try {
+            client.deleteByQuery(request, RequestOptions.DEFAULT)
+        }catch (e: ElasticsearchStatusException){
+            logger.warn("Elasticsearch index does not exists, there is no demo data to be deleted. Proceeding forward.")
         }
     }
 
