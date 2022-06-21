@@ -30,6 +30,8 @@ spring:
       matching-strategy: ant_path_matcher
   flyway:
     baselineOnMigrate: true
+    enabled: true
+    target: 2
 
 
 springdoc:
