@@ -19,12 +19,7 @@ class ExternalElasticsearch(
     override fun initialize(user: User) {
         logger.info("Initializing elasticsearch services for user. ${user.email}")
         try {
-
-            elasticsearchService.createESUser(
-                username = user.email, password = user.password, roles = user.key
-            )
-            elasticsearchService.createKibanaSpace(user.key)
-            elasticsearchService.createKibanaRole(user.key)
+            elasticsearchService.initESUser(user.email, user.key)
         } catch (e: ResourceAccessException) {
             logger.error(e.message)
             val msg =

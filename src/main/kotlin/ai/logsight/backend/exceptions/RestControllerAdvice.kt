@@ -4,6 +4,7 @@ import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
+import ai.logsight.backend.incidents.exceptions.IncidentNotFoundException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
 import ai.logsight.backend.logs.ingestion.exceptions.LogReceiptNotFoundException
 import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
@@ -81,6 +82,7 @@ class RestControllerAdvice {
         UserNotFoundException::class,
         TokenNotFoundException::class,
         LogReceiptNotFoundException::class,
+        IncidentNotFoundException::class
     )
     fun handleNotFound(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.NOT_FOUND, request, e)

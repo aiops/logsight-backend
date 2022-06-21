@@ -1,6 +1,7 @@
 package ai.logsight.backend.logs.demo
 
 import ai.logsight.backend.common.logging.LoggerImpl
+import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class LogDemoService(
-    private val logIngestionService: LogIngestionService
+    private val logIngestionService: LogIngestionService,
+    private val elasticsearchService: ElasticsearchService
 ) {
     val logger: LoggerImpl = LoggerImpl(LogDemoService::class.java)
 
@@ -19,18 +21,28 @@ class LogDemoService(
         const val SAMPLE_LOG_DIR = "sample_data"
     }
 
+    fun deleteDanglingDemoData(fileNames: List<String>, user: User) {
+        fileNames.forEach{
+            val version = it.split("-")[1]
+            val service = it.split("-")[0]
+            elasticsearchService.deleteDemoData("${user.key}_pipeline", "tags.service", service)
+            elasticsearchService.deleteDemoData("${user.key}_incidents", "tags.service", service)
+        }
+    }
+
     fun createHadoopDemoForUser(user: User): List<LogReceipt> {
 
         val fileNames = listOf(
-            "hdfs_node-v1.0.0",
-            "hdfs_node-v1.1.0",
-            "node_manager-v1.0.0",
-            "node_manager-v1.1.0",
-            "resource_manager-v1.0.0",
-            "resource_manager-v1.1.0",
-            "name_node-v1.0.0",
-            "name_node-v1.1.0"
+            "demo_hdfs_node-v1.0.0",
+            "demo_hdfs_node-v1.1.0",
+            "demo_node_manager-v1.0.0",
+            "demo_node_manager-v1.1.0",
+            "demo_resource_manager-v1.0.0",
+            "demo_resource_manager-v1.1.0",
+            "demo_name_node-v1.0.0",
+            "demo_name_node-v1.1.0"
         )
+        deleteDanglingDemoData(fileNames, user)
         val logReceipts = fileNames.map { fileName ->
             // read file
             val logMessages = this.readSampleFile(fileName)

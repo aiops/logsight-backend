@@ -32,6 +32,8 @@ spring:
     baselineOnMigrate: true
     enabled: true
     target: 3
+  jackson:
+    default-property-inclusion: non_null
 
 
 springdoc:

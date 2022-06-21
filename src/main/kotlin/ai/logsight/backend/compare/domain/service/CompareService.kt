@@ -63,7 +63,7 @@ class CompareService(
 
     fun updateCompareStatusByID(compareId: String, compareStatus: Long, user: User): String {
         val parameters = hashMapOf("status" to (compareStatus as Any))
-        return elasticsearchService.updateFieldByIndexAndDocID(parameters, "${user.key}_verifications", compareId)
+        return elasticsearchService.updateFieldsByIndexAndDocID(parameters, "${user.key}_verifications", compareId)
     }
 
     private fun buildCompareEndpointURI() =
