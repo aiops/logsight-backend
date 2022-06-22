@@ -5,6 +5,7 @@ import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReache
 import ai.logsight.backend.logs.ingestion.ports.out.sink.adapters.LogSinkAdapter
 import org.springframework.stereotype.Component
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 @Component
 class BlockingQueueLogSinkAdapter(
@@ -15,12 +16,11 @@ class BlockingQueueLogSinkAdapter(
     }
 
     override fun sendBatch(logBatchDTO: LogBatchDTO) {
-        if (blockingLogQueue.remainingCapacity() < 1) {
+        if (!blockingLogQueue.offer(logBatchDTO, 100, TimeUnit.MILLISECONDS)) {
             throw LogQueueCapacityLimitReached(
                 "log queue capacity limit reached. required capacity: 1, " +
-                    "remaining capacity: ${blockingLogQueue.remainingCapacity()}."
+                        "remaining capacity: ${blockingLogQueue.remainingCapacity()}."
             )
         }
-        blockingLogQueue.put(logBatchDTO)
     }
 }
