@@ -15,10 +15,10 @@ class ZmqLogSinkAdapter(
 
     override fun sendBatch(logBatchDTO: LogBatchDTO) {
         val logBatchDTOJsonString = jsonLogBatchSerializer.serialize(logBatchDTO)
-            ?: throw LogSinkException("Serialization error: Failed to process log batch $logBatchDTO.")
+            ?: throw LogSinkException("Serialization error: Failed to process log batch ${logBatchDTO.id}.")
 
         if (!zmqSinkConnector.send(logBatchDTOJsonString)) {
-            throw LogSinkException("Transmission error: Failed to process log batch $logBatchDTO.")
+            throw LogSinkException("Transmission error: Failed to process log batch ${logBatchDTO.id}.")
         }
     }
 }
