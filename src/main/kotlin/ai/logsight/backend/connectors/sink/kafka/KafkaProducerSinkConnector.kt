@@ -29,11 +29,11 @@ class KafkaProducerSinkConnector(
 
         future.addCallback(object : ListenableFutureCallback<SendResult<String, String>> {
             override fun onSuccess(result: SendResult<String, String>?) {
-                logger.debug("Successfully send message $msg to kafka topic $topic")
+                logger.debug("Successfully send message to kafka topic $topic")
             }
 
             override fun onFailure(ex: Throwable) {
-                logger.warn("Failed to send message $msg to kafka topic $topic. Reason: $ex")
+                logger.warn("Failed to send message to kafka topic $topic. Reason: $ex")
             }
         })
 

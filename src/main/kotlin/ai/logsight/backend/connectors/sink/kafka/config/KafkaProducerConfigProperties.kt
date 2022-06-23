@@ -11,5 +11,6 @@ class KafkaProducerConfigProperties(
     val bootstrapServer: String,
     val topic: String,
     val partitions: Int,
-    val replicationFactor: Short
+    val replicationFactor: Short,
+    val maxSize: Int
 )

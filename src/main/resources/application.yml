@@ -61,13 +61,15 @@ logsight:
       hwm: 1000000
     kafka:
       bootstrapServer: ${KAFKA_SERVER:localhost:9092}
-      topic: "log-batches"
+      topic: ${KAFKA_TOPIC:pipeline}
       partitions: 5
       replication_factor: 1
+      maxSize: 5242880
+      numPartitions: 2
 
   logs:
     sink:
-      type: ${LOG_SINK_CONNECTION:zmq} # "queued-zmq", "kafka"
+      type: ${LOG_SINK_CONNECTION:queued-zmq} # "zmq", "kafka"
       queue:
         max-size: 100000
 

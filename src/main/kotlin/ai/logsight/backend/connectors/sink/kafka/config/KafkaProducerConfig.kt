@@ -28,6 +28,8 @@ class KafkaProducerConfig(
         configProps[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaProducerConfigProperties.bootstrapServer
         configProps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
         configProps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
+        configProps[ProducerConfig.MAX_REQUEST_SIZE_CONFIG] = kafkaProducerConfigProperties.maxSize
+
         return DefaultKafkaProducerFactory(configProps)
     }
 

@@ -4,10 +4,10 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.logs.domain.LogBatch
 import ai.logsight.backend.logs.domain.LogsightLog
+import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionService
 import ai.logsight.backend.logs.utils.LogFileReader
 import ai.logsight.backend.users.domain.User
-import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,8 +22,7 @@ class LogDemoService(
     }
 
     fun deleteDanglingDemoData(fileNames: List<String>, user: User) {
-        fileNames.forEach{
-            val version = it.split("-")[1]
+        fileNames.forEach {
             val service = it.split("-")[0]
             elasticsearchService.deleteDemoData("${user.key}_pipeline", "tags.service", service)
             elasticsearchService.deleteDemoData("${user.key}_incidents", "tags.service", service)

@@ -18,7 +18,7 @@ class LogBatchJsonSerializer(
         val logBatchDTOJsonString = try {
             objectMapper.writeValueAsString(logBatchDTO)
         } catch (ex: JsonProcessingException) {
-            logger.warn("Failed to serialize log batch object $logBatchDTO. Reason: $ex")
+            logger.warn("Failed to serialize log batch object ${logBatchDTO.id}. Reason: $ex")
             null
         }
         return logBatchDTOJsonString
