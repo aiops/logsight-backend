@@ -67,7 +67,7 @@ logsight:
 
   logs:
     sink:
-      type: ${LOG_SINK_CONNECTION:kafka} # "queued-zmq", "kafka"
+      type: ${LOG_SINK_CONNECTION:queued-zmq} # "zmq", "kafka"
       queue:
         max-size: 100000
 
