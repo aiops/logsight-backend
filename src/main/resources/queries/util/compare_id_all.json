@@ -1,18 +1,7 @@
 {
   "size": 100,
-  "version": true,
-  "fields": [
-    {
-      "field": "*",
-      "include_unmapped": "true"
-    },
-    {
-      "field": "timestamp",
-      "format": "strict_date_optional_time"
-    }
-  ],
   "_source": {
-    "excludes": [ "rows" ]
+    "excludes": [ "cols", "rows.*"]
   },
   "query": {
     "bool": {

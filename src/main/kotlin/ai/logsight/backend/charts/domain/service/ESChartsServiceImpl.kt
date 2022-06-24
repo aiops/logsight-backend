@@ -226,10 +226,12 @@ class ESChartsServiceImpl(
             )
         )
         val getChartDataQuery = getChartQuery(user.id, chartRequest)
+        val esdata = elasticsearchService.getData(
+            getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
+        )
+        println(esdata)
         val verification = mapper.readValue<TableCompareAll>(
-            elasticsearchService.getData(
-                getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
-            )
+            esdata
         )
         return verification.hits.hits
     }
