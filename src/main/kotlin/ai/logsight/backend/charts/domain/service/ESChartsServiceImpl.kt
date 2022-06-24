@@ -221,7 +221,7 @@ class ESChartsServiceImpl(
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
-                    "type" to "util", "feature" to "compare_id", "indexType" to "verifications", "propertyId" to ""
+                    "type" to "util", "feature" to "compare_id_all", "indexType" to "verifications", "propertyId" to ""
                 )
             )
         )
