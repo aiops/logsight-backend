@@ -1,11 +1,22 @@
 {
-  "size": 100,
+  "size": 1000,
+  "sort": { "timestamp": { "order": "desc" } },
   "_source": {
     "excludes": [ "cols", "rows.*"]
   },
   "query": {
     "bool": {
-      "must": [],
+      "must": [
+        {
+          "range": {
+            "timestamp": {
+              "format": "strict_date_optional_time",
+              "gte": "start_time",
+              "lte": "stop_time"
+            }
+          }
+        }
+      ],
       "filter": [
         property_id
       ],

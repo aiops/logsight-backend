@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Pattern
 
 @Api(tags = ["Compare"], description = "Comparison between log data")
 @RestController
@@ -61,9 +63,23 @@ class CompareController(
     @ResponseStatus(HttpStatus.OK)
     fun getAllCompares(
         authentication: Authentication,
+        @Pattern(
+            regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[0-9+-:]+)",
+            message = "startTime must be defined as ISO 8601 timestamp " +
+                    "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
+        )
+        @NotEmpty(message = "startTime must not be empty.")
+        @RequestParam startTime: String,
+        @Pattern(
+            regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[0-9+-:]+)",
+            message = "stopTime must be defined as ISO 8601 timestamp " +
+                    "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
+        )
+        @NotEmpty(message = "stopTime must not be empty.")
+        @RequestParam stopTime: String
     ): GetAllCompareResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return GetAllCompareResponse(compareService.getAllCompares(user))
+        return GetAllCompareResponse(compareService.getAllCompares(user, startTime, stopTime))
     }
 
     @ApiOperation("Delete compare by ID")

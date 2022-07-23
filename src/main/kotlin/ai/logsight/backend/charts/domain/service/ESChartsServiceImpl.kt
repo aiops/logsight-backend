@@ -217,11 +217,11 @@ class ESChartsServiceImpl(
         return verification.hits.hits
     }
 
-    fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
+    fun getAllCompares(user: User, startTime: String, stopTime: String): List<HitsCompareAllDataPoint> {
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
-                    "type" to "util", "feature" to "compare_id_all", "indexType" to "verifications", "propertyId" to ""
+                    "type" to "util", "feature" to "compare_id_all", "indexType" to "verifications", "propertyId" to "", "startTime" to startTime, "stopTime" to stopTime
                 )
             )
         )
@@ -229,7 +229,6 @@ class ESChartsServiceImpl(
         val esdata = elasticsearchService.getData(
             getChartDataQuery, "${user.key}_${chartRequest.chartConfig.parameters["indexType"]}"
         )
-        println(esdata)
         val verification = mapper.readValue<TableCompareAll>(
             esdata
         )
