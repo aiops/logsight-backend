@@ -53,8 +53,8 @@ class CompareService(
         return esChartsServiceImpl.getCompareByID(compareId, user)
     }
 
-    fun getAllCompares(user: User): List<HitsCompareAllDataPoint> {
-        return esChartsServiceImpl.getAllCompares(user)
+    fun getAllCompares(user: User, startTime: String, stopTime: String): List<HitsCompareAllDataPoint> {
+        return esChartsServiceImpl.getAllCompares(user, startTime, stopTime)
     }
 
     fun deleteCompareByID(compareId: String, user: User): String {
