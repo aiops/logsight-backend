@@ -4,6 +4,7 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
     container_name: elasticsearch7.16.2
+    hostname: elasticsearch
     environment:
       - xpack.security.enabled=true
       - discovery.type=single-node
@@ -15,10 +16,13 @@ services:
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
       - "9200:9200"
+    networks:
+      - logsight
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.16.2
     container_name: kibana7.16.2
+    hostname: kibana
     environment:
       - network.host=0.0.0.0
       - ELASTICSEARCH_USERNAME=elastic
@@ -27,15 +31,19 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
-
+    networks:
+      - logsight
   postgres:
     image: postgres:11
+    hostname: postgres
     environment:
       - POSTGRES_USER=logsight
       - POSTGRES_PASSWORD=logsight
       - POSTGRES_DB=logsight
     ports:
       - "5432:5432"
+    networks:
+      - logsight
 
   postgres-test:
     image: postgres:11
@@ -70,3 +78,7 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
+
+networks:
+  logsight:
+    driver: bridge

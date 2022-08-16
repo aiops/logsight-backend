@@ -8,26 +8,19 @@ import ai.logsight.backend.common.dto.Credentials
 import ai.logsight.backend.connectors.elasticsearch.config.ElasticsearchConfigProperties
 import ai.logsight.backend.connectors.elasticsearch.config.KibanaConfigProperties
 import ai.logsight.backend.connectors.rest.RestTemplateConnector
-import ai.logsight.backend.logs.extensions.toLogBatchDTO
-import ai.logsight.backend.logs.ingestion.domain.service.LogIngestionServiceImplUnitTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.elasticsearch.client.RestHighLevelClient
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.spy
-import org.mockito.Mockito.`when`
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.client.HttpClientErrorException
 
-internal class ElasticsearchServiceUnitTest{
+internal class ElasticsearchServiceUnitTest {
     private val client: RestHighLevelClient = mockk(relaxed = true)
     private val kibanaConfig: KibanaConfigProperties = mockk()
     private val elasticsearchConfig: ElasticsearchConfigProperties = ElasticsearchConfigProperties("http", "localhost", "9200", Credentials(TestInputConfig.baseUser.email, TestInputConfig.baseUser.key))
@@ -36,8 +29,8 @@ internal class ElasticsearchServiceUnitTest{
     private val spyElasticsearchService = spy(elasticsearchService)
 
     @Test
-    fun `should return data for query`(){
-        //given
+    fun `should return data for query`() {
+        // given
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
@@ -59,12 +52,12 @@ internal class ElasticsearchServiceUnitTest{
             header,
             HttpStatus.OK
         )
-        //when
+        // when
         every { restConnector.sendRequest(any(), any(), any(), any()) } returns responseEntity
         val result = elasticsearchService.getData(getChartDataQuery, "${TestInputConfig.baseUser.key}_verifications")
-        //then
+        // then
         Assertions.assertEquals(result, responseEntity.body!!)
-        verify(exactly = 1) { restConnector.sendRequest(any(), any(), any(), any())}
+        verify(exactly = 1) { restConnector.sendRequest(any(), any(), any(), any()) }
     }
 
 //    @Test
