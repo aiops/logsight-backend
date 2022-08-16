@@ -25,7 +25,7 @@
         }
       ],
       "filter": [
-          property_id
+        property_id
       ],
       "should": [],
       "must_not": [
@@ -40,6 +40,10 @@
     }
   },
   "sort": [
-    { "risk":   { "order": "desc" }}
+    {
+      "risk": {
+        "order": "desc"
+      }
+    }
   ]
 }

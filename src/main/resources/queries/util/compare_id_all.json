@@ -1,8 +1,15 @@
 {
   "size": 1000,
-  "sort": { "timestamp": { "order": "desc" } },
+  "sort": {
+    "timestamp": {
+      "order": "desc"
+    }
+  },
   "_source": {
-    "excludes": [ "cols", "rows.*"]
+    "excludes": [
+      "cols",
+      "rows.*"
+    ]
   },
   "query": {
     "bool": {

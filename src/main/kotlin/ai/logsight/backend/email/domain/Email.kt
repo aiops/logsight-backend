@@ -23,9 +23,9 @@ data class Email(
     fun getMessage(): SimpleMailMessage {
         return with(SimpleMailMessage()) {
             setTo(mailTo)
-            setFrom(mailFrom)
-            setSubject(sub)
-            setText(body)
+            from = mailFrom
+            subject = sub
+            text = body
             this
         }
     }

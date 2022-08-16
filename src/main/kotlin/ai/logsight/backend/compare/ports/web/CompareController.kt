@@ -66,14 +66,14 @@ class CompareController(
         @Pattern(
             regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[0-9+-:]+)",
             message = "startTime must be defined as ISO 8601 timestamp " +
-                    "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
+                "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
         )
         @NotEmpty(message = "startTime must not be empty.")
         @RequestParam startTime: String,
         @Pattern(
             regexp = "now-\\d+m|now|(\\d{4}-\\d{2}-\\d{2}[A-Z]+\\d{2}:\\d{2}:\\d{2}.[0-9+-:]+)",
             message = "stopTime must be defined as ISO 8601 timestamp " +
-                    "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
+                "YYYY-MM-DDTHH:mm:ss.SSSSSS+HH:00. If timezone is not specified, UTC is default."
         )
         @NotEmpty(message = "stopTime must not be empty.")
         @RequestParam stopTime: String

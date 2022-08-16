@@ -28,7 +28,6 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.util.*
 import org.elasticsearch.client.security.user.User as ESUser
 
-
 @Service
 class ElasticsearchService(
     val client: RestHighLevelClient,
@@ -37,7 +36,6 @@ class ElasticsearchService(
     val restConnector: RestTemplateConnector = RestTemplateConnector(),
 ) {
     val logger: Logger = LoggerFactory.getLogger(ElasticsearchService::class.java)
-
 
     fun createESUser(username: String, password: String, roles: String) {
         logger.debug("Creating elasticsearch user $username.")
@@ -61,8 +59,8 @@ class ElasticsearchService(
             restConnector.sendRequest(
                 url, Credentials(getDataQuery.user.email, getDataQuery.user.key), query
             ).body!!
-        } catch (e: HttpClientErrorException){
-            when(e) {
+        } catch (e: HttpClientErrorException) {
+            when (e) {
                 is HttpClientErrorException.Forbidden -> {
                     initESUser(getDataQuery.user.email, getDataQuery.user.key)
                 }
@@ -76,18 +74,18 @@ class ElasticsearchService(
         }
     }
 
-    fun deleteDemoData(index: String, fieldName: String, fieldValue: String){
+    fun deleteDemoData(index: String, fieldName: String, fieldValue: String) {
         val request = DeleteByQueryRequest(index)
-        request.setConflicts("proceed");
+        request.setConflicts("proceed")
         request.setQuery(TermQueryBuilder(fieldName, fieldValue))
         try {
             client.deleteByQuery(request, RequestOptions.DEFAULT)
-        }catch (e: ElasticsearchStatusException){
+        } catch (e: ElasticsearchStatusException) {
             logger.warn("Elasticsearch index does not exists, there is no demo data to be deleted. Proceeding forward.")
         }
     }
 
-    fun initESUser(email: String, userKey: String){
+    fun initESUser(email: String, userKey: String) {
         createESUser(email, userKey, userKey)
         createKibanaSpace(userKey)
         createKibanaRole(userKey)
@@ -157,7 +155,6 @@ class ElasticsearchService(
         } catch (e: HttpClientErrorException.Conflict) {
             logger.warn("Kibana space for user with key $userKey already exists.")
         }
-
     }
 
     fun deleteKibanaSpace(userKey: String) {
@@ -186,6 +183,5 @@ class ElasticsearchService(
         } catch (e: HttpClientErrorException.Conflict) {
             logger.warn("Kibana role for user with key $userKey already exists.")
         }
-
     }
 }

@@ -11,5 +11,4 @@ import java.time.Duration
 data class TokenConfigurationProperties(
     var minutes: Long = 15,
     var duration: Duration = Duration.ofMinutes(minutes)
-    // TODO this needs to be reworked via a custom setter for duration
 )

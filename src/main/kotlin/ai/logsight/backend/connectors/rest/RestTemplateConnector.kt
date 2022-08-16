@@ -2,31 +2,16 @@ package ai.logsight.backend.connectors.rest
 
 import ai.logsight.backend.common.dto.Credentials
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpMethod
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForEntity
 import org.springframework.web.client.postForEntity
 
 @Component
-open class RestTemplateConnector {
+class RestTemplateConnector {
     fun sendRequest(
-        url: String,
-        credentials: Credentials,
-        query: String,
-        headerName: String? = null
-    ): ResponseEntity<String> {
-        val request = ConnectorUtils.createHttpEntityHeader(query, headerName)
-        val restTemplate: RestTemplate = RestTemplateBuilder().basicAuthentication(
-            credentials.username, credentials.password
-        ).build()
-        return restTemplate.postForEntity(url, request)
-    }
-
-    fun postForEntity(
         url: String,
         credentials: Credentials,
         query: String,

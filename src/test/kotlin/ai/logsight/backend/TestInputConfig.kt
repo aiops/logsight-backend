@@ -1,10 +1,8 @@
 package ai.logsight.backend
 
 import ai.logsight.backend.incidents.domain.Incident
-import ai.logsight.backend.incidents.domain.IncidentGroup
 import ai.logsight.backend.incidents.domain.dto.IncidentDTO
 import ai.logsight.backend.incidents.domain.dto.IncidentGroupDTO
-import ai.logsight.backend.incidents.extensions.toIncidentGroupDTO
 import ai.logsight.backend.incidents.extensions.toIncidentMessage
 import ai.logsight.backend.incidents.extensions.toIncidentMessageDTO
 import ai.logsight.backend.incidents.ports.out.persistence.elasticsearch.entities.ESIncidentMessage

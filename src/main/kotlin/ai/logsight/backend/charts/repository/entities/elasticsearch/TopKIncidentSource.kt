@@ -1,10 +1,9 @@
 package ai.logsight.backend.charts.repository.entities.elasticsearch
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRawValue
 import com.fasterxml.jackson.databind.JsonNode
-import org.json.JSONArray
-import org.json.JSONObject
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class TopKIncidentSource(

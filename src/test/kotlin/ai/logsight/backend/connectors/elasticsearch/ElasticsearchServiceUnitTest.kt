@@ -23,7 +23,12 @@ import org.springframework.http.ResponseEntity
 internal class ElasticsearchServiceUnitTest {
     private val client: RestHighLevelClient = mockk(relaxed = true)
     private val kibanaConfig: KibanaConfigProperties = mockk()
-    private val elasticsearchConfig: ElasticsearchConfigProperties = ElasticsearchConfigProperties("http", "localhost", "9200", Credentials(TestInputConfig.baseUser.email, TestInputConfig.baseUser.key))
+    private val elasticsearchConfig: ElasticsearchConfigProperties = ElasticsearchConfigProperties(
+        "http",
+        "localhost",
+        "9200",
+        Credentials(TestInputConfig.baseUser.email, TestInputConfig.baseUser.key)
+    )
     private val restConnector: RestTemplateConnector = mockk()
     private val elasticsearchService = ElasticsearchService(client, kibanaConfig, elasticsearchConfig, restConnector)
     private val spyElasticsearchService = spy(elasticsearchService)
