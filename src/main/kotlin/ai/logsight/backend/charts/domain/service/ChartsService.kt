@@ -1,7 +1,6 @@
 package ai.logsight.backend.charts.domain.service
 
 import ai.logsight.backend.charts.domain.charts.BarChart
-import ai.logsight.backend.charts.domain.charts.HeatmapChart
 import ai.logsight.backend.charts.domain.charts.PieChart
 import ai.logsight.backend.charts.domain.charts.TableChart
 import ai.logsight.backend.charts.domain.query.GetChartDataQuery

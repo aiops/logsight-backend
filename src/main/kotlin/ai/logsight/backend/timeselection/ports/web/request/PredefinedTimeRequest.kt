@@ -1,7 +1,9 @@
 package ai.logsight.backend.timeselection.ports.web.request
 
 import ai.logsight.backend.timeselection.ports.out.persistence.DateTimeType
-import javax.validation.constraints.*
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 data class PredefinedTimeRequest(
     @get:NotEmpty(message = "name must not be empty.")

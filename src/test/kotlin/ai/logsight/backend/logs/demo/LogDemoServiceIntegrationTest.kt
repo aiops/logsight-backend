@@ -3,12 +3,12 @@ package ai.logsight.backend.logs.demo
 import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.TestInputConfig.baseUser
 import ai.logsight.backend.users.ports.out.persistence.UserRepository
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.junit.jupiter.api.*
 
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)

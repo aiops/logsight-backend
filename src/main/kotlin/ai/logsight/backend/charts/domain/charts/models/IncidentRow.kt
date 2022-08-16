@@ -1,7 +1,6 @@
 package com.loxbear.logsight.charts.data
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class IncidentRow(

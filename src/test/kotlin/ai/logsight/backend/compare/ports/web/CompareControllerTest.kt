@@ -167,7 +167,8 @@ internal class CompareControllerTest {
         @ParameterizedTest(name = "Bad request for {0}. ")
         @MethodSource("getInvalidRequests")
         fun `Bad request for invalid input`(
-            reason: String, request: GetCompareResultRequest
+            reason: String,
+            request: GetCompareResultRequest
         ) {
 
             // given

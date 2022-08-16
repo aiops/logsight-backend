@@ -115,6 +115,7 @@ class ESChartsServiceImpl(
     }
 
     private fun getBarChartData(getChartDataQuery: GetChartDataQuery): BarChartData {
+        @Suppress("UNCHECKED_CAST")
         getChartDataQuery.chartConfig.parameters["baselineTags"] =
             queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
         return mapper.readValue<BarChartData>(
@@ -221,7 +222,12 @@ class ESChartsServiceImpl(
         val chartRequest = ChartRequest(
             chartConfig = ChartConfig(
                 mutableMapOf(
-                    "type" to "util", "feature" to "compare_id_all", "indexType" to "verifications", "propertyId" to "", "startTime" to startTime, "stopTime" to stopTime
+                    "type" to "util",
+                    "feature" to "compare_id_all",
+                    "indexType" to "verifications",
+                    "propertyId" to "",
+                    "startTime" to startTime,
+                    "stopTime" to stopTime
                 )
             )
         )

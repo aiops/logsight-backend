@@ -25,7 +25,12 @@ class TagService(
         return esChartsServiceImpl.getCompareTagFilter(user, listTags, applicationIndices)
     }
 
-    fun getCompareTagValues(user: User, tagName: String, applicationIndices: String, listTags: List<TagEntry>): List<Tag> {
+    fun getCompareTagValues(
+        user: User,
+        tagName: String,
+        applicationIndices: String,
+        listTags: List<TagEntry>
+    ): List<Tag> {
         return esChartsServiceImpl.getCompareTagValues(user, tagName, applicationIndices, listTags)
     }
 }

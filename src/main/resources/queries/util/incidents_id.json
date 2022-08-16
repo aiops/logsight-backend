@@ -15,7 +15,7 @@
     "bool": {
       "must": [],
       "filter": [
-          property_id
+        property_id
       ],
       "should": [],
       "must_not": []

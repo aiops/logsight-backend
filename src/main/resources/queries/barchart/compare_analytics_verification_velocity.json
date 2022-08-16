@@ -43,7 +43,9 @@
   "query": {
     "bool": {
       "must": [],
-      "filter": [baselineTags_value],
+      "filter": [
+        baselineTags_value
+      ],
       "should": [],
       "must_not": []
     }

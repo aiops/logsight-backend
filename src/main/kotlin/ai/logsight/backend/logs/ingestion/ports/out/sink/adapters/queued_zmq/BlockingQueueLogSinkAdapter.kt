@@ -19,7 +19,7 @@ class BlockingQueueLogSinkAdapter(
         if (!blockingLogQueue.offer(logBatchDTO, 100, TimeUnit.MILLISECONDS)) {
             throw LogQueueCapacityLimitReached(
                 "log queue capacity limit reached. required capacity: 1, " +
-                        "remaining capacity: ${blockingLogQueue.remainingCapacity()}."
+                    "remaining capacity: ${blockingLogQueue.remainingCapacity()}."
             )
         }
     }
