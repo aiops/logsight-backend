@@ -50,6 +50,7 @@ class ElasticsearchService(
 
     fun getData(getDataQuery: GetChartDataQuery, index: String): String {
         val chartConfig = getDataQuery.chartConfig
+        @Suppress("UNCHECKED_CAST")
         val query = ESQueryBuilder().buildQuery(
             chartConfig.parameters as Map<String, String>
         )

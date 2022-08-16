@@ -115,6 +115,7 @@ class ESChartsServiceImpl(
     }
 
     private fun getBarChartData(getChartDataQuery: GetChartDataQuery): BarChartData {
+        @Suppress("UNCHECKED_CAST")
         getChartDataQuery.chartConfig.parameters["baselineTags"] =
             queryBuilderHelper.getBaselineTagsQuery(getChartDataQuery.chartConfig.parameters["baselineTags"] as Map<String, String>)
         return mapper.readValue<BarChartData>(
