@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class FindUserStorageImpl(
+class UserStorageImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) : UserStorageService {

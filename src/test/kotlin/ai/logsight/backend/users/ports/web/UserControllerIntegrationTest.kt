@@ -9,6 +9,7 @@ import ai.logsight.backend.token.exceptions.TokenExpiredException
 import ai.logsight.backend.token.persistence.TokenEntity
 import ai.logsight.backend.token.persistence.TokenRepository
 import ai.logsight.backend.token.persistence.TokenType
+import ai.logsight.backend.users.domain.UserCategory
 import ai.logsight.backend.users.exceptions.*
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.extensions.toUserEntity
@@ -81,7 +82,7 @@ class UserControllerIntegrationTest {
         val mapper = ObjectMapper().registerModule(KotlinModule())!!
         const val getUserEndpoint = "/api/v1/users"
         const val newUserEmail = "newUser@email.com"
-        private val newUserEntity = UserEntity(email = newUserEmail, password = "password123")
+        private val newUserEntity = UserEntity(email = newUserEmail, password = "password123", userCategory = UserCategory.DEVELOPER)
         val newUser = newUserEntity.toUser()
     }
 
@@ -957,7 +958,7 @@ class UserControllerIntegrationTest {
         @Test
         fun `should delete user`() {
             // given
-            val user = UserEntity(email = "testdelete@delete.com", password = "password123")
+            val user = UserEntity(email = "testdelete@delete.com", password = "password123", userCategory = UserCategory.DEVELOPER)
             user.activated = true
             externalElasticsearch.initialize(user.toUser())
             userRepository.save(user)
@@ -977,7 +978,6 @@ class UserControllerIntegrationTest {
         @Test
         fun `Not found when user doesn't exist`() {
             // given
-            val user = newUser
             // when
             val result = mockMvc.delete("$getUserEndpoint/${UUID.randomUUID()}") {
                 contentType = MediaType.APPLICATION_JSON

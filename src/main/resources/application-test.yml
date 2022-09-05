@@ -16,6 +16,21 @@ spring:
       username: "elastic"
       password: "elasticsearchpassword"
 
+logsight:
+  limit:
+    tags:
+      freemium: ${LIMIT_TAGS_FREEMIUM:1}
+      developer: ${LIMIT_TAGS_DEVELOPER:5}
+      corporate: ${LIMIT_TAGS_CORPORATE:5}
+    data:
+      freemium: ${LIMIT_DATA_FREEMIUM:500}
+      developer: ${LIMIT_DATA_DEVELOPER:100000}
+      corporate: ${LIMIT_DATA_CORPORATE:100000}
+    verification:
+      freemium: ${LIMIT_VERIFICATION_FREEMIUM:5}
+      developer: ${LIMIT_VERIFICATION_DEVELOPER:5}
+      corporate: ${LIMIT_VERIFICATION_CORPORATE:5}
+
   kibana:
     host: "localhost"
     port: "5601"
