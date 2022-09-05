@@ -1,13 +1,16 @@
 package ai.logsight.backend.limiter.datalimit.service
 
 import ai.logsight.backend.users.domain.User
+import ai.logsight.backend.users.domain.UserCategory
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class DataPlanService {
+class DataPlanService(
+    private val dataPlanConfigProperties: DataPlanConfigProperties
+) {
     private val cache: MutableMap<User, Bucket> = ConcurrentHashMap()
     fun resolveBucket(user: User): Bucket {
         return cache.computeIfAbsent(
@@ -17,8 +20,15 @@ class DataPlanService {
         }
     }
 
+    fun resolveDataPlanFromUser(userType: UserCategory): DataPlan =
+        when (userType) {
+            UserCategory.FREEMIUM -> DataPlan(dataPlanConfigProperties.freemium)
+            UserCategory.CORPORATE -> DataPlan(dataPlanConfigProperties.corporate)
+            UserCategory.DEVELOPER -> DataPlan(dataPlanConfigProperties.developer)
+        }
+
     private fun newBucket(user: User): Bucket {
-        val pricingPlan: DataPlan = DataPlan.resolveDataPlanFromUser(user.userCategory)
+        val pricingPlan: DataPlan = resolveDataPlanFromUser(user.userCategory)
         return bucket(pricingPlan.limit)
     }
 

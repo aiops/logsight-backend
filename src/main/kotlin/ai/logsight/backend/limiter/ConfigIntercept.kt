@@ -14,7 +14,8 @@ class ConfigIntercept(
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(dataInterceptor)
-            .addPathPatterns("/api/v1/logs/**").order(Ordered.LOWEST_PRECEDENCE)
+            .addPathPatterns("/api/v1/logs")
+            .addPathPatterns("/api/v1/logs/singles").order(Ordered.LOWEST_PRECEDENCE)
         registry.addInterceptor(verificationLimitInterceptor).order(Ordered.LOWEST_PRECEDENCE)
             .addPathPatterns("/api/v1/logs/compare")
     }

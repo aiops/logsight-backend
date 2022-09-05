@@ -3,6 +3,7 @@ package ai.logsight.backend.exceptions
 import ai.logsight.backend.charts.exceptions.InvalidFeatureException
 import ai.logsight.backend.common.logging.Logger
 import ai.logsight.backend.common.logging.LoggerImpl
+import ai.logsight.backend.compare.exceptions.CompareLimitExceededException
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.incidents.exceptions.IncidentNotFoundException
 import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReached
@@ -25,6 +26,7 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import java.util.*
 import javax.naming.AuthenticationException
 import javax.servlet.http.HttpServletRequest
 
@@ -34,7 +36,8 @@ class RestControllerAdvice {
     private val logger: Logger = LoggerImpl(RestControllerAdvice::class.java)
 
     @ExceptionHandler(
-        BadCredentialsException::class, AuthenticationException::class
+        BadCredentialsException::class,
+        AuthenticationException::class
     )
     fun handleUnauthorizedException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.UNAUTHORIZED, request, e)
@@ -45,7 +48,7 @@ class RestControllerAdvice {
         UserExistsException::class,
         EmailExistsException::class,
         TokenExpiredException::class,
-        UserAlreadyActivatedException::class,
+        UserAlreadyActivatedException::class
     )
     fun handleConflictException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.CONFLICT, request, e)
@@ -73,6 +76,7 @@ class RestControllerAdvice {
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
         IllegalArgumentException::class,
+        CompareLimitExceededException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)
@@ -105,7 +109,10 @@ class RestControllerAdvice {
 //        val messages = e.fieldErrors.map { x -> x.defaultMessage }.joinToString(separator = ",", prefix = "Errors: ")
         val message = e.fieldErrors[0].defaultMessage
         return generateErrorResponse(
-            HttpStatus.BAD_REQUEST, request, e, message.toString()
+            HttpStatus.BAD_REQUEST,
+            request,
+            e,
+            message.toString()
         )
     }
 
@@ -122,12 +129,12 @@ class RestControllerAdvice {
         // log.debug(stackTrace)
 
 //        environment - based logic
-//        val stackTraceMessage = when (System.getenv("ENV").toUpperCase()) {
-//            "STAGING" -> stackTrace // returning the stack trace
-//            "PRODUCTION" -> null // returning no stack trace
-//            else -> stackTrace // default behavior
-//        }
+        val stackTraceMessage = when (System.getenv("ENV") ?: "STAGING".uppercase(Locale.getDefault())) {
+            "STAGING" -> stackTrace // returning the stack trace
+            "PRODUCTION" -> null // returning no stack trace
+            else -> stackTrace // default behavior
+        }
 
-        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTrace), status)
+        return ResponseEntity(ErrorResponse(status, message, requestPath, stackTraceMessage), status)
     }
 }

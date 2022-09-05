@@ -13,6 +13,7 @@ import ai.logsight.backend.logs.ingestion.domain.LogReceipt
 import ai.logsight.backend.logs.ingestion.domain.enums.LogBatchStatus
 import ai.logsight.backend.logs.ingestion.ports.web.requests.SendLogMessage
 import ai.logsight.backend.logs.ingestion.ports.web.responses.LogReceiptResponse
+import ai.logsight.backend.users.domain.UserCategory
 import ai.logsight.backend.users.extensions.toUser
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
 import ai.logsight.backend.users.ports.out.persistence.UserType
@@ -31,7 +32,8 @@ object TestInputConfig {
         email = baseEmail,
         password = passwordEncoder.encode(basePassword),
         userType = UserType.ONLINE_USER,
-        activated = true
+        activated = true,
+        userCategory = UserCategory.DEVELOPER
     )
     val baseUser = baseUserEntity.toUser()
 
@@ -49,7 +51,8 @@ object TestInputConfig {
         message = "Hello World!",
         timestamp = DateTime.now()
             .toString(),
-        level = "INFO", tags = defaultTag
+        level = "INFO",
+        tags = defaultTag
     )
     const val numMessages = 100
     val logBatch = LogBatch(
