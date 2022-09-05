@@ -14,6 +14,7 @@ data class User(
     val hasPaid: Boolean,
     val availableData: Long,
     val usedData: Long,
+    val stripeId: String?,
     val userType: UserType = UserType.LOCAL_USER,
     val userCategory: UserCategory = UserCategory.CORPORATE
 )

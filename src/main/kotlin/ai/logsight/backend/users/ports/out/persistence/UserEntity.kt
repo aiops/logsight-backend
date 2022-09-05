@@ -43,6 +43,9 @@ class UserEntity(
     @Column(name = "activated", nullable = false)
     var activated: Boolean = false,
 
+    @Column(name = "stripe_id")
+    var stripeId: String? = null,
+
     @Column(name = "user_type")
     val userType: UserType = UserType.ONLINE_USER,
 

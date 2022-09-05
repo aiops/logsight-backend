@@ -15,7 +15,8 @@ fun UserEntity.toUser() = User(
     userType = this.userType,
     hasPaid = this.hasPaid,
     availableData = this.availableData,
-    usedData = this.usedData
+    usedData = this.usedData,
+    stripeId = this.stripeId
 )
 
 fun UserEntity.toOnlineUser() = OnlineUser(
@@ -31,8 +32,8 @@ fun UserEntity.toOnlineUser() = OnlineUser(
     hasPaid = this.hasPaid,
     dateCreated = this.dateCreated ?: LocalDateTime.now(),
     userType = this.userType,
-    userCategory = this.userCategory
-
+    userCategory = this.userCategory,
+    stripeId = this.stripeId
 )
 
 fun OnlineUser.toUserEntity() = UserEntity(
@@ -48,7 +49,8 @@ fun OnlineUser.toUserEntity() = UserEntity(
     hasPaid = this.hasPaid,
     dateCreated = this.dateCreated,
     userType = this.userType,
-    userCategory = this.userCategory
+    userCategory = this.userCategory,
+    stripeId = this.stripeId
 )
 
 fun OnlineUser.toUser() = User(
@@ -62,7 +64,8 @@ fun OnlineUser.toUser() = User(
     hasPaid = this.hasPaid,
     availableData = this.availableData,
     usedData = this.usedData,
-    userCategory = this.userCategory
+    userCategory = this.userCategory,
+    stripeId = this.stripeId,
 )
 
 fun User.toUserEntity() = UserEntity(
@@ -74,5 +77,6 @@ fun User.toUserEntity() = UserEntity(
     dateCreated = this.dateCreated,
     userType = this.userType,
     hasPaid = this.hasPaid,
-    userCategory = this.userCategory
+    userCategory = this.userCategory,
+    stripeId = this.stripeId
 )

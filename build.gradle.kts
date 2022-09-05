@@ -46,6 +46,7 @@ dependencies {
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
     implementation("org.springframework.data:spring-data-elasticsearch:4.4.2")
     implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
+    implementation(group = "com.stripe", name = "stripe-java", version = "20.56.0")
 
 //    implementation("org.liquibase:liquibase-core")
 //    implementation("com.h2database:h2:2.1.212")

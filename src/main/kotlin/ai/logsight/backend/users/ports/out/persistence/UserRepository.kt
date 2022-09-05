@@ -18,4 +18,7 @@ interface UserRepository : JpaRepository<UserEntity, UUID> {
     @Override
     @CacheEvict(cacheNames = ["users"], beforeInvocation = false, key = "#result.email")
     override fun deleteById(id: UUID)
+
+    @Override
+    fun findUserByStripeId(stripeId: String): UserEntity?
 }

@@ -16,6 +16,7 @@ data class OnlineUser(
     val approachingLimit: Boolean,
     val availableData: Long,
     val activated: Boolean,
+    val stripeId: String?,
     val userType: UserType = UserType.ONLINE_USER,
     val userCategory: UserCategory
 )

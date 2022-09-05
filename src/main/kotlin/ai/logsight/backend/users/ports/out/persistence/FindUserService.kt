@@ -6,4 +6,5 @@ import java.util.*
 interface FindUserService {
     fun findUserById(userId: UUID): User
     fun findUserByEmail(email: String): User
+    fun findUserByStripeId(stripeId: String): User
 }

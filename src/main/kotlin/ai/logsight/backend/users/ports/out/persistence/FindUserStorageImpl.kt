@@ -76,6 +76,8 @@ class FindUserStorageImpl(
     override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
         ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
 
+
+
     override fun deleteUser(id: UUID): User {
         val user = findUserById(id)
         userRepository.deleteById(user.id)
