@@ -27,9 +27,9 @@ class LogsController(
     @ResponseStatus(HttpStatus.OK)
     fun sendLogList(
         authentication: Authentication,
-        @RequestBody @Valid logListRequest: SendLogListRequest
+        @RequestBody @Valid
+        logListRequest: SendLogListRequest
     ): LogReceiptResponse {
-
         val logEventsDTO = LogListDTO(
             index = userStorageService.findUserByEmail(authentication.name).key,
             logs = logListRequest.logs,
@@ -49,11 +49,12 @@ class LogsController(
     @ResponseStatus(HttpStatus.OK)
     fun sendLogSingles(
         authentication: Authentication,
-        @RequestBody @Valid logListRequest: MutableList<SendLogMessage>
+        @RequestBody @Valid
+        logListRequest: MutableList<SendLogMessage>
     ): LogReceiptResponse {
         val logSinglesDTO = LogEventsDTO(
             index = userStorageService.findUserByEmail(authentication.name).key,
-            logs = logListRequest,
+            logs = logListRequest
         )
         val logReceipt = logsService.processLogEvents(logSinglesDTO)
         return LogReceiptResponse(

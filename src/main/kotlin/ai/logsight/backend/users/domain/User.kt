@@ -11,5 +11,9 @@ data class User(
     var password: String,
     val dateCreated: LocalDateTime,
     val activated: Boolean,
-    val userType: UserType = UserType.LOCAL_USER
+    val hasPaid: Boolean,
+    val availableData: Long,
+    val usedData: Long,
+    val userType: UserType = UserType.LOCAL_USER,
+    val userCategory: UserCategory = UserCategory.CORPORATE
 )

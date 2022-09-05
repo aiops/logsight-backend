@@ -2,6 +2,7 @@ package ai.logsight.backend.users.ports.out.persistence
 
 import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
+import ai.logsight.backend.users.domain.UserCategory
 import ai.logsight.backend.users.exceptions.EmailExistsException
 import ai.logsight.backend.users.exceptions.UserNotFoundException
 import ai.logsight.backend.users.extensions.toOnlineUser
@@ -12,7 +13,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class UserStorageImpl(
+class FindUserStorageImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) : UserStorageService {
@@ -20,7 +21,11 @@ class UserStorageImpl(
         if (userRepository.findByEmail(email) != null) throw EmailExistsException("User with $email is already registered.")
 
         val userEntity = UserEntity(
-            email = email, password = passwordEncoder.encode(password), userType = UserType.ONLINE_USER
+            email = email,
+            password = passwordEncoder.encode(password),
+            userType = UserType.ONLINE_USER,
+            userCategory = UserCategory.FREEMIUM
+
         )
         val savedEntity = userRepository.save(userEntity)
         return savedEntity.toOnlineUser()
@@ -34,7 +39,8 @@ class UserStorageImpl(
             userType = UserType.LOCAL_USER,
             activated = true,
             activationDate = LocalDateTime.now(),
-            hasPaid = true
+            hasPaid = true,
+            userCategory = UserCategory.CORPORATE
         )
         return userRepository.save(userEntity)
             .toUser()

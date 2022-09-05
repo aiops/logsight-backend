@@ -29,7 +29,7 @@ repositories {
 dependencies {
 //    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.3")
     implementation("org.flywaydb:flyway-core:8.5.11")
-    implementation("org.springframework.integration:spring-integration-zeromq:5.5.11")
+    implementation("org.springframework.integration:spring-integration-zeromq:5.5.14")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -44,25 +44,23 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     implementation(group = "org.springframework.boot", name = "spring-boot-starter-mail")
     implementation(group = "com.auth0", name = "java-jwt", version = "3.13.0")
-    implementation("org.springframework.data:spring-data-elasticsearch:4.4.0")
+    implementation("org.springframework.data:spring-data-elasticsearch:4.4.2")
+    implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0")
+
 //    implementation("org.liquibase:liquibase-core")
-    implementation("com.h2database:h2:2.1.212")
+//    implementation("com.h2database:h2:2.1.212")
 //    implementation("org.liquibase:liquibase-core")
     kapt("org.springframework.boot:spring-boot-configuration-processor")/**/
-    implementation("org.json:json:20160810")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("org.json:json:20220320")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     implementation("org.springframework.kafka:spring-kafka")
-    implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    implementation("org.junit.vintage:junit-vintage-engine:5.8.2")
+    implementation("org.junit.jupiter:junit-jupiter:5.9.0")
+    implementation("org.junit.vintage:junit-vintage-engine:5.9.0")
     implementation("com.antkorwin:xsync:1.3")
 
     implementation("io.springfox:springfox-boot-starter:3.0.0")
     implementation("io.springfox:springfox-swagger-ui:3.0.0")
-
-//    implementation("io.springfox:springfox-swagger2:2.9.2")
-//    implementation("io.springfox:springfox-bean-validators:2.9.2")
-//    implementation("io.springfox:springfox-swagger-ui:2.9.2")
 
     implementation("org.springframework:spring-test")
     implementation("org.springframework.data:spring-data-jpa")
@@ -77,14 +75,14 @@ dependencies {
     }
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.springframework.security:spring-security-test")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.8")
-    testImplementation("io.mockk:mockk:1.12.3")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.6.7")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.10")
+    testImplementation("io.mockk:mockk:1.12.5")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.7.3")
     // testing dependencies
-    testCompileOnly("org.mockito:mockito-junit-jupiter:4.5.1")
+    testCompileOnly("org.mockito:mockito-junit-jupiter:4.7.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.mockito:mockito-inline:4.5.1")
-    testCompileOnly("org.assertj:assertj-core:3.22.0")
+    testImplementation("org.mockito:mockito-inline:4.7.0")
+    testCompileOnly("org.assertj:assertj-core:3.23.1")
     testImplementation(kotlin("test"))
 }
 

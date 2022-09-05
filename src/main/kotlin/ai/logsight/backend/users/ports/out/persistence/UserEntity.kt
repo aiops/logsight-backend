@@ -2,6 +2,7 @@ package ai.logsight.backend.users.ports.out.persistence
 
 import ai.logsight.backend.security.KeyGenerator
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
+import ai.logsight.backend.users.domain.UserCategory
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
@@ -44,6 +45,9 @@ class UserEntity(
 
     @Column(name = "user_type")
     val userType: UserType = UserType.ONLINE_USER,
+
+    @Column(name = "user_category")
+    val userCategory: UserCategory,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
     @Column(name = "time_selection_entities")

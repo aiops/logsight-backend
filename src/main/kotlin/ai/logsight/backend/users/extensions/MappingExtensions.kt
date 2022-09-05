@@ -12,7 +12,10 @@ fun UserEntity.toUser() = User(
     key = this.key,
     activated = this.activated,
     dateCreated = this.dateCreated ?: LocalDateTime.now(),
-    userType = this.userType
+    userType = this.userType,
+    hasPaid = this.hasPaid,
+    availableData = this.availableData,
+    usedData = this.usedData
 )
 
 fun UserEntity.toOnlineUser() = OnlineUser(
@@ -27,7 +30,8 @@ fun UserEntity.toOnlineUser() = OnlineUser(
     availableData = this.availableData,
     hasPaid = this.hasPaid,
     dateCreated = this.dateCreated ?: LocalDateTime.now(),
-    userType = this.userType
+    userType = this.userType,
+    userCategory = this.userCategory
 
 )
 
@@ -43,7 +47,8 @@ fun OnlineUser.toUserEntity() = UserEntity(
     availableData = this.availableData,
     hasPaid = this.hasPaid,
     dateCreated = this.dateCreated,
-    userType = this.userType
+    userType = this.userType,
+    userCategory = this.userCategory
 )
 
 fun OnlineUser.toUser() = User(
@@ -53,7 +58,11 @@ fun OnlineUser.toUser() = User(
     key = this.key,
     activated = this.activated,
     dateCreated = this.dateCreated,
-    userType = this.userType
+    userType = this.userType,
+    hasPaid = this.hasPaid,
+    availableData = this.availableData,
+    usedData = this.usedData,
+    userCategory = this.userCategory
 )
 
 fun User.toUserEntity() = UserEntity(
@@ -63,5 +72,7 @@ fun User.toUserEntity() = UserEntity(
     key = this.key,
     activated = this.activated,
     dateCreated = this.dateCreated,
-    userType = this.userType
+    userType = this.userType,
+    hasPaid = this.hasPaid,
+    userCategory = this.userCategory
 )

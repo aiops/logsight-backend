@@ -38,12 +38,17 @@ class UserController(
     @ApiOperation("Register new user")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): CreateUserResponse {
+    fun createUser(
+        @Valid @RequestBody
+        createUserRequest: CreateUserRequest
+    ): CreateUserResponse {
         val createUserCommand = CreateUserCommand(
-            email = createUserRequest.email, password = createUserRequest.password
+            email = createUserRequest.email,
+            password = createUserRequest.password
         )
         logger.info(
-            "Starting the process for registering a new user ${createUserRequest.email}", this::createUser.name
+            "Starting the process for registering a new user ${createUserRequest.email}",
+            this::createUser.name
         )
         val user = when (commonConfigProperties.deployment) {
             LogsightDeploymentType.WEB_SERVICE -> userService.createOnlineUser(createUserCommand).toUser()
@@ -60,7 +65,8 @@ class UserController(
         @PathVariable @Pattern(
             regexp = "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
             message = "userId must be UUID type."
-        ) @NotEmpty(message = "userId must not be empty.") userId: String
+        ) @NotEmpty(message = "userId must not be empty.")
+        userId: String
     ) {
         logger.info("Deleting user $userId.", this::deleteUser.name)
         val deleteUserCommand = DeleteUserCommand(
@@ -76,10 +82,14 @@ class UserController(
     @ApiOperation("Activate registered user")
     @PostMapping("/activate")
     @ResponseStatus(HttpStatus.OK)
-    fun activateUser(@Valid @RequestBody activateUserRequest: ActivateUserRequest): ActivateUserResponse {
+    fun activateUser(
+        @Valid @RequestBody
+        activateUserRequest: ActivateUserRequest
+    ): ActivateUserResponse {
         logger.info("Activating user ${activateUserRequest.userId}.", this::activateUser.name)
         val activateUserCommand = ActivateUserCommand(
-            id = UUID.fromString(activateUserRequest.userId), activationToken = activateUserRequest.activationToken
+            id = UUID.fromString(activateUserRequest.userId),
+            activationToken = activateUserRequest.activationToken
         )
         val activatedUser = userService.activateUser(activateUserCommand)
         logger.info("User ${activateUserRequest.userId} successfully activated.", this::activateUser.name)
@@ -93,13 +103,14 @@ class UserController(
     @PostMapping("/password/change")
     @ResponseStatus(HttpStatus.OK)
     fun changePassword(
-        @Valid @RequestBody changePasswordRequest: ChangePasswordRequest
+        @Valid @RequestBody
+        changePasswordRequest: ChangePasswordRequest
     ): ChangePasswordResponse {
         val user = userService.findUser(FindUserQuery(UUID.fromString(changePasswordRequest.userId)))
         val changePasswordCommand = ChangePasswordCommand(
             email = user.email,
             oldPassword = changePasswordRequest.oldPassword,
-            newPassword = changePasswordRequest.newPassword,
+            newPassword = changePasswordRequest.newPassword
         )
         logger.info("Starting the process for changing password of a user ${user.id}.", this::changePassword.name)
         val modifiedUser = userService.changePassword(changePasswordCommand)
@@ -113,7 +124,10 @@ class UserController(
     @ApiOperation("Reset password, when the user forgets it")
     @PostMapping("/password/reset")
     @ResponseStatus(HttpStatus.OK)
-    fun resetPassword(@Valid @RequestBody resetPasswordRequest: ResetPasswordRequest): ResetPasswordResponse {
+    fun resetPassword(
+        @Valid @RequestBody
+        resetPasswordRequest: ResetPasswordRequest
+    ): ResetPasswordResponse {
         val resetPasswordCommand = ResetPasswordCommand(
             password = resetPasswordRequest.password,
             passwordResetToken = resetPasswordRequest.passwordResetToken,
@@ -134,7 +148,10 @@ class UserController(
     @ApiOperation("Send reset password link")
     @PostMapping("/password/forgot")
     @ResponseStatus(HttpStatus.OK)
-    fun forgotPassword(@Valid @RequestBody forgotPasswordRequest: ForgotPasswordRequest) {
+    fun forgotPassword(
+        @Valid @RequestBody
+        forgotPasswordRequest: ForgotPasswordRequest
+    ) {
         logger.info("Sending password reset link a user ${forgotPasswordRequest.email}.", this::forgotPassword.name)
         userService.generateForgotPasswordTokenAndSendEmail(CreateTokenCommand(forgotPasswordRequest.email))
     }
@@ -145,7 +162,10 @@ class UserController(
     @ApiOperation("Send activation email")
     @PostMapping("/activation/resend")
     @ResponseStatus(HttpStatus.OK)
-    fun resendActivationEmail(@Valid @RequestBody resendActivationEmailRequest: ResendActivationEmailRequest) {
+    fun resendActivationEmail(
+        @Valid @RequestBody
+        resendActivationEmailRequest: ResendActivationEmailRequest
+    ) {
         logger.info("Sending activation link ${resendActivationEmailRequest.email}.", this::forgotPassword.name)
         userService.sendActivationEmail(SendActivationEmailCommand(resendActivationEmailRequest.email))
     }

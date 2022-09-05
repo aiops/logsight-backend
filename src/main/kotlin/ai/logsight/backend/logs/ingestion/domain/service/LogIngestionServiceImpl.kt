@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class LogIngestionServiceImpl(
     private val logReceiptStorageService: LogReceiptStorageService,
-    private val logSink: LogSink,
+    private val logSink: LogSink
 ) : LogIngestionService {
 
     override fun processLogBatch(logBatch: LogBatch): LogReceipt {

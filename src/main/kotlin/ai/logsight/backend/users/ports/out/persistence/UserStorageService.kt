@@ -4,10 +4,8 @@ import ai.logsight.backend.users.domain.OnlineUser
 import ai.logsight.backend.users.domain.User
 import java.util.*
 
-interface UserStorageService {
+interface UserStorageService : FindUserService {
     fun createOnlineUser(email: String, password: String): OnlineUser
-    fun findUserById(userId: UUID): User
-    fun findUserByEmail(email: String): User
     fun changePassword(id: UUID, newPassword: String): User
     fun activateUser(email: String): User
     fun createUser(email: String, password: String): User

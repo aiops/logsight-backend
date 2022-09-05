@@ -94,5 +94,7 @@ logsight:
       port: ${RESULT_API_PORT:5554}
       compare-path: ${RESULT_API_COMPARE_PATH:api/v1/compare}
 
+  security:
+    secret: ${JWT_SECRET:default}
   token:
     minutes: 15
