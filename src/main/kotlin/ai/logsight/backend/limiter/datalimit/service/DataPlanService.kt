@@ -5,16 +5,19 @@ import ai.logsight.backend.users.domain.UserCategory
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import org.springframework.stereotype.Service
+import reactor.util.function.Tuple2
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import javax.persistence.Tuple
 
 @Service
 class DataPlanService(
     private val dataPlanConfigProperties: DataPlanConfigProperties
 ) {
-    private val cache: MutableMap<User, Bucket> = ConcurrentHashMap()
+    private val cache: MutableMap<Pair<UUID, UserCategory>, Bucket> = ConcurrentHashMap()
     fun resolveBucket(user: User): Bucket {
         return cache.computeIfAbsent(
-            user
+            Pair(user.id,user.userCategory)
         ) {
             newBucket(user)
         }

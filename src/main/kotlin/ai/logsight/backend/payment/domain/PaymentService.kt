@@ -24,12 +24,13 @@ import org.json.JSONObject
 import org.springframework.stereotype.Service
 import javax.servlet.http.HttpServletRequest
 
+
 @Service
 class PaymentService(
     val userStorageService: UserStorageService,
     val paymentConfigurationProperties: PaymentConfigurationProperties,
     val commonConfigProperties: CommonConfigProperties,
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
 ) {
 
     val mapper = ObjectMapper().registerModule(KotlinModule())!!
@@ -41,6 +42,15 @@ class PaymentService(
     fun paymentWithCheckout(user: User, payment: CheckoutPayment): StripePaymentWithCheckoutResponse {
         init()
         val stripeCustomerID = getStripeCustomerId(user)
+        val expandList: MutableList<String> = ArrayList()
+        expandList.add("subscriptions")
+        val expandParams: MutableMap<String, Any> = HashMap()
+        expandParams["expand"] = expandList
+        val currentSubscriptions = Customer.retrieve(stripeCustomerID, expandParams, null).subscriptions
+        if (currentSubscriptions.data.size > 1){
+            return StripePaymentWithCheckoutResponse(user.id, stripeCustomerID, null, isAlreadySubscribed = true)
+        }
+
         val params: SessionCreateParams = SessionCreateParams.builder()
             .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
             .setCustomer(stripeCustomerID)
@@ -49,7 +59,7 @@ class PaymentService(
             .addLineItem(SessionCreateParams.LineItem.builder().setPrice(payment.priceID).setQuantity(1).build())
             .build()
         val session: Session = Session.create(params)
-        return StripePaymentWithCheckoutResponse(user.id, stripeCustomerID, session.id)
+        return StripePaymentWithCheckoutResponse(user.id, stripeCustomerID, session.id, isAlreadySubscribed = false)
     }
 
 

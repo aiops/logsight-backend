@@ -74,12 +74,12 @@ logsight:
       corporate: ${LIMIT_TAGS_CORPORATE:5}
     data:
       freemium: ${LIMIT_DATA_FREEMIUM:500}
-      developer: ${LIMIT_DATA_DEVELOPER:100000}
-      corporate: ${LIMIT_DATA_CORPORATE:100000}
+      developer: ${LIMIT_DATA_DEVELOPER:400}
+      corporate: ${LIMIT_DATA_CORPORATE:500}
     verification:
       freemium: ${LIMIT_VERIFICATION_FREEMIUM:5}
-      developer: ${LIMIT_VERIFICATION_DEVELOPER:5}
-      corporate: ${LIMIT_VERIFICATION_CORPORATE:5}
+      developer: ${LIMIT_VERIFICATION_DEVELOPER:10}
+      corporate: ${LIMIT_VERIFICATION_CORPORATE:15}
   logs:
     sink:
       type: ${LOG_SINK_CONNECTION:queued-zmq} # "zmq", "kafka"

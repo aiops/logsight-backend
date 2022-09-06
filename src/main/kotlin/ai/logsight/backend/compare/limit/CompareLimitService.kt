@@ -12,7 +12,7 @@ class CompareLimitService(
     fun checkTagLimit(user: User, baselineTags: Map<String, String>, candidateTags: Map<String, String>): Boolean {
         val compareLimit = resolveCompareLimitFromUser(user.userCategory)
         if (baselineTags.size > compareLimit || candidateTags.size > compareLimit) {
-            throw CompareLimitExceededException("Exceeded tag limit for user. Max tag limit allowed: $compareLimit")
+            throw CompareLimitExceededException("Max tag count limit per verification is $compareLimit. Subscribe to Developer plan for increased tag counts.")
         }
         return true
     }

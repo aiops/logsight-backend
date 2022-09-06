@@ -5,5 +5,6 @@ import java.util.*
 data class StripePaymentWithCheckoutResponse(
     val userId: UUID,
     val stripeId: String,
-    val sessionId: String
+    val sessionId: String?,
+    val isAlreadySubscribed: Boolean
 )

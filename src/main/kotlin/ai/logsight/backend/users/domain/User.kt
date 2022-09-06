@@ -16,5 +16,5 @@ data class User(
     val usedData: Long,
     val stripeId: String?,
     val userType: UserType = UserType.LOCAL_USER,
-    val userCategory: UserCategory = UserCategory.CORPORATE
+    val userCategory: UserCategory
 )

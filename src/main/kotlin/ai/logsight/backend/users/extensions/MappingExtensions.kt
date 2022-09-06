@@ -16,7 +16,8 @@ fun UserEntity.toUser() = User(
     hasPaid = this.hasPaid,
     availableData = this.availableData,
     usedData = this.usedData,
-    stripeId = this.stripeId
+    stripeId = this.stripeId,
+    userCategory = this.userCategory
 )
 
 fun UserEntity.toOnlineUser() = OnlineUser(

@@ -8,6 +8,6 @@ class DataPlan(private val bucketCapacity: Long) {
     val limit: Bandwidth
         get() = Bandwidth.classic(
             bucketCapacity,
-            Refill.intervally(bucketCapacity, Duration.ofMinutes(1))
+            Refill.intervally(bucketCapacity, Duration.ofDays(30))
         )
 }

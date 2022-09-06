@@ -35,7 +35,7 @@ abstract class RateLimitInterceptor : HandlerInterceptor {
             val waitForRefill = probe.nanosToWaitForRefill / 1000000000
             response.contentType = MediaType.APPLICATION_JSON_VALUE
             response.addHeader(HEADER_RETRY_AFTER, waitForRefill.toString())
-            response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "You have exhausted your API Request Quota. Please retry after ${waitForRefill.seconds}.") // 429
+            response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "You have exhausted your API Request Quota. Please retry after ${waitForRefill.seconds}, or upgrade your plan.") // 429
             false
         }
     }
