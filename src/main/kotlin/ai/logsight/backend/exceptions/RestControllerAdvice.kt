@@ -10,6 +10,7 @@ import ai.logsight.backend.logs.ingestion.exceptions.LogQueueCapacityLimitReache
 import ai.logsight.backend.logs.ingestion.exceptions.LogReceiptNotFoundException
 import ai.logsight.backend.logs.ingestion.ports.out.exceptions.LogSinkException
 import ai.logsight.backend.logs.utils.LogFileIOException
+import ai.logsight.backend.payment.exceptions.InvalidPaymentMethodException
 import ai.logsight.backend.token.exceptions.InvalidTokenException
 import ai.logsight.backend.token.exceptions.InvalidTokenTypeException
 import ai.logsight.backend.token.exceptions.TokenExpiredException
@@ -76,7 +77,8 @@ class RestControllerAdvice {
         MissingKotlinParameterException::class,
         HttpMessageNotReadableException::class,
         IllegalArgumentException::class,
-        CompareLimitExceededException::class
+        CompareLimitExceededException::class,
+        InvalidPaymentMethodException::class
     )
     fun handleBadRequest(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         return generateErrorResponse(HttpStatus.BAD_REQUEST, request, e)

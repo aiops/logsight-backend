@@ -17,6 +17,4 @@ class FindUserServiceImpl(
     override fun findUserByEmail(email: String): User = userRepository.findByEmail(email)
         ?.toUser() ?: throw UserNotFoundException("User with email $email not found.")
 
-    override fun findUserByStripeId(stripeId: String):  User = userRepository.findUserByStripeId(stripeId)
-        ?.toUser() ?: throw UserNotFoundException("User with stripeId $stripeId not found.")
 }

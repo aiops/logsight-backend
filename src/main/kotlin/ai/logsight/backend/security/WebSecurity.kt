@@ -27,6 +27,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
             .antMatchers(HttpMethod.POST, "/api/v1/users/password/forgot").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/users/activation/resend").permitAll()
             .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/v1/payments/webhook").permitAll()
             .antMatchers("/v2/api-docs/**").permitAll()
             .antMatchers("/swagger.json").permitAll()
             .antMatchers("/swagger-ui.html").permitAll()

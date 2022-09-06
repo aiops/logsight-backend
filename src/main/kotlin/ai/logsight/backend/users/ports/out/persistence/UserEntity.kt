@@ -50,7 +50,7 @@ class UserEntity(
     val userType: UserType = UserType.ONLINE_USER,
 
     @Column(name = "user_category")
-    val userCategory: UserCategory,
+    var userCategory: UserCategory,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
     @Column(name = "time_selection_entities")

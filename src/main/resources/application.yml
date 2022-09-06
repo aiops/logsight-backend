@@ -111,3 +111,7 @@ logsight:
     secret: ${JWT_SECRET:default}
   token:
     minutes: 15
+  payment:
+    stripeId: ${STRIPE_SECRET_ID:sk_test_51ILUOvIf2Ur5sxpS0QXryzoYLNXCXD1DFJ1EUBcvoLkwrMxLQ9ijx7aXW1cq5x2z7Syf9MRp1RgMzO9n2eNzD5V200t826qw4t}
+    stripeWebhookSecretId: ${STRIPE_WEBHOOK_SECRET_ID:whsec_06ab3e57e92bbd8bfe28bfc337426e765b072367c3df8b0eb09991cefafcda27}
+    stripeProductId: ${STRIPE_PRODUCT_ID:prod_MNOMaFyn9XZc8r}

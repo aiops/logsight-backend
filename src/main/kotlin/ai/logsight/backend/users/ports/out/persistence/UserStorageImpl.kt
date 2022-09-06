@@ -69,6 +69,18 @@ class UserStorageImpl(
             .toUser()
     }
 
+    override fun findUserByStripeId(stripeId: String):  User = userRepository.findUserByStripeId(stripeId)
+        ?.toUser() ?: throw UserNotFoundException("User with stripeId $stripeId not found.")
+
+    override fun changeUserCategory(id: UUID, userCategory: UserCategory): User {
+        val userEntity = userRepository.findById(id)
+            .orElseThrow { UserNotFoundException("User with id $id doesn't exist in database.") }
+        userEntity.userCategory = userCategory
+        // save changes
+        return userRepository.save(userEntity)
+            .toUser()
+    }
+
     override fun findUserById(userId: UUID): User = userRepository.findById(userId)
         .orElseThrow { UserNotFoundException("User with id $userId not found.") }
         .toUser()
