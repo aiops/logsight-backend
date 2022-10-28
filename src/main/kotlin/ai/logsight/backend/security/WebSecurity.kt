@@ -55,6 +55,7 @@ class WebSecurity(val userDetailsService: UserDetailsServiceImpl) : WebSecurityC
         val corsConf = CorsConfiguration()
         corsConf.applyPermitDefaultValues()
         corsConf.addAllowedOrigin("*")
+        corsConf.addAllowedOrigin("vscode-file://vscode-app")
         corsConf.addAllowedHeader("*")
         corsConf.addAllowedMethod("GET")
         corsConf.addAllowedMethod("PUT")

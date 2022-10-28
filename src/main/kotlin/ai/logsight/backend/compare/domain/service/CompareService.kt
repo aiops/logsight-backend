@@ -8,7 +8,7 @@ import ai.logsight.backend.common.logging.LoggerImpl
 import ai.logsight.backend.compare.domain.dto.CompareDTO
 import ai.logsight.backend.compare.exceptions.RemoteCompareException
 import ai.logsight.backend.compare.ports.out.HttpClientFactory
-import ai.logsight.backend.compare.ports.out.config.CompareRESTConfigProperties
+import ai.logsight.backend.compare.ports.out.config.ResultAPIRESTConfigProperties
 import ai.logsight.backend.compare.ports.web.response.CompareDataResponse
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchService
 import ai.logsight.backend.users.domain.User
@@ -24,7 +24,7 @@ import java.net.http.HttpResponse
 
 @Service
 class CompareService(
-    private val restConfigProperties: CompareRESTConfigProperties,
+    private val restConfigProperties: ResultAPIRESTConfigProperties,
     private val esChartsServiceImpl: ESChartsServiceImpl,
     private val elasticsearchService: ElasticsearchService,
     private val httpClientFactory: HttpClientFactory
