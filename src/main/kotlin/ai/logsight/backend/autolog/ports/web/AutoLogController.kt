@@ -3,10 +3,8 @@ package ai.logsight.backend.autolog.ports.web
 import ai.logsight.backend.autolog.domain.dto.AutoLogDTO
 import ai.logsight.backend.autolog.ports.web.response.AutoLogResponse
 import ai.logsight.backend.autolog.domain.service.AutoLogService
-import ai.logsight.backend.autolog.ports.web.out.persistance.AutoLogEntity
 import ai.logsight.backend.autolog.ports.web.request.AutoLogFeedbackRequest
 import ai.logsight.backend.autolog.ports.web.request.AutoLogRequest
-import ai.logsight.backend.autolog.ports.web.response.AutoLogEntry
 import ai.logsight.backend.autolog.ports.web.response.AutoLogFeedbackResponse
 import ai.logsight.backend.users.ports.out.persistence.UserStorageService
 import io.swagger.annotations.Api
@@ -32,7 +30,7 @@ class AutoLogController(
         @Valid @RequestBody autoLogRequest: AutoLogRequest,
     ): AutoLogResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        return autoLogService.getAutoLogs(AutoLogDTO(user, autoLogRequest.context, autoLogRequest.fileName, autoLogRequest.languageId, autoLogRequest.source))
+        return autoLogService.getAutoLogs(AutoLogDTO(user, autoLogRequest.code, autoLogRequest.language))
     }
 
     @ApiOperation("Give feedback about the autolog recommendation")

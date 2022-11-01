@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.util.UUID
+import java.util.concurrent.ThreadLocalRandom
 
 @Service
 class AutoLogService (
@@ -35,23 +36,27 @@ class AutoLogService (
     fun getAutoLogs(autoLogDTO: AutoLogDTO): AutoLogResponse {
         val uri = buildAutoLogEndpointURI()
         val requestBody = mapOf(
-            autoLogDTO::context.name to autoLogDTO.context,
-            autoLogDTO::fileName.name to autoLogDTO.fileName,
-            autoLogDTO::languageId.name to autoLogDTO.languageId,
-            autoLogDTO::source.name to autoLogDTO.source,
-            "privateKey" to autoLogDTO.user.key,
+            autoLogDTO::code.name to autoLogDTO.code,
+            autoLogDTO::language.name to autoLogDTO.language,
         )
-        val autoLog = autoLogRepository.save(AutoLogEntity(language = autoLogDTO.languageId, user = autoLogDTO.user.toUserEntity()))
+        val autoLog =
+            autoLogRepository.save(AutoLogEntity(language = autoLogDTO.language, user = autoLogDTO.user.toUserEntity()))
 
-//        val request = HttpRequest.newBuilder().uri(uri).header("Content-Type", "application/json")
-//            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody))).build()
-//        val response = httpClientFactory.create().send(request, HttpResponse.BodyHandlers.ofString())
-//        if (response.statusCode() != HttpStatus.OK.value()) throw RemoteAutoLogException(
-//            response.body().toString()
-//        )
-//        return mapper.readValue<AutoLogResponse>(response.body().toString())
-        val shouldShowFeedback = true
-        return AutoLogResponse(listAutoLogs = listOf(AutoLogEntry()), autoLogId = autoLog.id, shouldShowFeedback = shouldShowFeedback)
+        val request = HttpRequest.newBuilder().uri(uri).header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody))).build()
+        val response = httpClientFactory.create().send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() != HttpStatus.OK.value()) throw RemoteAutoLogException(
+            response.body().toString()
+        )
+        val autoLogEntities = autoLogRepository.findAllByUser(autoLog.user)
+        val shouldShowFeedback = (autoLogEntities.size % ThreadLocalRandom.current().nextInt(5, 10)) == 0
+        val autoLogs = mapper.readValue<List<AutoLogEntry>>(response.body().toString())
+        return AutoLogResponse(
+            listAutoLogs = autoLogs,
+            autoLogId = autoLog.id,
+            shouldShowFeedback = shouldShowFeedback
+        )
+
     }
 
     fun giveFeedback(user: User, autoLogId: UUID, isHelpful: Boolean): AutoLogEntity {
