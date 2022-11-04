@@ -4,9 +4,9 @@ import ai.logsight.backend.TestInputConfig
 import ai.logsight.backend.charts.domain.service.ESChartsServiceImpl
 import ai.logsight.backend.charts.repository.entities.elasticsearch.HitsCompareDataPoint
 import ai.logsight.backend.compare.ports.out.HttpClientFactory
-import ai.logsight.backend.autolog.ports.web.request.AutoLogRequest
+import ai.logsight.backend.logwriter.ports.web.request.LogWriterRequest
 import ai.logsight.backend.compare.ports.web.request.UpdateCompareStatusRequest
-import ai.logsight.backend.autolog.ports.web.response.AutoLogResponse
+import ai.logsight.backend.logwriter.ports.web.response.LogWriterResponse
 import ai.logsight.backend.compare.ports.web.response.DeleteCompareByIdResponse
 import ai.logsight.backend.compare.ports.web.response.UpdateCompareStatusResponse
 import ai.logsight.backend.connectors.elasticsearch.ElasticsearchException
@@ -76,8 +76,8 @@ internal class CompareControllerTest {
         val updateCompareStatusRequest = UpdateCompareStatusRequest(compareId, 1)
 
         val createCompareRequest =
-            AutoLogRequest(baselineTags = mapOf("tag" to "default"), candidateTags = mapOf("tag" to "default"))
-        val compareResponse = AutoLogResponse(
+            LogWriterRequest(baselineTags = mapOf("tag" to "default"), candidateTags = mapOf("tag" to "default"))
+        val compareResponse = LogWriterResponse(
             link = "http://localhost:4200/pages/compare?compareId=compareId",
             baselineTags = mapOf("tag" to "default"),
             candidateTags = mapOf("tag" to "default"),
@@ -155,10 +155,10 @@ internal class CompareControllerTest {
 
         private fun getInvalidRequests(): List<Arguments> {
             return mapOf(
-                "Empty baseline tags" to AutoLogRequest(
+                "Empty baseline tags" to LogWriterRequest(
                     baselineTags = mapOf(), candidateTags = mapOf("tag" to "default")
                 ),
-                "Empty candidate tags" to AutoLogRequest(
+                "Empty candidate tags" to LogWriterRequest(
                     baselineTags = mapOf(), candidateTags = mapOf("tag" to "default")
                 ),
             ).map { x -> Arguments.of(x.key, x.value) }
@@ -168,7 +168,7 @@ internal class CompareControllerTest {
         @MethodSource("getInvalidRequests")
         fun `Bad request for invalid input`(
             reason: String,
-            request: AutoLogRequest
+            request: LogWriterRequest
         ) {
 
             // given

@@ -1,6 +1,6 @@
 package ai.logsight.backend.users.ports.out.persistence
 
-import ai.logsight.backend.autolog.ports.web.out.persistance.AutoLogEntity
+import ai.logsight.backend.logwriter.ports.web.out.persistance.LogWriterEntity
 import ai.logsight.backend.security.KeyGenerator
 import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import java.time.LocalDateTime
@@ -51,6 +51,6 @@ class UserEntity(
     val timeSelectionEntities: List<TimeSelectionEntity> = listOf(),
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @Column(name = "autolog_entities")
-    val autoLogEntities: List<AutoLogEntity> = listOf()
+    @Column(name = "logwriter_entities")
+    val logWriterEntities: List<LogWriterEntity> = listOf()
 )

@@ -1,10 +1,10 @@
-package ai.logsight.backend.autolog.ports.web.response
+package ai.logsight.backend.logwriter.ports.web.response
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class AutoLogEntry(
+data class LogWriterEntry(
     @JsonProperty("start_line_number")
     val startLineNumber: Long,
     @JsonProperty("start_col_number")

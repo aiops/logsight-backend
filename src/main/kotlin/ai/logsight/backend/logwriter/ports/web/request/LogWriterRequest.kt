@@ -1,8 +1,8 @@
-package ai.logsight.backend.autolog.ports.web.request
+package ai.logsight.backend.logwriter.ports.web.request
 
 import javax.validation.constraints.NotEmpty
 
-data class AutoLogRequest(
+data class LogWriterRequest(
     @get:NotEmpty(message = "languageId must not be empty.")
     val language: String,
     @get:NotEmpty(message = "fileName must not be empty.")

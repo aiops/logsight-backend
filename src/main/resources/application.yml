@@ -93,7 +93,7 @@ logsight:
       host: ${RESULT_API_HOST:localhost}
       port: ${RESULT_API_PORT:5554}
       compare-path: ${RESULT_API_COMPARE_PATH:api/v1/compare}
-      autolog-path:  ${RESULT_API_AUTOLOG_PATH:api/v1/autolog}
+      log-writer-path:  ${RESULT_API_WRITER_PATH:api/v1/writer}
 
   token:
     minutes: 15

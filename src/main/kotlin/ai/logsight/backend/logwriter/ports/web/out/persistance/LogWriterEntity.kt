@@ -1,15 +1,12 @@
-package ai.logsight.backend.autolog.ports.web.out.persistance
+package ai.logsight.backend.logwriter.ports.web.out.persistance
 
-import ai.logsight.backend.security.KeyGenerator
-import ai.logsight.backend.timeselection.ports.out.persistence.TimeSelectionEntity
 import ai.logsight.backend.users.ports.out.persistence.UserEntity
-import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 
 @Entity
-@Table(name = "autolog")
-class AutoLogEntity(
+@Table(name = "log_writer")
+class LogWriterEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 

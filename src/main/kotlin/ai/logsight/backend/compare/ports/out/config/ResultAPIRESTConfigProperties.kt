@@ -12,5 +12,5 @@ data class ResultAPIRESTConfigProperties(
     val host: String,
     val port: Int,
     val comparePath: String,
-    val autologPath: String
+    val logWriterPath: String
 )
