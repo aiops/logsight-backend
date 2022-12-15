@@ -50,7 +50,7 @@ class LogWriterService (
             response.body().toString()
         )
         val logWriteEntities = logWriterRepository.findAllByUser(logWrite.user)
-        val shouldShowFeedback = (logWriteEntities.size % ThreadLocalRandom.current().nextInt(5, 10)) == 0
+        val shouldShowFeedback = (logWriteEntities.size % ThreadLocalRandom.current().nextInt(5, 6)) == 0
         val logWriterLogs = mapper.readValue<List<LogWriterEntry>>(response.body().toString())
         return LogWriterResponse(
             listWriteLogs = logWriterLogs,

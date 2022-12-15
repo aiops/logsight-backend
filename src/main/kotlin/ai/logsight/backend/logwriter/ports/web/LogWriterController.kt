@@ -30,9 +30,7 @@ class LogWriterController(
         @Valid @RequestBody logWriterRequest: LogWriterRequest,
     ): LogWriterResponse {
         val user = userStorageService.findUserByEmail(authentication.name)
-        val ret = logWriterService.getLogWriterLogs(LogWriterDTO(user, logWriterRequest.code, logWriterRequest.language))
-        println(ret)
-        return ret
+        return logWriterService.getLogWriterLogs(LogWriterDTO(user, logWriterRequest.code, logWriterRequest.language))
     }
 
     @ApiOperation("Give feedback about the log writer recommendation")
